@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/dashboard';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
 import { useTranslations } from '@/lib/i18n';
+import { api } from '@/lib/api';
 
 // Mock Data
 const initialAccounts: MetaAccount[] = [];
@@ -75,63 +76,32 @@ export default function AccountsPage() {
       }
 
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-        const res = await fetch(
-          `${baseUrl}/api/meta/accounts?accountId=${encodeURIComponent(activeAccountId)}&range=${encodeURIComponent(range)}${
-            range === 'custom' && from && to
-              ? `&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
-              : ''
-          }`
-        );
+        // GET /meta/ad-accounts returns available Meta ad accounts (with alreadyConnected flag)
+        const adAccounts = await api<any[]>('/meta/ad-accounts');
 
-        if (!res.ok) {
-          throw new Error(`Request failed with status ${res.status}`);
-        }
-
-        const data = await res.json();
-
-        const rows: unknown[] = Array.isArray(data)
-          ? data
-          : Array.isArray((data as { accounts?: unknown }).accounts)
-            ? ((data as { accounts?: unknown }).accounts as unknown[])
-            : [];
-
-        const mapped: MetaAccount[] = rows.map((item: unknown): MetaAccount => {
-          const obj = item as Record<string, unknown>;
-          const backendStatus = String(obj.status || '').toLowerCase();
-
-          let status: MetaAccount['status'] = 'connected';
-          if (backendStatus === 'error') status = 'error';
-          if (backendStatus === 'expired') status = 'expired';
-
-          const lastSyncAt = obj.lastSyncAt;
-          const lastSyncDate = lastSyncAt ? new Date(String(lastSyncAt)) : null;
-          const lastSync = lastSyncDate
-            ? lastSyncDate.toLocaleString('tr-TR')
-            : t('unknown');
-
-          return {
-            id: String(obj.id ?? ''),
-            name: String(obj.name ?? t('unknown_account')),
-            accountId: String(obj.metaAccountId ?? 'N/A'),
-            status,
-            lastSync,
-          };
-        });
-
+        // Filter to only show already-connected accounts
+        const connected = (adAccounts || []).filter((a: any) => a.alreadyConnected);
+        const mapped: MetaAccount[] = connected.map((a: any) => ({
+          id: a.metaAccountId,
+          name: a.name || `act_${a.metaAccountId}`,
+          accountId: `act_${a.metaAccountId}`,
+          status: 'connected',
+          lastSync: '—',
+          currency: a.currency,
+          timezone: a.timezone,
+        }));
         setAccounts(mapped);
       } catch (error) {
-        console.error('Error fetching Meta accounts', error);
-        toast.info(t('fetch_error'));
-        setAccountsError(t('fetch_error_banner'));
+        console.error('Failed to fetch accounts', error);
         setAccounts(demoAccounts);
+        setAccountsError('Hesaplar yüklenemedi');
       } finally {
         setIsAccountsLoading(false);
       }
     };
 
     fetchAccounts();
-  }, [toast, activeAccountId, range, from, to, useMockData]);
+  }, [useMockData]);
 
   const handleConnect = () => {
     setAccounts((prev) => {

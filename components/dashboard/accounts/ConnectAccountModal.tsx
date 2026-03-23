@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui';
 import { X, Check, Loader2, Facebook } from 'lucide-react';
+import { api, ApiError } from '@/lib/api';
 
 interface ConnectAccountModalProps {
   isOpen: boolean;
@@ -13,21 +14,23 @@ interface ConnectAccountModalProps {
 
 export function ConnectAccountModal({ isOpen, onClose, onConnect }: ConnectAccountModalProps) {
   const [status, setStatus] = useState<'idle' | 'connecting' | 'success'>('idle');
+  const toast = useToast();
 
   if (!isOpen) return null;
 
-  const handleConnect = () => {
+  const handleConnect = async () => {
     setStatus('connecting');
-    // Simulate API delay
-    setTimeout(() => {
-      setStatus('success');
-      // Wait a bit before closing
-      setTimeout(() => {
-        onConnect();
-        onClose();
-        setStatus('idle'); // Reset for next time
-      }, 1500);
-    }, 2000);
+    try {
+      const data = await api<{ url: string }>('/meta/auth-url');
+      window.location.href = data.url; // Redirect to Facebook OAuth
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 403) {
+        toast.error('Yalnızca yöneticiler Meta hesabı bağlayabilir');
+      } else {
+        toast.error('Meta bağlantısı başlatılamadı');
+      }
+      setStatus('idle');
+    }
   };
 
   return (
