@@ -7,6 +7,8 @@ import { RedisModule } from './redis/redis.module';
 import { HealthModule } from './health/health.module';
 import { EmailModule } from './email/email.module';
 import { AuthModule } from './auth/auth.module';
+import { WorkspaceModule } from './workspace/workspace.module';
+import { MetaModule } from './meta/meta.module';
 import { CsrfMiddleware } from './common/middleware/csrf.middleware';
 
 @Module({
@@ -18,6 +20,8 @@ import { CsrfMiddleware } from './common/middleware/csrf.middleware';
     HealthModule,
     EmailModule,
     AuthModule,
+    WorkspaceModule,
+    MetaModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
