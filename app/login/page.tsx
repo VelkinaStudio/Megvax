@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -8,12 +8,15 @@ import { MarketingNav } from '@/components/marketing/MarketingNav';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
+import { useAuth } from '@/lib/auth-context';
+import { ApiError } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
   const toast = useToast();
   const t = useTranslations('auth');
   const tc = useTranslations('common');
+  const { login, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,29 +25,31 @@ export default function LoginPage() {
     rememberMe: false,
   });
 
+  useEffect(() => {
+    if (isAuthenticated) router.replace('/app/dashboard');
+  }, [isAuthenticated, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Mock credential check
-    if (formData.email === 'demo@megvax.com' && formData.password === 'demo123') {
+    try {
+      await login(formData.email, formData.password);
       toast.success(tc('success') + '!');
       router.push('/app/dashboard');
-    } else {
-      toast.error(t('invalid_credentials'));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else {
+        toast.error(t('invalid_credentials'));
+      }
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    toast.success(tc('success') + '!');
-    router.push('/app/dashboard');
+  const handleGoogleLogin = () => {
+    toast.info('Google login coming soon');
   };
 
   return (

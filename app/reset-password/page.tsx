@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Lock, Loader2, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
+import { api, ApiError } from '@/lib/api';
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const token = searchParams.get('token');
   const toast = useToast();
   const t = useTranslations('auth');
@@ -39,10 +41,21 @@ function ResetPasswordContent() {
     }
 
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    toast.success(t('password_changed_title'));
-    setIsSuccess(true);
-    setIsLoading(false);
+
+    try {
+      await api('/auth/reset-password', { method: 'POST', body: { token, newPassword: password }, skipAuth: true });
+      toast.success(t('password_changed_title'));
+      setIsSuccess(true);
+      setTimeout(() => router.push('/login'), 2000);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else {
+        toast.error(t('reset_failed') || 'Password reset failed. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isSuccess) {

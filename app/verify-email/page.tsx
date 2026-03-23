@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Mail, Loader2, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
+import { api, ApiError } from '@/lib/api';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -17,21 +18,39 @@ function VerifyEmailContent() {
   const [isResending, setIsResending] = useState(false);
 
   useEffect(() => {
-    if (token) {
-      setTimeout(() => {
+    const verify = async () => {
+      if (!token) {
+        setStatus('error');
+        return;
+      }
+      try {
+        await api('/auth/verify-email', { method: 'POST', body: { token }, skipAuth: true });
         setStatus('success');
         toast.success(t('verify_success_toast'));
-      }, 2000);
-    } else {
-      setStatus('error');
-    }
-  }, [token, toast]);
+      } catch (error) {
+        setStatus('error');
+        if (error instanceof ApiError) {
+          toast.error(error.message);
+        }
+      }
+    };
+    void verify();
+  }, [token, toast, t]);
 
   const handleResend = async () => {
     setIsResending(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    toast.success(t('verify_resend_toast'));
-    setIsResending(false);
+    try {
+      await api('/auth/resend-verification', { method: 'POST', skipAuth: true });
+      toast.success(t('verify_resend_toast'));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else {
+        toast.error(t('verify_resend_error') || 'Failed to resend verification email.');
+      }
+    } finally {
+      setIsResending(false);
+    }
   };
 
   if (status === 'loading') {

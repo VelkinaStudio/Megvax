@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Mail, Loader2, CheckCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
+import { api, ApiError } from '@/lib/api';
 
 export default function ForgotPasswordPage() {
   const toast = useToast();
@@ -18,12 +19,19 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    toast.success(t('reset_link_sent'));
-    setIsSubmitted(true);
-    setIsLoading(false);
+    try {
+      await api('/auth/forgot-password', { method: 'POST', body: { email }, skipAuth: true });
+      toast.success(t('reset_link_sent'));
+      setIsSubmitted(true);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else {
+        toast.error(t('reset_link_error') || 'Failed to send reset link. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isSubmitted) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Lock, User, Building, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -8,12 +8,15 @@ import { MarketingNav } from '@/components/marketing/MarketingNav';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
+import { useAuth } from '@/lib/auth-context';
+import { ApiError } from '@/lib/api';
 
 export default function SignupPage() {
   const router = useRouter();
   const toast = useToast();
   const t = useTranslations('auth');
   const tc = useTranslations('common');
+  const { register, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -24,6 +27,10 @@ export default function SignupPage() {
     terms: false,
   });
 
+  useEffect(() => {
+    if (isAuthenticated) router.replace('/app/dashboard');
+  }, [isAuthenticated, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.terms) {
@@ -32,18 +39,23 @@ export default function SignupPage() {
     }
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    toast.success(t('signup_success'));
-    router.push('/app/dashboard');
+    try {
+      await register(formData.email, formData.password, formData.name);
+      toast.success(t('signup_success'));
+      router.push('/app/dashboard');
+    } catch (error) {
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else {
+        toast.error(t('signup_error') || 'Registration failed. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleSignup = async () => {
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    toast.success(t('google_signup_success'));
-    router.push('/app/dashboard');
+  const handleGoogleSignup = () => {
+    toast.info('Google signup coming soon');
   };
 
   return (
