@@ -97,19 +97,8 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSaveNotifications = async () => {
-    setIsSaving(true);
-    try {
-      await api('/auth/me', {
-        method: 'PATCH',
-        body: { notificationPreferences: notifications },
-      });
-      toast.success(ts('notifications_updated'));
-    } catch (error) {
-      toast.error(error instanceof ApiError ? error.message : 'Failed to save notifications');
-    } finally {
-      setIsSaving(false);
-    }
+  const handleSaveNotifications = () => {
+    toast.success('Bildirim tercihleri yakında aktif olacak');
   };
 
   const handleChangePassword = async () => {

@@ -91,7 +91,7 @@ export default function InsightsPage() {
     const from = fromDate.toISOString().split('T')[0];
     const to = toDate.toISOString().split('T')[0];
 
-    const entityType = level !== 'account' ? level : undefined;
+    const entityType = level !== 'account' ? level.toUpperCase() : undefined;
     const entityIdParam = level !== 'account' ? effectiveEntityId : undefined;
 
     const url = `/insights?accountId=${encodeURIComponent(accountId)}${

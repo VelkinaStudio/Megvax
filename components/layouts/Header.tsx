@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useNotifications } from '@/lib/hooks/use-notifications';
+import { useAuth } from '@/lib/auth-context';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -18,6 +19,7 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
   const tCommon = useTranslations('common');
   const tHeader = useTranslations('header');
   const router = useRouter();
+  const { user, logout } = useAuth();
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -343,8 +345,8 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
                   "
                 >
                   <div className="p-3 border-b border-gray-200">
-                    <p className="text-sm font-semibold text-gray-900">John Doe</p>
-                    <p className="text-xs text-gray-600">john@example.com</p>
+                    <p className="text-sm font-semibold text-gray-900">{user?.fullName || 'User'}</p>
+                    <p className="text-xs text-gray-600">{user?.email || ''}</p>
                   </div>
                   <div className="p-2">
                     <Link href="/app/settings">
@@ -362,6 +364,7 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
                       </button>
                     </Link>
                     <button
+                      onClick={async () => { await logout(); router.push('/login'); }}
                       className="
                         w-full flex items-center gap-3 px-3 py-2 rounded-md
                         text-sm font-medium text-accent-danger

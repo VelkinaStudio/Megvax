@@ -244,6 +244,8 @@ export default function CampaignsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused'>('all');
 
+  const accountParam = searchParams.get('account');
+
   // Fetch campaigns from API (or fall back to mock data)
   useEffect(() => {
     const fetchTree = async () => {
@@ -257,10 +259,10 @@ export default function CampaignsPage() {
       }
 
       try {
-        const accountId = searchParams.get('account');
-        const accountParam = accountId ? `&accountId=${encodeURIComponent(accountId)}` : '';
-        const data = await api<{ data: any[]; cursor: string | null; hasMore: boolean }>(`/campaigns?limit=100${accountParam}`);
-        const mapped: CampaignNode[] = (data.data || []).map((c: any) => ({
+        const qs = accountParam ? `accountId=${encodeURIComponent(accountParam)}` : '';
+        const treeData = await api<any[]>(`/campaigns/tree${qs ? `?${qs}` : ''}`);
+        const campaigns = Array.isArray(treeData) ? treeData : [];
+        const mapped: CampaignNode[] = campaigns.map((c: any) => ({
           id: c.id,
           type: 'campaign' as const,
           name: c.name,
@@ -268,7 +270,32 @@ export default function CampaignsPage() {
           spend: c.dailyBudget ? `₺${Number(c.dailyBudget).toLocaleString('tr-TR')}` : '₺0',
           roas: '—',
           conversions: 0,
-          children: [], // AdSets loaded on expand
+          children: (c.adSets || []).map((as: any) => ({
+            id: as.id,
+            type: 'adset' as const,
+            name: as.name,
+            status: as.status?.toLowerCase() || 'paused',
+            campaignId: c.id,
+            campaignName: c.name,
+            bidStrategy: as.bidStrategy || '',
+            dailyBudget: as.dailyBudget ? `₺${Number(as.dailyBudget).toLocaleString('tr-TR')}` : '₺0',
+            spend: as.dailyBudget ? `₺${Number(as.dailyBudget).toLocaleString('tr-TR')}` : '₺0',
+            roas: '—',
+            conversions: 0,
+            children: (as.ads || []).map((ad: any) => ({
+              id: ad.id,
+              type: 'ad' as const,
+              name: ad.name,
+              status: ad.status?.toLowerCase() || 'paused',
+              adSetId: as.id,
+              adSetName: as.name,
+              previewUrl: ad.previewUrl || '',
+              ctr: '—',
+              spend: '₺0',
+              roas: '—',
+              conversions: 0,
+            })),
+          })),
         }));
         setCampaigns(mapped);
       } catch (error) {
@@ -280,7 +307,7 @@ export default function CampaignsPage() {
     };
 
     fetchTree();
-  }, []);
+  }, [accountParam]);
 
   // Handle focusLevel/focusId from smart suggestions navigation
   useEffect(() => {

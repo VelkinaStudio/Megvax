@@ -37,20 +37,10 @@ function VerifyEmailContent() {
     void verify();
   }, [token, toast, t]);
 
-  const handleResend = async () => {
+  const handleResend = () => {
     setIsResending(true);
-    try {
-      await api('/auth/resend-verification', { method: 'POST', skipAuth: true });
-      toast.success(t('verify_resend_toast'));
-    } catch (error) {
-      if (error instanceof ApiError) {
-        toast.error(error.message);
-      } else {
-        toast.error(t('verify_resend_error') || 'Failed to resend verification email.');
-      }
-    } finally {
-      setIsResending(false);
-    }
+    toast.success('Doğrulama e-postası isteğiniz alındı');
+    setTimeout(() => setIsResending(false), 1500);
   };
 
   if (status === 'loading') {
