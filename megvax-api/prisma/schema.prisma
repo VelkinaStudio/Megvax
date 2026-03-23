@@ -31,6 +31,7 @@ model User {
   invitationsSent  Invitation[]      @relation("InvitedBy")
   auditLogs        AuditLog[]
   notifications    Notification[]
+  cancelledActions AutopilotAction[]
 
   @@index([email])
 }
@@ -52,6 +53,7 @@ model Workspace {
   adAccounts     AdAccount[]
   auditLogs      AuditLog[]
   notifications  Notification[]
+  automationRules AutomationRule[]
 
   @@index([slug])
 }
@@ -168,12 +170,16 @@ model AdAccount {
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
 
-  metaConnection MetaConnection   @relation(fields: [metaConnectionId], references: [id], onDelete: Cascade)
-  workspace      Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  campaigns      Campaign[]
-  adSets         AdSet[]
-  ads            Ad[]
+  metaConnection   MetaConnection   @relation(fields: [metaConnectionId], references: [id], onDelete: Cascade)
+  workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  campaigns        Campaign[]
+  adSets           AdSet[]
+  ads              Ad[]
   insightSnapshots InsightSnapshot[]
+  autopilotConfig  AutopilotConfig?
+  autopilotActions AutopilotAction[]
+  automationRules  AutomationRule[]
+  suggestions      Suggestion[]
 
   @@unique([workspaceId, metaAccountId])
   @@index([metaAccountId])
@@ -389,4 +395,127 @@ enum NotificationType {
   BILLING
   SYSTEM
   META_CONNECTION
+}
+
+// ─── Autopilot ────────────────────────────────────────
+
+model AutopilotConfig {
+  id                     String     @id @default(uuid()) @db.Uuid
+  adAccountId            String     @unique @db.Uuid
+  actionTiers            Json       // { PAUSE_UNDERPERFORMER: 'AUTO', SCALE_WINNER: 'SUGGEST_ACT', ... }
+  suggestActDelayMinutes Int        @default(60)
+  budgetChangeMaxPercent Int        @default(30)
+  minSpendBeforeAction   Decimal    @default(10) @db.Decimal(12, 4)
+  pauseThresholds        Json       // { cpa_max: 100, roas_min: 0.5, frequency_max: 5 }
+  scaleThresholds        Json       // { roas_min: 2.0, conversions_min: 10 }
+  updatedAt              DateTime   @updatedAt
+
+  adAccount AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+}
+
+enum ActionTier {
+  AUTO
+  SUGGEST_ACT
+  SUGGEST_WAIT
+}
+
+enum RuleType {
+  PAUSE_UNDERPERFORMER
+  SCALE_WINNER
+  REALLOCATE_BUDGET
+  FREQUENCY_CAP
+  SCHEDULE_OPTIMIZE
+  CUSTOM_RULE
+}
+
+enum ActionStatus {
+  PENDING
+  SCHEDULED
+  EXECUTED
+  CANCELLED
+  FAILED
+}
+
+model AutopilotAction {
+  id              String       @id @default(uuid()) @db.Uuid
+  adAccountId     String       @db.Uuid
+  ruleType        RuleType
+  entityType      EntityType
+  entityId        String       @db.Uuid
+  tier            ActionTier
+  description     String
+  reason          Json         // { metric: 'cpa', value: 85, threshold: 50, window: '7d' }
+  changes         Json         // { field: 'status', from: 'ACTIVE', to: 'PAUSED' }
+  confidenceScore Decimal      @db.Decimal(4, 3) // 0.000 - 1.000
+  status          ActionStatus @default(PENDING)
+  scheduledFor    DateTime?
+  executedAt      DateTime?
+  cancelledAt     DateTime?
+  cancelledById   String?      @db.Uuid
+  errorMessage    String?
+  createdAt       DateTime     @default(now())
+
+  adAccount   AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+  cancelledBy User?     @relation(fields: [cancelledById], references: [id], onDelete: SetNull)
+
+  @@index([adAccountId, status, createdAt])
+  @@index([status, scheduledFor])
+}
+
+model AutomationRule {
+  id              String     @id @default(uuid()) @db.Uuid
+  workspaceId     String     @db.Uuid
+  adAccountId     String     @db.Uuid
+  name            String
+  enabled         Boolean    @default(true)
+  trigger         Json       // { metric, operator, threshold, window, entityScope }
+  action          Json       // { type, params }
+  tier            ActionTier @default(SUGGEST_WAIT)
+  cooldownMinutes Int        @default(60)
+  lastFiredAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  adAccount AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+
+  @@index([adAccountId, enabled])
+}
+
+// ─── Suggestions ──────────────────────────────────────
+
+enum SuggestionType {
+  BUDGET
+  AUDIENCE
+  CREATIVE
+  BID
+  HEALTH
+  SCALING
+}
+
+enum SuggestionStatus {
+  PENDING
+  APPLIED
+  DISMISSED
+}
+
+model Suggestion {
+  id             String           @id @default(uuid()) @db.Uuid
+  adAccountId    String           @db.Uuid
+  entityType     EntityType
+  entityId       String           @db.Uuid
+  type           SuggestionType
+  title          String
+  description    String
+  impact         Json             // { metric: 'roas', estimatedChange: '+15%', confidence: 0.7 }
+  action         Json             // { type: 'patch_campaign', params: { dailyBudget: 500 } }
+  status         SuggestionStatus @default(PENDING)
+  appliedAt      DateTime?
+  dismissedAt    DateTime?
+  dismissReason  String?
+  createdAt      DateTime         @default(now())
+
+  adAccount AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+
+  @@index([adAccountId, status, createdAt])
 }
