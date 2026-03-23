@@ -3,6 +3,7 @@
 import { useTranslations } from '@/lib/i18n';
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Campaign, AdSet, Ad } from '@/types/dashboard';
+import { api } from '@/lib/api';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { MetricValue } from '@/components/ui/MetricCell';
 import { Sparkline } from '@/components/ui/Sparkline';
@@ -12,19 +13,20 @@ import { PageHeader } from '@/components/dashboard';
 import { usePlatform } from '@/components/dashboard/PlatformContext';
 import { useSearchParams } from 'next/navigation';
 import { useToast } from '@/components/ui/Toast';
-import { 
-  Plus, 
-  Filter, 
-  Search, 
-  MoreHorizontal, 
-  Play, 
-  Pause, 
-  Copy, 
+import {
+  Plus,
+  Filter,
+  Search,
+  MoreHorizontal,
+  Play,
+  Pause,
+  Copy,
   Trash2,
   Layers,
   Target,
   Image as ImageIcon,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 
 function cn(...classes: (string | boolean | undefined)[]) {
@@ -234,12 +236,51 @@ export default function CampaignsPage() {
   const toast = useToast();
   const searchParams = useSearchParams();
   
-  const [data] = useState<CampaignNode[]>(mockCampaigns);
+  const [isLoading, setIsLoading] = useState(true);
+  const [campaigns, setCampaigns] = useState<CampaignNode[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedEntity, setSelectedEntity] = useState<TreeNode | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused'>('all');
+
+  // Fetch campaigns from API (or fall back to mock data)
+  useEffect(() => {
+    const fetchTree = async () => {
+      setIsLoading(true);
+      const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
+
+      if (useMockData) {
+        setCampaigns(mockCampaigns);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const accountId = searchParams.get('account');
+        const accountParam = accountId ? `&accountId=${encodeURIComponent(accountId)}` : '';
+        const data = await api<{ data: any[]; cursor: string | null; hasMore: boolean }>(`/campaigns?limit=100${accountParam}`);
+        const mapped: CampaignNode[] = (data.data || []).map((c: any) => ({
+          id: c.id,
+          type: 'campaign' as const,
+          name: c.name,
+          status: c.status?.toLowerCase() || 'paused',
+          spend: c.dailyBudget ? `₺${Number(c.dailyBudget).toLocaleString('tr-TR')}` : '₺0',
+          roas: '—',
+          conversions: 0,
+          children: [], // AdSets loaded on expand
+        }));
+        setCampaigns(mapped);
+      } catch (error) {
+        console.error('Failed to fetch campaigns', error);
+        setCampaigns(mockCampaigns);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTree();
+  }, []);
 
   // Handle focusLevel/focusId from smart suggestions navigation
   useEffect(() => {
@@ -251,7 +292,7 @@ export default function CampaignsPage() {
     const idsToExpand = new Set<string>();
     let foundNode: TreeNode | null = null;
 
-    for (const campaign of data) {
+    for (const campaign of campaigns) {
       if (focusLevel === 'campaign' && campaign.id === focusId) {
         foundNode = campaign;
         break;
@@ -284,10 +325,10 @@ export default function CampaignsPage() {
       setSelectedIds(new Set([focusId]));
       setSelectedEntity(foundNode);
     }
-  }, [searchParams, data]);
+  }, [searchParams, campaigns]);
 
   const filteredData = useMemo(() => {
-    if (!searchQuery && statusFilter === 'all') return data;
+    if (!searchQuery && statusFilter === 'all') return campaigns;
     const query = searchQuery.toLowerCase();
     
     const filterNode = (node: CampaignNode): CampaignNode | null => {
@@ -330,8 +371,8 @@ export default function CampaignsPage() {
       return null;
     };
     
-    return data.map(filterNode).filter(Boolean) as CampaignNode[];
-  }, [data, searchQuery, statusFilter]);
+    return campaigns.map(filterNode).filter(Boolean) as CampaignNode[];
+  }, [campaigns, searchQuery, statusFilter]);
 
   const getAllIds = useCallback((nodes: TreeNode[]): string[] => {
     const ids: string[] = [];
@@ -507,7 +548,7 @@ export default function CampaignsPage() {
     <div className="h-full flex flex-col">
       <PageHeader
         title={t('title')}
-        description={`${data.length} ${t('description')} ${data.reduce((acc, c) => acc + (c.children?.length || 0), 0)}`}
+        description={`${campaigns.length} ${t('description')} ${campaigns.reduce((acc, c) => acc + (c.children?.length || 0), 0)}`}
         actions={
           <button className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm">
             <Plus className="w-4 h-4" />
@@ -544,7 +585,12 @@ export default function CampaignsPage() {
         </button>
       </div>
 
-      <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden relative">
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10">
+            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+          </div>
+        )}
         <TreeTable
           data={filteredData as any}
           columns={columns as any}
