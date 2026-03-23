@@ -15,6 +15,7 @@ import { mockKpiMetrics, mockMetaCampaigns, mockSuggestions } from '@/components
 import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
 import { usePlatform } from '@/components/dashboard/PlatformContext';
 import { useTranslations } from '@/lib/i18n';
+import { api } from '@/lib/api';
 
 export default function DashboardPage() {
   const toast = useToast();
@@ -91,27 +92,25 @@ export default function DashboardPage() {
       }
 
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-        const res = await fetch(
-          `${baseUrl}/api/overview?accountId=${encodeURIComponent(account)}&range=${encodeURIComponent(range)}${range === 'custom' && from && to
-            ? `&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
-            : ''
-          }`
-        );
+        const data = await api<{ data: any }>(`/insights/account-summary?accountId=${encodeURIComponent(account)}${
+          from && to ? `&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}` : ''
+        }`);
 
-        if (!res.ok) {
-          throw new Error(`Request failed with status ${res.status}`);
-        }
-
-        const data = await res.json();
-        if (!data || !Array.isArray(data.metrics)) {
-          setMetrics([]);
-          return;
-        }
-
-        setMetrics(data.metrics as KpiMetric[]);
+        // Prisma Decimal types serialize as strings — must coerce with Number()
+        const agg = data.data;
+        const spend = Number(agg._sum?.spend || 0);
+        const roas = Number(agg._avg?.roas || 0);
+        const conversions = Number(agg._sum?.conversions || 0);
+        const ctr = Number(agg._avg?.ctr || 0);
+        const kpis: KpiMetric[] = [
+          { id: 'spend', label: 'Toplam Harcama', value: `₺${spend.toLocaleString('tr-TR')}`, trend: '', status: 'neutral', description: 'Toplam reklam harcaması' },
+          { id: 'roas', label: 'ROAS', value: `${roas.toFixed(2)}x`, trend: '', status: roas >= 2 ? 'up' : 'down', description: 'Reklam getiri oranı' },
+          { id: 'conversions', label: 'Dönüşüm', value: String(conversions), trend: '', status: 'neutral', description: 'Toplam dönüşüm' },
+          { id: 'ctr', label: 'CTR', value: `${ctr.toFixed(2)}%`, trend: '', status: 'neutral', description: 'Tıklanma oranı' },
+        ];
+        setMetrics(kpis);
       } catch (error) {
-        console.error(t('error_fetching_metrics'), error);
+        console.error('Failed to fetch metrics', error);
         setMetrics(mockKpiMetrics);
         setMetricsError(tc('live_data_unavailable'));
       } finally {
@@ -133,34 +132,9 @@ export default function DashboardPage() {
         return;
       }
 
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-        const res = await fetch(
-          `${baseUrl}/api/overview/suggestions?accountId=${encodeURIComponent(account)}&range=${encodeURIComponent(range)}${range === 'custom' && from && to
-            ? `&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
-            : ''
-          }`
-        );
-
-        if (!res.ok) {
-          throw new Error(`Request failed with status ${res.status}`);
-        }
-
-        const data = await res.json();
-        const rows: unknown[] = Array.isArray((data as { suggestions?: unknown }).suggestions)
-          ? ((data as { suggestions?: unknown }).suggestions as unknown[])
-          : Array.isArray(data)
-            ? (data as unknown[])
-            : [];
-
-        setSuggestions(rows as Suggestion[]);
-      } catch (error) {
-        console.error(t('error_fetching_suggestions'), error);
-        setSuggestions(mockSuggestions);
-        setSuggestionsError(tc('live_data_unavailable'));
-      } finally {
-        setIsSuggestionsLoading(false);
-      }
+      // Suggestions engine is Phase 2 — always use mock data for now
+      setSuggestions(mockSuggestions);
+      setIsSuggestionsLoading(false);
     };
 
     fetchSuggestions();
@@ -178,27 +152,19 @@ export default function DashboardPage() {
       }
 
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-        const res = await fetch(
-          `${baseUrl}/api/meta/campaigns?accountId=${encodeURIComponent(account)}&range=${encodeURIComponent(range)}${range === 'custom' && from && to
-            ? `&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
-            : ''
-          }`
-        );
-
-        if (!res.ok) {
-          throw new Error(`Request failed with status ${res.status}`);
-        }
-
-        const data = await res.json();
-        if (!data || !Array.isArray(data.campaigns)) {
-          setTopCampaigns([]);
-          return;
-        }
-
-        setTopCampaigns((data.campaigns as Campaign[]).slice(0, 5));
+        const data = await api<{ data: any[] }>(`/campaigns?accountId=${encodeURIComponent(account)}&limit=5`);
+        // Note: c.dailyBudget is Prisma Decimal → string in JSON. Shows budget, not actual spend.
+        const mapped: Campaign[] = (data.data || []).map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          status: c.status?.toLowerCase() || 'paused',
+          spend: `₺${Number(c.dailyBudget || 0).toLocaleString('tr-TR')}`,
+          roas: '—',
+          conversions: 0,
+        }));
+        setTopCampaigns(mapped);
       } catch (error) {
-        console.error(t('error_fetching_campaigns'), error);
+        console.error('Failed to fetch campaigns', error);
         setTopCampaigns(mockMetaCampaigns.slice(0, 5));
         setTopCampaignsError(tc('live_data_unavailable'));
       } finally {
