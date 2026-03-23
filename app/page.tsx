@@ -1,28 +1,21 @@
-'use client';
-
-import { MarketingNav } from '@/components/marketing/MarketingNav';
-import { MarketingFooter } from '@/components/marketing/MarketingFooter';
-import {
-  HeroSection,
-  FeaturesSection,
-  SocialProofSection,
-  HowItWorksSection,
-  CTASection,
-  SmoothScroll,
-} from '@/components/marketing/landing';
+import { Nav } from '@/components/marketing/landing/Nav';
+import { Hero } from '@/components/marketing/landing/Hero';
+import { WhatItDoes } from '@/components/marketing/landing/WhatItDoes';
+import { HowItWorks } from '@/components/marketing/landing/HowItWorks';
+import { MetricsStrip } from '@/components/marketing/landing/MetricsStrip';
+import { FinalCTA } from '@/components/marketing/landing/FinalCTA';
+import { Footer } from '@/components/marketing/landing/Footer';
 
 export default function Home() {
   return (
-    <SmoothScroll>
-      <main className="min-h-screen bg-white overflow-x-hidden">
-        <MarketingNav variant="dark" />
-        <HeroSection />
-        <FeaturesSection />
-        <SocialProofSection />
-        <HowItWorksSection />
-        <CTASection />
-        <MarketingFooter />
-      </main>
-    </SmoothScroll>
+    <main className="bg-[#0A0A0F] text-white min-h-screen">
+      <Nav />
+      <Hero />
+      <WhatItDoes />
+      <HowItWorks />
+      <MetricsStrip />
+      <FinalCTA />
+      <Footer />
+    </main>
   );
 }
