@@ -96,4 +96,78 @@ export class MetaApiClient {
     const data = await res.json();
     return data.data || [];
   }
+
+  // Helper: Meta API uses form-encoded POST for write operations
+  private async metaPost(url: string, accessToken: string, params: Record<string, any>): Promise<any> {
+    const body = new URLSearchParams();
+    body.set('access_token', accessToken);
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null) {
+        body.set(k, typeof v === 'object' ? JSON.stringify(v) : String(v));
+      }
+    }
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(`Meta API error: ${JSON.stringify(err.error || err)}`);
+    }
+    return res.json();
+  }
+
+  async createCampaign(accountId: string, accessToken: string, params: {
+    name: string;
+    objective: string;
+    status?: string;
+    special_ad_categories?: string[];
+    daily_budget?: number;
+    lifetime_budget?: number;
+    bid_strategy?: string;
+  }): Promise<{ id: string }> {
+    return this.metaPost(`${META_API_BASE}/act_${accountId}/campaigns`, accessToken, params);
+  }
+
+  async updateCampaign(campaignId: string, accessToken: string, params: Record<string, any>): Promise<{ success: boolean }> {
+    return this.metaPost(`${META_API_BASE}/${campaignId}`, accessToken, params);
+  }
+
+  async createAdSet(accountId: string, accessToken: string, params: {
+    name: string;
+    campaign_id: string;
+    status?: string;
+    targeting?: any;
+    daily_budget?: number;
+    lifetime_budget?: number;
+    bid_amount?: number;
+    optimization_goal?: string;
+    billing_event?: string;
+    start_time?: string;
+    end_time?: string;
+  }): Promise<{ id: string }> {
+    return this.metaPost(`${META_API_BASE}/act_${accountId}/adsets`, accessToken, params);
+  }
+
+  async updateAdSet(adsetId: string, accessToken: string, params: Record<string, any>): Promise<{ success: boolean }> {
+    return this.metaPost(`${META_API_BASE}/${adsetId}`, accessToken, params);
+  }
+
+  async createAd(accountId: string, accessToken: string, params: {
+    name: string;
+    adset_id: string;
+    status?: string;
+    creative?: any;
+  }): Promise<{ id: string }> {
+    return this.metaPost(`${META_API_BASE}/act_${accountId}/ads`, accessToken, params);
+  }
+
+  async updateAd(adId: string, accessToken: string, params: Record<string, any>): Promise<{ success: boolean }> {
+    return this.metaPost(`${META_API_BASE}/${adId}`, accessToken, params);
+  }
+
+  async deleteEntity(entityId: string, accessToken: string): Promise<{ success: boolean }> {
+    return this.metaPost(`${META_API_BASE}/${entityId}`, accessToken, { status: 'DELETED' });
+  }
 }
