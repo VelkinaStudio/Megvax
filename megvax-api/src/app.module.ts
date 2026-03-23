@@ -14,6 +14,7 @@ import { CampaignsModule } from './campaigns/campaigns.module';
 import { InsightsModule } from './insights/insights.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AutopilotModule } from './autopilot/autopilot.module';
+import { SuggestionsModule } from './suggestions/suggestions.module';
 import { CsrfMiddleware } from './common/middleware/csrf.middleware';
 
 @Module({
@@ -41,6 +42,7 @@ import { CsrfMiddleware } from './common/middleware/csrf.middleware';
     InsightsModule,
     NotificationsModule,
     AutopilotModule,
+    SuggestionsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
