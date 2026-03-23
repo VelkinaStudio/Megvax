@@ -12,6 +12,7 @@ import { WorkspaceModule } from './workspace/workspace.module';
 import { MetaModule } from './meta/meta.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
 import { InsightsModule } from './insights/insights.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { CsrfMiddleware } from './common/middleware/csrf.middleware';
 
 @Module({
@@ -37,6 +38,7 @@ import { CsrfMiddleware } from './common/middleware/csrf.middleware';
     MetaModule,
     CampaignsModule,
     InsightsModule,
+    NotificationsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
