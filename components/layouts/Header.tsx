@@ -41,7 +41,7 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
     read: !!n.readAt,
   }));
 
-  const getNotificationIcon = (type: Notification['type']) => {
+  const getNotificationIcon = (type: 'info' | 'success' | 'warning' | 'error') => {
     switch (type) {
       case 'success':
         return <Check className="w-4 h-4 text-green-500" />;
