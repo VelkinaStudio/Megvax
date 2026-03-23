@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from '@/lib/i18n';
+import { useAuth } from '@/lib/auth-context';
 import {
   LayoutDashboard,
   Target,
@@ -104,13 +105,10 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations('navigation');
+  const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user');
-      sessionStorage.clear();
-    }
+  const handleLogout = async () => {
+    await logout();
     router.push('/login');
   };
 
@@ -223,6 +221,14 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
       {/* Footer with Logout */}
       <div className="p-4 border-t border-gray-200 space-y-3">
+        {/* User Info */}
+        {!collapsed && user && (
+          <div className="px-3 py-2 rounded-lg bg-gray-50">
+            <p className="text-sm font-medium text-gray-900 truncate">{user.fullName || 'User'}</p>
+            <p className="text-xs text-gray-500 truncate">{user.email || ''}</p>
+          </div>
+        )}
+
         {/* Logout Button */}
         <button
           onClick={handleLogout}
@@ -238,7 +244,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             <span className="font-medium text-sm">{t('logout')}</span>
           )}
         </button>
-        
+
         {!collapsed ? (
           <div className="text-xs text-gray-500 text-center">
             <p>MegaVax v2.0</p>
@@ -261,13 +267,10 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations('navigation');
+  const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user');
-      sessionStorage.clear();
-    }
+  const handleLogout = async () => {
+    await logout();
     router.push('/login');
   };
 
@@ -350,6 +353,14 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
 
         {/* Footer with Logout */}
         <div className="p-4 border-t border-gray-200 space-y-3">
+          {/* User Info */}
+          {user && (
+            <div className="px-3 py-2 rounded-lg bg-gray-50">
+              <p className="text-sm font-medium text-gray-900 truncate">{user.fullName || 'User'}</p>
+              <p className="text-xs text-gray-500 truncate">{user.email || ''}</p>
+            </div>
+          )}
+
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
@@ -357,7 +368,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
             <LogOut className="w-5 h-5 flex-shrink-0" />
             <span className="font-medium text-sm">{t('logout')}</span>
           </button>
-          
+
           <div className="text-xs text-gray-500 text-center">
             <p>MegaVax v2.0</p>
             <p className="mt-1">© 2026</p>
