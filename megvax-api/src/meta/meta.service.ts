@@ -1,5 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import * as crypto from 'crypto';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service';
 import { MetaApiClient } from './meta-api.client';
 import { EncryptionService } from './encryption.service';
@@ -14,6 +16,7 @@ export class MetaService {
     private metaApi: MetaApiClient,
     private encryption: EncryptionService,
     private config: ConfigService,
+    @InjectQueue('meta-sync') private syncQueue: Queue,
   ) {
     this.redirectUri = this.config.getOrThrow('META_REDIRECT_URI');
   }
@@ -148,5 +151,17 @@ export class MetaService {
     if (account.workspaceId !== workspaceId) throw new NotFoundException();
     await this.prisma.adAccount.delete({ where: { id: accountId } });
     return { message: 'Ad account disconnected' };
+  }
+
+  async triggerSync(workspaceId: string, accountId: string) {
+    const account = await this.prisma.adAccount.findUniqueOrThrow({ where: { id: accountId } });
+    if (account.workspaceId !== workspaceId) throw new NotFoundException();
+
+    await this.syncQueue.add('sync', { adAccountId: accountId, workspaceId }, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 30000 },
+    });
+
+    return { message: 'Sync job queued' };
   }
 }

@@ -61,4 +61,14 @@ export class MetaController {
   ) {
     return this.metaService.disconnectAdAccount(workspaceId, accountId);
   }
+
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  @Post('ad-accounts/:id/sync')
+  async triggerSync(
+    @CurrentUser('workspaceId') workspaceId: string,
+    @Param('id') accountId: string,
+  ) {
+    return this.metaService.triggerSync(workspaceId, accountId);
+  }
 }
