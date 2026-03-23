@@ -1,5 +1,5 @@
-import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
-import { Job } from 'bullmq';
+import { Processor, WorkerHost, OnWorkerEvent, InjectQueue } from '@nestjs/bullmq';
+import { Job, Queue } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MetaApiClient } from './meta-api.client';
@@ -23,6 +23,7 @@ export class MetaSyncProcessor extends WorkerHost {
     private metaApi: MetaApiClient,
     private encryption: EncryptionService,
     private redis: RedisService,
+    @InjectQueue('autopilot') private autopilotQueue: Queue,
   ) {
     super();
   }
@@ -130,6 +131,9 @@ export class MetaSyncProcessor extends WorkerHost {
 
       await job.updateProgress(100);
       this.logger.log(`Sync complete for account ${metaAccountId}: ${campaigns.length} campaigns, ${adSets.length} adsets, ${ads.length} ads`);
+
+      // Dispatch autopilot evaluation after sync completes
+      await this.autopilotQueue.add('evaluate', { adAccountId, workspaceId: job.data.workspaceId }, { delay: 5000 });
 
       return { campaigns: campaigns.length, adSets: adSets.length, ads: ads.length };
     } catch (error) {

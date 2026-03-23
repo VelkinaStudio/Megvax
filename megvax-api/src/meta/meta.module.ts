@@ -9,6 +9,7 @@ import { MetaSyncProcessor } from './meta-sync.processor';
 @Module({
   imports: [
     BullModule.registerQueue({ name: 'meta-sync' }),
+    BullModule.registerQueue({ name: 'autopilot' }),
   ],
   controllers: [MetaController],
   providers: [MetaService, MetaApiClient, EncryptionService, MetaSyncProcessor],
