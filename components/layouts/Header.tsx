@@ -6,19 +6,11 @@ import { Menu, ChevronDown, User, Settings, LogOut, Bell, X, Check, Info, AlertT
 import { Badge } from '@/components/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useNotifications } from '@/lib/hooks/use-notifications';
 
 interface HeaderProps {
   onMenuClick?: () => void;
   showMenuButton?: boolean;
-}
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  timestamp: string;
-  read: boolean;
 }
 
 export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
@@ -29,42 +21,25 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: tHeader('notif_new_suggestion'),
-      message: tHeader('notif_low_perf'),
-      type: 'info',
-      timestamp: tHeader('notif_5m_ago'),
-      read: false,
-    },
-    {
-      id: '2',
-      title: tHeader('notif_optimization_done'),
-      message: tHeader('notif_ab_test_done'),
-      type: 'success',
-      timestamp: tHeader('notif_1h_ago'),
-      read: false,
-    },
-    {
-      id: '3',
-      title: tHeader('notif_budget_warning'),
-      message: tHeader('notif_budget_80'),
-      type: 'warning',
-      timestamp: tHeader('notif_2h_ago'),
-      read: true,
-    },
-  ]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const {
+    notifications: rawNotifications,
+    unreadCount,
+    markRead: markAsRead,
+    markAllRead: markAllAsRead,
+  } = useNotifications();
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
+  // Map hook notification shape to the display shape expected by the panel UI
+  const notifications = rawNotifications.map((n) => ({
+    id: n.id,
+    title: n.title,
+    message: n.body ?? '',
+    type: (['info', 'success', 'warning', 'error'].includes(n.type)
+      ? n.type
+      : 'info') as 'info' | 'success' | 'warning' | 'error',
+    timestamp: new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    read: !!n.readAt,
+  }));
 
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
