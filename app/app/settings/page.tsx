@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { 
-  User, 
-  Bell, 
-  Globe, 
-  Shield, 
-  CreditCard, 
+import { useState, useEffect } from 'react';
+import {
+  User,
+  Bell,
+  Globe,
+  Shield,
+  CreditCard,
   Mail,
   Phone,
   Building,
@@ -19,6 +19,8 @@ import { Card, Button, Switch } from '@/components/ui';
 import { PageHeader } from '@/components/dashboard';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations, useLocale, useSetLocale } from '@/lib/i18n';
+import { api, ApiError } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 
 type SettingsTab = 'profile' | 'notifications' | 'preferences' | 'security';
 
@@ -28,9 +30,10 @@ export default function SettingsPage() {
   const setLocale = useSetLocale();
   const t = useTranslations('navigation');
   const ts = useTranslations('settings_page');
+  const { user, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Profile state
   const [profile, setProfile] = useState({
     fullName: 'Demo User',
@@ -39,6 +42,17 @@ export default function SettingsPage() {
     company: 'Demo Company Inc.',
     role: 'Marketing Manager',
   });
+
+  // Sync profile from auth user on mount / user change
+  useEffect(() => {
+    if (user) {
+      setProfile((prev) => ({
+        ...prev,
+        fullName: user.fullName || prev.fullName,
+        email: user.email || prev.email,
+      }));
+    }
+  }, [user]);
 
   // Notification settings
   const [notifications, setNotifications] = useState({
@@ -68,16 +82,34 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast.success(ts('profile_updated'));
-    setIsSaving(false);
+    try {
+      await api('/auth/me', {
+        method: 'PATCH',
+        body: { fullName: profile.fullName, locale },
+      });
+      await refreshUser();
+      if (typeof setLocale === 'function') setLocale(locale);
+      toast.success(ts('profile_saved') || ts('profile_updated') || 'Profile saved');
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : 'Failed to save profile');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSaveNotifications = async () => {
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast.success(ts('notifications_updated'));
-    setIsSaving(false);
+    try {
+      await api('/auth/me', {
+        method: 'PATCH',
+        body: { notificationPreferences: notifications },
+      });
+      toast.success(ts('notifications_updated'));
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : 'Failed to save notifications');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleChangePassword = async () => {
@@ -90,10 +122,18 @@ export default function SettingsPage() {
       return;
     }
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast.success(ts('password_changed'));
-    setPasswords({ current: '', new: '', confirm: '' });
-    setIsSaving(false);
+    try {
+      await api('/auth/change-password', {
+        method: 'POST',
+        body: { currentPassword: passwords.current, newPassword: passwords.new },
+      });
+      toast.success(ts('password_changed') || 'Password changed');
+      setPasswords({ current: '', new: '', confirm: '' });
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : 'Failed to change password');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
