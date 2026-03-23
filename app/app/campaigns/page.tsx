@@ -65,6 +65,23 @@ function generateMockSparkline(): number[] {
   return Array.from({ length: 14 }, () => Math.random() * 100 + 50);
 }
 
+function findEntityType(id: string, campaigns: CampaignNode[]): EntityType {
+  for (const c of campaigns) {
+    if (c.id === id) return 'campaign';
+    if (c.children) {
+      for (const as of c.children) {
+        if (as.id === id) return 'adset';
+        if (as.children) {
+          for (const ad of as.children) {
+            if (ad.id === id) return 'ad';
+          }
+        }
+      }
+    }
+  }
+  return 'campaign'; // fallback
+}
+
 const mockCampaigns: CampaignNode[] = [
   {
     id: 'camp_1',
@@ -243,14 +260,17 @@ export default function CampaignsPage() {
   const [selectedEntity, setSelectedEntity] = useState<TreeNode | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused'>('all');
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   const accountParam = searchParams.get('account');
+  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
 
   // Fetch campaigns from API (or fall back to mock data)
   useEffect(() => {
     const fetchTree = async () => {
       setIsLoading(true);
-      const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
 
       if (useMockData) {
         setCampaigns(mockCampaigns);
@@ -511,22 +531,108 @@ export default function CampaignsPage() {
     [t]
   );
 
+  const refreshCampaigns = useCallback(async () => {
+    if (useMockData) {
+      setCampaigns(mockCampaigns);
+      return;
+    }
+    try {
+      const qs = accountParam ? `accountId=${encodeURIComponent(accountParam)}` : '';
+      const treeData = await api<any[]>(`/campaigns/tree${qs ? `?${qs}` : ''}`);
+      const raw = Array.isArray(treeData) ? treeData : [];
+      const mapped: CampaignNode[] = raw.map((c: any) => ({
+        id: c.id,
+        type: 'campaign' as const,
+        name: c.name,
+        status: c.status?.toLowerCase() || 'paused',
+        spend: c.dailyBudget ? `₺${Number(c.dailyBudget).toLocaleString('tr-TR')}` : '₺0',
+        roas: '—',
+        conversions: 0,
+        children: (c.adSets || []).map((as: any) => ({
+          id: as.id,
+          type: 'adset' as const,
+          name: as.name,
+          status: as.status?.toLowerCase() || 'paused',
+          campaignId: c.id,
+          campaignName: c.name,
+          bidStrategy: as.bidStrategy || '',
+          dailyBudget: as.dailyBudget ? `₺${Number(as.dailyBudget).toLocaleString('tr-TR')}` : '₺0',
+          spend: as.dailyBudget ? `₺${Number(as.dailyBudget).toLocaleString('tr-TR')}` : '₺0',
+          roas: '—',
+          conversions: 0,
+          children: (as.ads || []).map((ad: any) => ({
+            id: ad.id,
+            type: 'ad' as const,
+            name: ad.name,
+            status: ad.status?.toLowerCase() || 'paused',
+            adSetId: as.id,
+            adSetName: as.name,
+            previewUrl: ad.previewUrl || '',
+            ctr: '—',
+            spend: '₺0',
+            roas: '—',
+            conversions: 0,
+          })),
+        })),
+      }));
+      setCampaigns(mapped);
+    } catch {
+      // Silently keep existing data on refresh failure
+    }
+  }, [useMockData, accountParam]);
+
   const bulkActions = useMemo(
     () => [
       {
         label: t('bulk_activate'),
         icon: <Play className="w-4 h-4" />,
         variant: 'primary' as const,
-        onClick: () => {
-          toast.success(`${selectedIds.size} ${t('items_activated')}`);
+        onClick: async () => {
+          if (useMockData) {
+            toast.success(`${selectedIds.size} ${t('items_activated')}`);
+            return;
+          }
+          // Resume each selected entity
+          const ids = Array.from(selectedIds);
+          try {
+            await Promise.all(
+              ids.map((id) => {
+                // Determine entity type from the tree
+                const entityType = findEntityType(id, campaigns);
+                const entityPath = entityType === 'campaign' ? 'campaigns' : entityType === 'adset' ? 'adsets' : 'ads';
+                return api(`/${entityPath}/${id}/resume`, { method: 'POST' });
+              })
+            );
+            toast.success(`${selectedIds.size} ${t('items_activated')}`);
+            await refreshCampaigns();
+          } catch {
+            toast.error(t('items_activated') + ' failed');
+          }
         },
       },
       {
         label: t('bulk_pause'),
         icon: <Pause className="w-4 h-4" />,
         variant: 'secondary' as const,
-        onClick: () => {
-          toast.success(`${selectedIds.size} ${t('items_paused')}`);
+        onClick: async () => {
+          if (useMockData) {
+            toast.success(`${selectedIds.size} ${t('items_paused')}`);
+            return;
+          }
+          const ids = Array.from(selectedIds);
+          try {
+            await Promise.all(
+              ids.map((id) => {
+                const entityType = findEntityType(id, campaigns);
+                const entityPath = entityType === 'campaign' ? 'campaigns' : entityType === 'adset' ? 'adsets' : 'ads';
+                return api(`/${entityPath}/${id}/pause`, { method: 'POST' });
+              })
+            );
+            toast.success(`${selectedIds.size} ${t('items_paused')}`);
+            await refreshCampaigns();
+          } catch {
+            toast.error(t('items_paused') + ' failed');
+          }
         },
       },
       {
@@ -538,27 +644,104 @@ export default function CampaignsPage() {
         },
       },
     ],
-    [selectedIds.size, toast, t]
+    [selectedIds.size, toast, t, useMockData, campaigns, refreshCampaigns]
   );
 
   const handleRowClick = useCallback((row: TreeNode) => {
     setSelectedEntity(row);
   }, []);
 
-  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const handlePauseCampaign = useCallback(async (entity: TreeNode) => {
+    if (isActionLoading) return;
+    setIsActionLoading(true);
+
+    if (useMockData) {
+      // Optimistic update in mock mode
+      setCampaigns((prev) =>
+        prev.map((c) =>
+          c.id === entity.id ? { ...c, status: 'paused' as const } : c
+        )
+      );
+      toast.success(`${entity.name} ${t('paused_status')}`);
+      setIsActionLoading(false);
+      setIsMoreMenuOpen(false);
+      return;
+    }
+
+    try {
+      const entityPath = entity.type === 'campaign' ? 'campaigns' : entity.type === 'adset' ? 'adsets' : 'ads';
+      await api(`/${entityPath}/${entity.id}/pause`, { method: 'POST' });
+      toast.success(`${entity.name} ${t('paused_status')}`);
+      await refreshCampaigns();
+    } catch (error) {
+      console.error('Failed to pause', error);
+      toast.error(`${entity.name} — ${t('paused_status')} failed`);
+    } finally {
+      setIsActionLoading(false);
+      setIsMoreMenuOpen(false);
+    }
+  }, [isActionLoading, useMockData, toast, t, refreshCampaigns]);
+
+  const handleResumeCampaign = useCallback(async (entity: TreeNode) => {
+    if (isActionLoading) return;
+    setIsActionLoading(true);
+
+    if (useMockData) {
+      setCampaigns((prev) =>
+        prev.map((c) =>
+          c.id === entity.id ? { ...c, status: 'active' as const } : c
+        )
+      );
+      toast.success(`${entity.name} ${t('active_status')}`);
+      setIsActionLoading(false);
+      setIsMoreMenuOpen(false);
+      return;
+    }
+
+    try {
+      const entityPath = entity.type === 'campaign' ? 'campaigns' : entity.type === 'adset' ? 'adsets' : 'ads';
+      await api(`/${entityPath}/${entity.id}/resume`, { method: 'POST' });
+      toast.success(`${entity.name} ${t('active_status')}`);
+      await refreshCampaigns();
+    } catch (error) {
+      console.error('Failed to resume', error);
+      toast.error(`${entity.name} — ${t('active_status')} failed`);
+    } finally {
+      setIsActionLoading(false);
+      setIsMoreMenuOpen(false);
+    }
+  }, [isActionLoading, useMockData, toast, t, refreshCampaigns]);
+
+  const handleDuplicateCampaign = useCallback(async (entity: TreeNode) => {
+    if (isActionLoading) return;
+    setIsActionLoading(true);
+
+    if (useMockData) {
+      toast.success(`${entity.name} ${t('duplicate')}`);
+      setIsActionLoading(false);
+      setIsMoreMenuOpen(false);
+      return;
+    }
+
+    try {
+      const entityPath = entity.type === 'campaign' ? 'campaigns' : entity.type === 'adset' ? 'adsets' : 'ads';
+      await api(`/${entityPath}/${entity.id}/duplicate`, { method: 'POST' });
+      toast.success(`${entity.name} ${t('duplicate')}`);
+      await refreshCampaigns();
+    } catch (error) {
+      console.error('Failed to duplicate', error);
+      toast.error(`${entity.name} — ${t('duplicate')} failed`);
+    } finally {
+      setIsActionLoading(false);
+      setIsMoreMenuOpen(false);
+    }
+  }, [isActionLoading, useMockData, toast, t, refreshCampaigns]);
 
   const handleEdit = useCallback(() => {
     if (!selectedEntity) return;
     setIsEditModalOpen(true);
     setIsMoreMenuOpen(false);
   }, [selectedEntity]);
-
-  const handleDuplicate = useCallback(() => {
-    if (!selectedEntity) return;
-    toast.success(`${selectedEntity.name} ${t('duplicate')}`);
-    setIsMoreMenuOpen(false);
-  }, [selectedEntity, toast, t]);
 
   const handleDelete = useCallback(() => {
     if (!selectedEntity) return;
@@ -698,21 +881,32 @@ export default function CampaignsPage() {
                     />
                     <div className="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-20 py-1">
                       <button
-                        onClick={handleDuplicate}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        onClick={() => selectedEntity && handleDuplicateCampaign(selectedEntity)}
+                        disabled={isActionLoading}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 disabled:opacity-50"
                       >
                         <Copy className="w-4 h-4" />
                         {t('duplicate')}
                       </button>
                       <button
                         onClick={() => {
-                          const newStatus = selectedEntity?.status === 'active' ? 'paused' : 'active';
-                          toast.success(`${selectedEntity?.name} ${newStatus === 'active' ? t('active_status') : t('paused_status')}`);
-                          setIsMoreMenuOpen(false);
+                          if (!selectedEntity) return;
+                          if (selectedEntity.status === 'active') {
+                            void handlePauseCampaign(selectedEntity);
+                          } else {
+                            void handleResumeCampaign(selectedEntity);
+                          }
                         }}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        disabled={isActionLoading}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 disabled:opacity-50"
                       >
-                        {selectedEntity?.status === 'active' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                        {isActionLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : selectedEntity?.status === 'active' ? (
+                          <Pause className="w-4 h-4" />
+                        ) : (
+                          <Play className="w-4 h-4" />
+                        )}
                         {selectedEntity?.status === 'active' ? t('bulk_pause') : t('bulk_activate')}
                       </button>
                       <div className="border-t border-gray-100 my-1" />

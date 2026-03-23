@@ -4,10 +4,11 @@ import { useTranslations } from '@/lib/i18n';
 import { useEffect, useState } from 'react';
 import { OptimizationStrategyRow } from '@/components/dashboard/optimizations/OptimizationStrategyRow';
 import { OptimizationStrategy, Suggestion, type OptimizationStrategySettings } from '@/types/dashboard';
-import { Eye, Lightbulb, X, Bug, LifeBuoy, Zap } from 'lucide-react';
+import { Eye, Lightbulb, X, Bug, LifeBuoy, Zap, Shield, Clock, Activity, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 import { Button, Card, Skeleton, ConfirmModal } from '@/components/ui';
 import { EmptyStateCard, PageHeader } from '@/components/dashboard';
 import {
@@ -41,6 +42,31 @@ export default function OptimizationsPage() {
   const [settingsStrategy, setSettingsStrategy] = useState<OptimizationStrategy | null>(null);
   const [strategySettings, setStrategySettings] = useState<Record<string, OptimizationStrategySettings>>({});
   const [executionHistory, setExecutionHistory] = useState<ExecutionHistoryEntry[]>([]);
+
+  // Autopilot config & recent actions
+  interface AutopilotConfig {
+    enabled: boolean;
+    mode: string;
+    maxActionsPerDay: number;
+    requireApproval: boolean;
+    [key: string]: unknown;
+  }
+  interface AutopilotAction {
+    id: string;
+    type: string;
+    entityType: string;
+    entityId: string;
+    entityName: string;
+    description: string;
+    status: string;
+    createdAt: string;
+    [key: string]: unknown;
+  }
+
+  const [autopilotConfig, setAutopilotConfig] = useState<AutopilotConfig | null>(null);
+  const [isAutopilotConfigLoading, setIsAutopilotConfigLoading] = useState(false);
+  const [recentActions, setRecentActions] = useState<AutopilotAction[]>([]);
+  const [isActionsLoading, setIsActionsLoading] = useState(false);
 
   type SuggestionQueueState = 'pending' | 'dismissed' | 'snoozed' | 'applied';
   type SuggestionQueueItem = Suggestion & { state: SuggestionQueueState; snoozeUntil?: string };
@@ -143,8 +169,6 @@ export default function OptimizationsPage() {
     setIsSettingsOpen(true);
   };
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-
   const fetchSuggestionDetail = async (id: string) => {
     setIsReviewLoading(true);
 
@@ -153,9 +177,7 @@ export default function OptimizationsPage() {
       return;
     }
     try {
-      const res = await fetch(`${baseUrl}/api/suggestions/${id}`);
-      if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
-      const data = await res.json();
+      const data = await api<any>(`/suggestions/${id}`);
       const suggestion = (data as { suggestion?: unknown })?.suggestion as Partial<Suggestion> | undefined;
       if (!suggestion) return;
 
@@ -181,21 +203,21 @@ export default function OptimizationsPage() {
     setSuggestions((current) => current.map((s) => (s.id === id ? { ...s, ...next } : s)));
   };
 
+  // Dismiss via POST /suggestions/:id/dismiss, snooze/approve via POST /suggestions/:id/decision
   const postDecision = async (id: string, decision: 'approve' | 'dismiss' | 'snooze', snoozeUntil?: string) => {
     if (useMockData) return;
-    const res = await fetch(`${baseUrl}/api/suggestions/${id}/decision`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ decision, snoozeUntil }),
-    });
 
-    if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
+    if (decision === 'dismiss') {
+      await api(`/suggestions/${id}/dismiss`, { method: 'POST' });
+    } else {
+      await api(`/suggestions/${id}/decision`, {
+        method: 'POST',
+        body: { decision, snoozeUntil },
+      });
     }
   };
 
+  // Apply suggestion via POST /suggestions/:id/apply
   const applySuggestion = async (id: string) => {
     if (useMockData) return;
 
@@ -207,25 +229,22 @@ export default function OptimizationsPage() {
     let scalePatch: { dailyBudget: number } | undefined;
     if (isScaleType && current?.target?.level === 'adset') {
       try {
-        const res = await fetch(`${baseUrl}/api/meta/adsets?accountId=${encodeURIComponent(account)}`);
-        if (res.ok) {
-          const data = (await res.json().catch(() => ({}))) as { adsets?: unknown };
-          const rows = Array.isArray((data as { adsets?: unknown }).adsets)
-            ? ((data as { adsets?: unknown }).adsets as unknown[])
-            : Array.isArray(data)
-              ? (data as unknown[])
-              : [];
+        const data = await api<any>(`/meta/adsets?accountId=${encodeURIComponent(account)}`);
+        const rows = Array.isArray((data as { adsets?: unknown }).adsets)
+          ? ((data as { adsets?: unknown }).adsets as unknown[])
+          : Array.isArray(data)
+            ? (data as unknown[])
+            : [];
 
-          const target = rows
-            .map((x) => x as Record<string, unknown>)
-            .find((x) => String(x.id ?? '') === current.target?.id);
+        const target = rows
+          .map((x) => x as Record<string, unknown>)
+          .find((x) => String(x.id ?? '') === current.target?.id);
 
-          const budgetRaw = target?.dailyBudget;
-          const budgetText = typeof budgetRaw === 'string' ? budgetRaw : typeof budgetRaw === 'number' ? String(budgetRaw) : '';
-          const numeric = Number(budgetText.replace('₺', '').trim());
-          if (!Number.isNaN(numeric) && Number.isFinite(numeric) && numeric > 0) {
-            scalePatch = { dailyBudget: Math.round(numeric * 1.2) };
-          }
+        const budgetRaw = target?.dailyBudget;
+        const budgetText = typeof budgetRaw === 'string' ? budgetRaw : typeof budgetRaw === 'number' ? String(budgetRaw) : '';
+        const numeric = Number(budgetText.replace('₺', '').trim());
+        if (!Number.isNaN(numeric) && Number.isFinite(numeric) && numeric > 0) {
+          scalePatch = { dailyBudget: Math.round(numeric * 1.2) };
         }
       } catch {
         // ignore
@@ -257,17 +276,10 @@ export default function OptimizationsPage() {
             }
         : undefined;
 
-    const res = await fetch(`${baseUrl}/api/suggestions/${id}/apply`, {
+    await api(`/suggestions/${id}/apply`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ dryRun: false, options: {}, ...(actionPlan ? { actionPlan } : {}) }),
+      body: { dryRun: false, options: {}, ...(actionPlan ? { actionPlan } : {}) },
     });
-
-    if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
-    }
   };
 
   useEffect(() => {
@@ -332,6 +344,7 @@ export default function OptimizationsPage() {
     fetchStrategies();
   }, [useMockData, account, range, from, to]);
 
+  // Fetch suggestions via GET /suggestions?accountId=...&status=PENDING
   useEffect(() => {
     const fetchSuggestions = async () => {
       setIsSuggestionsLoading(true);
@@ -345,16 +358,7 @@ export default function OptimizationsPage() {
       }
 
       try {
-        const res = await fetch(
-          `${baseUrl}/api/overview/suggestions?accountId=${encodeURIComponent(account)}&range=${encodeURIComponent(range)}${
-            range === 'custom' && from && to
-              ? `&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
-              : ''
-          }`
-        );
-        if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
-
-        const data = await res.json();
+        const data = await api<any>(`/suggestions?accountId=${encodeURIComponent(account)}&status=PENDING`);
         const rows: unknown[] = Array.isArray((data as { suggestions?: unknown }).suggestions)
           ? ((data as { suggestions?: unknown }).suggestions as unknown[])
           : Array.isArray(data)
@@ -374,7 +378,58 @@ export default function OptimizationsPage() {
     };
 
     fetchSuggestions();
-  }, [useMockData, account, range, from, to, baseUrl]);
+  }, [useMockData, account, range, from, to]);
+
+  // Fetch autopilot config via GET /autopilot/config/:accountId
+  useEffect(() => {
+    const fetchAutopilotConfig = async () => {
+      if (useMockData) {
+        setAutopilotConfig({ enabled: false, mode: 'suggest', maxActionsPerDay: 10, requireApproval: true });
+        return;
+      }
+
+      setIsAutopilotConfigLoading(true);
+      try {
+        const data = await api<AutopilotConfig>(`/autopilot/config/${encodeURIComponent(account)}`);
+        setAutopilotConfig(data);
+      } catch (err) {
+        console.error('Failed to fetch autopilot config', err);
+        setAutopilotConfig({ enabled: false, mode: 'suggest', maxActionsPerDay: 10, requireApproval: true });
+      } finally {
+        setIsAutopilotConfigLoading(false);
+      }
+    };
+
+    fetchAutopilotConfig();
+  }, [useMockData, account]);
+
+  // Fetch recent autopilot actions via GET /autopilot/actions?accountId=...&limit=10
+  useEffect(() => {
+    const fetchRecentActions = async () => {
+      if (useMockData) {
+        setRecentActions([]);
+        return;
+      }
+
+      setIsActionsLoading(true);
+      try {
+        const data = await api<any>(`/autopilot/actions?accountId=${encodeURIComponent(account)}&limit=10`);
+        const actions = Array.isArray(data)
+          ? data
+          : Array.isArray((data as { actions?: unknown }).actions)
+            ? ((data as { actions?: unknown }).actions as AutopilotAction[])
+            : [];
+        setRecentActions(actions);
+      } catch (err) {
+        console.error('Failed to fetch autopilot actions', err);
+        setRecentActions([]);
+      } finally {
+        setIsActionsLoading(false);
+      }
+    };
+
+    fetchRecentActions();
+  }, [useMockData, account]);
 
   return (
     <div className="space-y-8">
@@ -436,6 +491,93 @@ export default function OptimizationsPage() {
             />
           )}
         </>
+      )}
+
+      {/* Autopilot Config Section */}
+      <section className="pt-4">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="p-2 bg-indigo-600 text-white rounded-md">
+            <Shield size={18} />
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900">{t('autopilot_config') || 'Autopilot Config'}</h2>
+        </div>
+        {isAutopilotConfigLoading ? (
+          <Card padding="lg">
+            <Skeleton className="h-6 w-1/3 mb-4" />
+            <Skeleton className="h-4 w-2/3" />
+          </Card>
+        ) : autopilotConfig ? (
+          <Card padding="lg">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase">{t('status') || 'Status'}</p>
+                <p className="text-sm font-medium text-gray-900 mt-1">
+                  {autopilotConfig.enabled ? (
+                    <span className="inline-flex items-center gap-1 text-green-700">
+                      <Activity size={14} /> {t('active_status') || 'Active'}
+                    </span>
+                  ) : (
+                    <span className="text-gray-500">{t('paused_status') || 'Disabled'}</span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase">{t('mode') || 'Mode'}</p>
+                <p className="text-sm font-medium text-gray-900 mt-1 capitalize">{autopilotConfig.mode}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase">{t('max_actions_day') || 'Max Actions/Day'}</p>
+                <p className="text-sm font-medium text-gray-900 mt-1">{autopilotConfig.maxActionsPerDay}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase">{t('approval_required') || 'Approval Required'}</p>
+                <p className="text-sm font-medium text-gray-900 mt-1">{autopilotConfig.requireApproval ? t('yes') || 'Yes' : t('no') || 'No'}</p>
+              </div>
+            </div>
+          </Card>
+        ) : null}
+      </section>
+
+      {/* Recent Autopilot Actions */}
+      {recentActions.length > 0 && (
+        <section className="pt-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-gray-100 text-gray-700 rounded-md">
+                <Clock size={18} />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900">{t('recent_actions') || 'Recent Actions'}</h2>
+            </div>
+            <p className="text-sm text-gray-500">{recentActions.length} {t('actions') || 'actions'}</p>
+          </div>
+          {isActionsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentActions.map((action) => (
+                <Card key={action.id} padding="md" className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                    <Activity size={18} className="text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{action.description || action.type}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 truncate">
+                      {action.entityType}: {action.entityName || action.entityId}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs text-gray-400">{new Date(action.createdAt).toLocaleString()}</p>
+                    <p className={`text-xs font-medium mt-0.5 ${action.status === 'EXECUTED' || action.status === 'APPROVED' ? 'text-green-600' : action.status === 'PENDING' ? 'text-amber-600' : 'text-gray-500'}`}>
+                      {action.status}
+                    </p>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
       )}
 
       <section className="pt-4">
