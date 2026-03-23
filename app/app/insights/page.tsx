@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { BarChart3, ArrowRight, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
 import { usePlatform } from '@/components/dashboard/PlatformContext';
@@ -10,8 +10,9 @@ import { Button, Card, Badge } from '@/components/ui';
 import { PageHeader, EmptyStateCard } from '@/components/dashboard';
 import { InsightsView } from '@/components/dashboard/insights/InsightsView';
 import { createMockInsightsSingle } from '@/components/dashboard/insights/mock';
-import type { InsightsLevel } from '@/types/dashboard';
+import type { InsightsLevel, InsightsSingleResponse } from '@/types/dashboard';
 import { Sparkline } from '@/components/ui/Sparkline';
+import { api } from '@/lib/api';
 
 type LevelOption = {
   key: InsightsLevel;
@@ -68,15 +69,108 @@ export default function InsightsPage() {
     return 'all';
   }, [account, entityId, level, platform, range]);
 
-  const insights = useMemo(() => createMockInsightsSingle(level, effectiveEntityId), [level, effectiveEntityId]);
+  const [insights, setInsights] = useState<InsightsSingleResponse>(() =>
+    createMockInsightsSingle(level, effectiveEntityId)
+  );
+
+  // Fetch real insights data when not using mock
+  useEffect(() => {
+    if (useMockData) {
+      setInsights(createMockInsightsSingle(level, effectiveEntityId));
+      return;
+    }
+
+    const accountId = account || '';
+    if (!accountId) return;
+
+    const daysMap = { '7d': 7, '30d': 30, '90d': 90 };
+    const days = daysMap[dateRange];
+    const toDate = new Date();
+    const fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - days);
+    const from = fromDate.toISOString().split('T')[0];
+    const to = toDate.toISOString().split('T')[0];
+
+    const entityType = level !== 'account' ? level : undefined;
+    const entityIdParam = level !== 'account' ? effectiveEntityId : undefined;
+
+    const url = `/insights?accountId=${encodeURIComponent(accountId)}${
+      entityType ? `&entityType=${entityType}` : ''
+    }${entityIdParam ? `&entityId=${encodeURIComponent(entityIdParam)}` : ''}${
+      from ? `&from=${from}` : ''
+    }${to ? `&to=${to}` : ''}`;
+
+    api<{ data: any[] }>(url)
+      .then((response) => {
+        const snapshots = response.data || [];
+
+        // Build summary by aggregating InsightSnapshot[] fields
+        const summary = snapshots.reduce(
+          (acc, snap) => ({
+            spend: acc.spend + (snap.spend ?? 0),
+            conversions: acc.conversions + (snap.conversions ?? 0),
+            impressions: acc.impressions + (snap.impressions ?? 0),
+            clicks: acc.clicks + (snap.clicks ?? 0),
+            roas: 0, // computed below
+            ctr: 0,  // computed below
+            cpc: 0,  // computed below
+            cpm: 0,  // computed below
+          }),
+          { spend: 0, conversions: 0, impressions: 0, clicks: 0, roas: 0, ctr: 0, cpc: 0, cpm: 0 }
+        );
+
+        const totalImpressions = summary.impressions || 1;
+        const totalClicks = summary.clicks || 1;
+        const totalSpend = summary.spend || 1;
+
+        summary.ctr = Number(((summary.clicks / totalImpressions) * 100).toFixed(2));
+        summary.cpc = Number((totalSpend / totalClicks).toFixed(2));
+        summary.cpm = Number(((totalSpend / totalImpressions) * 1000).toFixed(2));
+        // Average ROAS across snapshots (weighted by spend)
+        const weightedRoas = snapshots.reduce((acc, snap) => acc + (snap.roas ?? 0) * (snap.spend ?? 0), 0);
+        summary.roas = Number((weightedRoas / (summary.spend || 1)).toFixed(2));
+
+        // Build timeseries from snapshots
+        const timeseries = snapshots.map((snap: any) => ({
+          date: snap.date,
+          spend: snap.spend ?? 0,
+          roas: snap.roas ?? 0,
+          conversions: snap.conversions ?? 0,
+          ctr: snap.ctr ?? 0,
+        }));
+
+        setInsights({
+          level,
+          entityId: effectiveEntityId,
+          summary: {
+            spend: summary.spend,
+            roas: summary.roas,
+            conversions: summary.conversions,
+            ctr: summary.ctr,
+            cpc: summary.cpc,
+            cpm: summary.cpm,
+            impressions: summary.impressions,
+          },
+          timeseries,
+          breakdowns: createMockInsightsSingle(level, effectiveEntityId).breakdowns,
+        });
+      })
+      .catch(() => {
+        // Fall back to mock data on error
+        setInsights(createMockInsightsSingle(level, effectiveEntityId));
+      });
+  }, [useMockData, account, level, effectiveEntityId, dateRange]);
 
   const activeLevelMeta = useMemo(() => levelOptions.find((x) => x.key === level), [level]);
 
-  // Generate mock chart data
+  // Derive sparkline data from timeseries (spend values)
   const chartData = useMemo(() => {
+    if (insights.timeseries.length > 0) {
+      return insights.timeseries.map((p) => p.spend);
+    }
     const days = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : 90;
-    return Array.from({ length: days }, () => Math.random() * 100 + 50);
-  }, [dateRange]);
+    return Array.from({ length: days }, (_, i) => 50 + i * 2);
+  }, [insights.timeseries, dateRange]);
 
   if (platform !== 'meta') {
     return (
