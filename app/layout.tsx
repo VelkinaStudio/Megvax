@@ -3,6 +3,7 @@ import { Space_Grotesk, Inter } from "next/font/google";
 import { ToastProvider } from "@/components/ui/Toast";
 import { CookieConsent } from "@/components/ui/CookieConsent";
 import { I18nProvider } from "@/lib/i18n";
+import { AuthProvider } from '@/lib/auth-context';
 import "./globals.css";
 
 const spaceGroteskHeading = Space_Grotesk({
@@ -56,10 +57,12 @@ export default function RootLayout({
         className={`${spaceGroteskHeading.variable} ${inter.variable} antialiased bg-gray-50 text-gray-900 font-sans overflow-x-hidden`}
       >
         <I18nProvider>
-          <ToastProvider>
-            {children}
-            <CookieConsent />
-          </ToastProvider>
+          <AuthProvider>
+            <ToastProvider>
+              {children}
+              <CookieConsent />
+            </ToastProvider>
+          </AuthProvider>
         </I18nProvider>
       </body>
     </html>
