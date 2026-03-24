@@ -16,6 +16,10 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from '../common/types/request.types';
 
+function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
 @Injectable()
 export class AuthService {
   private privateKey: string;
@@ -52,7 +56,7 @@ export class AuthService {
           email: dto.email.toLowerCase(),
           passwordHash,
           fullName: dto.fullName,
-          emailVerifyToken,
+          emailVerifyToken: hashToken(emailVerifyToken),
         },
       });
 
@@ -132,7 +136,7 @@ export class AuthService {
 
   async verifyEmail(token: string) {
     const user = await this.prisma.user.findFirst({
-      where: { emailVerifyToken: token },
+      where: { emailVerifyToken: hashToken(token) },
     });
     if (!user) throw new BadRequestException('Invalid verification token');
 
@@ -155,7 +159,7 @@ export class AuthService {
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
-        passwordResetToken: token,
+        passwordResetToken: hashToken(token),
         passwordResetExpiresAt: new Date(Date.now() + 3600000), // 1hr
       },
     });
@@ -167,7 +171,7 @@ export class AuthService {
   async resetPassword(token: string, newPassword: string) {
     const user = await this.prisma.user.findFirst({
       where: {
-        passwordResetToken: token,
+        passwordResetToken: hashToken(token),
         passwordResetExpiresAt: { gt: new Date() },
       },
     });
