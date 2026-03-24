@@ -1,4 +1,6 @@
 // lib/api.ts
+import { isDemoMode, mockApiHandler } from './mock-api';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 interface ApiOptions {
@@ -28,6 +30,11 @@ export class ApiError extends Error {
 
 export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
   const { method = 'GET', body, token, skipAuth = false } = options;
+
+  // Demo mode — return mock data, zero network requests
+  if (isDemoMode()) {
+    return mockApiHandler<T>(path, method, body);
+  }
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
 import { ApiError } from '@/lib/api';
+import { isDemoMode } from '@/lib/mock-api';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -54,6 +55,19 @@ export default function SignupPage() {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    try {
+      await register('demo@megvax.io', 'demo', 'Demo Kullanici');
+      toast.success(t('signup_success'));
+      router.push('/app/dashboard');
+    } catch {
+      toast.error('Demo login failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleGoogleSignup = () => {
     toast.info('Google signup coming soon');
   };
@@ -65,6 +79,15 @@ export default function SignupPage() {
       <section className="py-12 md:py-20">
         <div className="container mx-auto px-4 flex justify-center">
           <div className="w-full max-w-md">
+            {/* Demo Banner */}
+            {isDemoMode() && (
+              <div className="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
+                <p className="text-sm font-medium text-amber-800">
+                  Demo Modu — Gercek veri kullanilmamaktadir.
+                </p>
+              </div>
+            )}
+
             {/* Card */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
               <div className="text-center mb-8">
@@ -235,6 +258,19 @@ export default function SignupPage() {
                 </svg>
                 {t('google_signup')}
               </button>
+
+              {/* Demo Login */}
+              {isDemoMode() && (
+                <button
+                  type="button"
+                  onClick={handleDemoLogin}
+                  disabled={isLoading}
+                  className="w-full mt-3 py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98]"
+                >
+                  Demo ile Giris Yap
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
 
               {/* Login Link */}
               <p className="mt-8 text-center text-sm text-gray-600">
