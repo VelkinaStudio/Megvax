@@ -1,13 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X, ArrowRight } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 
 export function Nav() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const t = useTranslations('navigation');
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const links = [
     { href: '/#features', label: t('features') },
@@ -16,7 +23,13 @@ export function Nav() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0F]/80 backdrop-blur-xl border-b border-white/[0.06]">
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-[#0A0A0F]/90 backdrop-blur-xl border-b border-white/[0.06]'
+          : 'bg-transparent border-b border-transparent'
+      }`}
+    >
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -34,7 +47,7 @@ export function Nav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-[13px] font-medium text-white/50 hover:text-white transition-colors duration-200"
+                className="text-[13px] font-medium text-white/40 hover:text-white/80 transition-colors duration-200"
               >
                 {link.label}
               </Link>
@@ -45,7 +58,7 @@ export function Nav() {
           <div className="hidden md:flex items-center gap-5">
             <Link
               href="/login"
-              className="text-[13px] font-medium text-white/50 hover:text-white transition-colors duration-200"
+              className="text-[13px] font-medium text-white/40 hover:text-white/80 transition-colors duration-200"
             >
               {t('login')}
             </Link>
@@ -70,7 +83,7 @@ export function Nav() {
 
         {/* Mobile Menu */}
         {open && (
-          <div className="md:hidden pb-6 border-t border-white/[0.06] pt-4">
+          <div className="md:hidden pb-6 border-t border-white/[0.06] pt-4 bg-[#0A0A0F]/95 backdrop-blur-xl">
             <div className="flex flex-col gap-4">
               {links.map((link) => (
                 <Link

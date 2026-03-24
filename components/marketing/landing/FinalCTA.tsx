@@ -10,11 +10,14 @@ export function FinalCTA() {
 
   return (
     <section className="relative py-24 md:py-32">
-      {/* Subtle top glow */}
+      {/* Background glow — subtle, layered */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 60% 40% at 50% 100%, rgba(37,99,235,0.06) 0%, transparent 70%)',
+          background: `
+            radial-gradient(ellipse 50% 40% at 50% 60%, rgba(37,99,235,0.08) 0%, transparent 70%),
+            radial-gradient(ellipse 80% 30% at 50% 100%, rgba(37,99,235,0.04) 0%, transparent 50%)
+          `,
         }}
       />
 
@@ -27,17 +30,27 @@ export function FinalCTA() {
             {t('cta_heading')}
           </h2>
 
-          <div className="mt-8">
+          <p className="mt-4 text-sm md:text-base text-white/40 max-w-md mx-auto">
+            {t('cta_subheading')}
+          </p>
+
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/signup"
-              className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#2563EB] text-white text-[15px] font-semibold rounded-xl hover:bg-[#1D4ED8] transition-all duration-200 hover:shadow-[0_0_40px_rgba(37,99,235,0.25)]"
+              className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#2563EB] text-white text-[15px] font-semibold rounded-xl hover:bg-[#1D4ED8] transition-all duration-200 hover:shadow-[0_0_40px_rgba(37,99,235,0.3)]"
             >
               {t('cta_button')}
               <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
+            <Link
+              href="/book"
+              className="inline-flex items-center gap-2 px-7 py-3.5 text-white/50 text-[15px] font-medium rounded-xl border border-white/[0.08] hover:border-white/[0.15] hover:text-white/70 transition-all duration-200"
+            >
+              {t('hero_cta_secondary')}
+            </Link>
           </div>
 
-          <p className="mt-4 text-sm text-white/25">
+          <p className="mt-4 text-xs text-white/20">
             {t('cta_trust')}
           </p>
         </ScrollReveal>
