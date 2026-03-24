@@ -30,14 +30,20 @@ export class CsrfMiddleware implements NestMiddleware {
       }
 
       // Exempt auth endpoints that issue tokens
-      if (CSRF_EXEMPT.some((p) => req.path.startsWith(p))) {
+      if (CSRF_EXEMPT.some((p) => req.path === p)) {
         return next();
       }
 
       // Double-submit: header token must match cookie token
       const cookieToken = req.cookies?.[CSRF_COOKIE];
       const headerToken = req.headers[CSRF_HEADER];
-      if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+      if (
+        !cookieToken ||
+        !headerToken ||
+        typeof headerToken !== 'string' ||
+        cookieToken.length !== headerToken.length ||
+        !crypto.timingSafeEqual(Buffer.from(cookieToken), Buffer.from(headerToken))
+      ) {
         throw new ForbiddenException('CSRF token mismatch');
       }
     }
