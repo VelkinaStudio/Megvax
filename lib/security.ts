@@ -88,35 +88,6 @@ export function sanitizeEmail(email: string): string {
 }
 
 /**
- * Generate CSRF token (client-side)
- */
-export function generateCsrfToken(): string {
-  if (typeof window === 'undefined') {
-    return '';
-  }
-  
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
-}
-
-/**
- * Store CSRF token in session storage
- */
-export function storeCsrfToken(token: string): void {
-  if (typeof window === 'undefined') return;
-  sessionStorage.setItem('csrf_token', token);
-}
-
-/**
- * Get CSRF token from session storage
- */
-export function getCsrfToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return sessionStorage.getItem('csrf_token');
-}
-
-/**
  * Validate file upload
  */
 export function validateFileUpload(
