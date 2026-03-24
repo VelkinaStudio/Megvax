@@ -11,5 +11,5 @@ export class CreateAdDto {
   name: string;
 
   @IsOptional() @IsObject()
-  creativeSpec?: any;
+  creativeSpec?: { creative_id?: string; object_story_spec?: Record<string, unknown> };
 }
