@@ -3,6 +3,7 @@ import { Hero } from '@/components/marketing/landing/Hero';
 import { WhatItDoes } from '@/components/marketing/landing/WhatItDoes';
 import { HowItWorks } from '@/components/marketing/landing/HowItWorks';
 import { MetricsStrip } from '@/components/marketing/landing/MetricsStrip';
+import { SocialProof } from '@/components/marketing/landing/SocialProof';
 import { FinalCTA } from '@/components/marketing/landing/FinalCTA';
 import { Footer } from '@/components/marketing/landing/Footer';
 
@@ -14,6 +15,7 @@ export default function Home() {
       <WhatItDoes />
       <HowItWorks />
       <MetricsStrip />
+      <SocialProof />
       <FinalCTA />
       <Footer />
     </main>

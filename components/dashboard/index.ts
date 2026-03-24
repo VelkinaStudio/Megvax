@@ -11,3 +11,5 @@ export { SectorComparison } from './SectorComparison';
 export { ColumnCustomizer } from './ColumnCustomizer';
 export { StatsSummaryBar, CompactStat } from './StatsSummaryBar';
 export type { StatItem } from './StatsSummaryBar';
+export { OnboardingChecklist } from './OnboardingChecklist';
+export { WelcomeModal } from './WelcomeModal';

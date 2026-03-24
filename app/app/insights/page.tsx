@@ -13,6 +13,8 @@ import { createMockInsightsSingle } from '@/components/dashboard/insights/mock';
 import type { InsightsLevel, InsightsSingleResponse } from '@/types/dashboard';
 import { Sparkline } from '@/components/ui/Sparkline';
 import { api } from '@/lib/api';
+import { getMockDailyMetrics } from '@/lib/mock-chart-data';
+import { SpendChart, RoasChart } from '@/components/dashboard/charts';
 
 type LevelOption = {
   key: InsightsLevel;
@@ -254,6 +256,22 @@ export default function InsightsPage() {
           <div className="mt-2 h-8">
             <Sparkline data={chartData.map(v => v * 0.02)} width={120} height={32} color="#EF4444" />
           </div>
+        </Card>
+      </div>
+
+      {/* Trend Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <Card padding="lg">
+          <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
+            {t('spend_trend') || 'Harcama Trendi (30 Gün)'}
+          </h3>
+          <SpendChart data={getMockDailyMetrics()} />
+        </Card>
+        <Card padding="lg">
+          <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
+            ROAS {t('trend_label') || 'Trendi (30 Gün)'}
+          </h3>
+          <RoasChart data={getMockDailyMetrics()} />
         </Card>
       </div>
 

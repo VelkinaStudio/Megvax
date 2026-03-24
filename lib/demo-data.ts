@@ -35,6 +35,69 @@ export const DEMO_ADMIN = {
   createdAt: '2026-01-01T00:00:00Z',
 };
 
+// ── Mock Notifications ──────────────────────────────────────────────
+// Timestamps are computed relative to "now" so they always look fresh
+function minutesAgo(m: number) {
+  return new Date(Date.now() - m * 60_000).toISOString();
+}
+
+export const mockNotifications = [
+  {
+    id: 'notif-1',
+    type: 'AUTOPILOT_ACTION',
+    title: 'Otomatik optimizasyon: Düşük performanslı kampanya duraklatıldı',
+    body: 'Kampanya "Kış Sezonu" son 3 günde hedef ROAS altında kaldığı için otomatik olarak duraklatıldı.',
+    data: null,
+    readAt: null,
+    createdAt: minutesAgo(5),
+  },
+  {
+    id: 'notif-2',
+    type: 'SUGGESTION',
+    title: 'Yeni öneri: ROAS artışı için bütçe yeniden dağıtımı',
+    body: 'En iyi performans gösteren 2 reklam setine bütçe aktararak tahmini %18 ROAS artışı sağlayabilirsiniz.',
+    data: null,
+    readAt: null,
+    createdAt: minutesAgo(60),
+  },
+  {
+    id: 'notif-3',
+    type: 'META_CONNECTION',
+    title: 'Meta hesap senkronizasyonu tamamlandı',
+    body: '2 reklam hesabı ve 14 kampanya başarıyla senkronize edildi.',
+    data: null,
+    readAt: null,
+    createdAt: minutesAgo(120),
+  },
+  {
+    id: 'notif-4',
+    type: 'SYSTEM',
+    title: 'Haftalık performans raporu hazır',
+    body: 'Son 7 günün detaylı kampanya performans raporu incelenmeye hazır.',
+    data: null,
+    readAt: minutesAgo(30), // already read
+    createdAt: minutesAgo(1440),
+  },
+  {
+    id: 'notif-5',
+    type: 'BILLING',
+    title: 'Bütçe uyarısı: Günlük harcama limitine yaklaşıldı',
+    body: 'Günlük bütçenizin %85\'ini kullandınız. Kalan: ₺1.200',
+    data: null,
+    readAt: null,
+    createdAt: minutesAgo(1500),
+  },
+  {
+    id: 'notif-6',
+    type: 'AUTOPILOT_ACTION',
+    title: 'Kampanya "Yaz İndirimi" hedeflerini aştı',
+    body: 'Hedef CPA: ₺45 — Gerçekleşen CPA: ₺32. Tebrikler!',
+    data: null,
+    readAt: minutesAgo(2000), // already read
+    createdAt: minutesAgo(2880),
+  },
+];
+
 export const DEMO_ACCOUNTS = [
   {
     id: 'acc-1',

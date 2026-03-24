@@ -11,6 +11,7 @@ import {
   mockMetaAds,
   mockAutomationRules,
   mockOptimizationStrategies,
+  mockNotifications,
 } from './demo-data';
 
 export function isDemoMode(): boolean {
@@ -95,8 +96,14 @@ export async function mockApiHandler<T>(path: string, method: string = 'GET', bo
   }
 
   // ── Notifications ───────────────────────────────────────────────
+  if (path === '/notifications/read-all' && method === 'POST') {
+    return { success: true } as T;
+  }
+  if (path.match(/^\/notifications\/[^/]+\/read/) && method === 'PATCH') {
+    return { success: true } as T;
+  }
   if (path.startsWith('/notifications')) {
-    return [] as T;
+    return { data: mockNotifications, hasMore: false } as T;
   }
 
   // ── Default fallback (write operations return success) ──────────

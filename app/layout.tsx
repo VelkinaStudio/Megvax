@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Space_Grotesk, Inter } from "next/font/google";
 import { ToastProvider } from "@/components/ui/Toast";
 import { CookieConsent } from "@/components/ui/CookieConsent";
@@ -33,12 +34,21 @@ export const metadata: Metadata = {
     siteName: "Megvax",
     title: "Megvax - Manage Your Ads in One Dashboard",
     description: "Manage your Meta ad campaigns from one place. AI-powered optimizations and automations for better ROAS.",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Megvax - AI-Powered Ad Management Platform",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Megvax - Manage Your Ads in One Dashboard",
     description: "Manage your Meta ad campaigns from one place. AI-powered optimizations and automations for better ROAS.",
     creator: "@megvax",
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -46,13 +56,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const locale = headersList.get('x-locale') || 'tr';
+
   return (
-    <html lang="tr">
+    <html lang={locale}>
       <body
         className={`${spaceGroteskHeading.variable} ${inter.variable} antialiased bg-gray-50 text-gray-900 font-sans overflow-x-hidden`}
       >

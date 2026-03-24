@@ -10,12 +10,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/Toast';
 import { Button, Card, Skeleton, ConfirmModal } from '@/components/ui';
-import { PageHeader, EmptyStateCard, SectorComparison } from '@/components/dashboard';
+import { PageHeader, EmptyStateCard, SectorComparison, OnboardingChecklist, WelcomeModal } from '@/components/dashboard';
 import { mockKpiMetrics, mockMetaCampaigns, mockSuggestions } from '@/components/dashboard/mockData';
 import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
 import { usePlatform } from '@/components/dashboard/PlatformContext';
 import { useTranslations } from '@/lib/i18n';
 import { api } from '@/lib/api';
+import { getMockDailyMetrics, getMockCampaignComparison } from '@/lib/mock-chart-data';
+import { SpendChart, RoasChart, ConversionsChart, CampaignComparisonChart } from '@/components/dashboard/charts';
 
 export default function DashboardPage() {
   const toast = useToast();
@@ -188,6 +190,12 @@ export default function DashboardPage() {
   return (
     <div className="space-y-10">
 
+      {/* Welcome Modal (first visit only) */}
+      <WelcomeModal />
+
+      {/* Onboarding Checklist */}
+      <OnboardingChecklist />
+
       {/* KPIs Section */}
       <section>
         <div className="flex items-center gap-2 mb-6">
@@ -231,6 +239,37 @@ export default function DashboardPage() {
             )}
           </>
         )}
+      </section>
+
+      {/* Performance Charts Section */}
+      <section>
+        <h2 className="text-lg font-semibold text-gray-900 mb-6">{t('performance_charts') || 'Performans Grafikleri'}</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card padding="lg">
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
+              {t('daily_spend') || 'Günlük Harcama'}
+            </h3>
+            <SpendChart data={getMockDailyMetrics()} />
+          </Card>
+          <Card padding="lg">
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
+              ROAS {t('trend') || 'Trendi'}
+            </h3>
+            <RoasChart data={getMockDailyMetrics()} />
+          </Card>
+          <Card padding="lg">
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
+              {t('daily_conversions') || 'Günlük Dönüşümler'}
+            </h3>
+            <ConversionsChart data={getMockDailyMetrics()} />
+          </Card>
+          <Card padding="lg">
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
+              {t('campaign_comparison') || 'Kampanya Karşılaştırma'}
+            </h3>
+            <CampaignComparisonChart data={getMockCampaignComparison()} />
+          </Card>
+        </div>
       </section>
 
       <ConfirmModal
