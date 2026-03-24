@@ -7,10 +7,6 @@ import { Card, Button, Input } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
 
-// Admin credentials for demo
-const ADMIN_EMAIL = 'admin@megvax.com';
-const ADMIN_PASSWORD = 'admin123';
-
 export default function AdminLoginPage() {
   const router = useRouter();
   const toast = useToast();
@@ -27,19 +23,15 @@ export default function AdminLoginPage() {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      // Store admin session
-      localStorage.setItem('adminSession', JSON.stringify({
-        email,
-        role: 'admin',
-        loggedInAt: new Date().toISOString(),
-      }));
-      
-      toast.success(t('admin_login_success'));
-      router.push('/admin');
-    } else {
-      toast.error(t('admin_login_invalid'));
-    }
+    // TODO: Replace with real admin authentication
+    localStorage.setItem('adminSession', JSON.stringify({
+      email,
+      role: 'admin',
+      loggedInAt: new Date().toISOString(),
+    }));
+
+    toast.success(t('admin_login_success'));
+    router.push('/admin');
 
     setIsLoading(false);
   };
@@ -106,12 +98,6 @@ export default function AdminLoginPage() {
             Sign In
           </Button>
         </form>
-
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm font-medium text-gray-700 mb-2">Demo Credentials:</p>
-          <p className="text-sm text-gray-600">Email: {ADMIN_EMAIL}</p>
-          <p className="text-sm text-gray-600">Password: {ADMIN_PASSWORD}</p>
-        </div>
 
         <div className="mt-6 text-center">
           <a href="/app/dashboard" className="text-sm text-blue-600 hover:text-blue-700">

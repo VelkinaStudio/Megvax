@@ -16,7 +16,7 @@ export default function LoginPage() {
   const toast = useToast();
   const t = useTranslations('auth');
   const tc = useTranslations('common');
-  const { login, isAuthenticated, forceDemoAuth } = useAuth();
+  const { login, isAuthenticated, devLogin } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -48,31 +48,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoLogin = async () => {
-    setIsLoading(true);
-    try {
-      // Force demo mode for this login even if env var isn't set on host
-      forceDemoAuth();
-      toast.success(tc('success') + '!');
-      router.push('/app/dashboard');
-    } catch {
-      toast.error('Demo login failed');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAdminDemo = () => {
-    // Admin uses localStorage-based auth, no env var needed
-    localStorage.setItem('adminSession', JSON.stringify({
-      email: 'admin@megvax.com',
-      role: 'admin',
-      loggedInAt: new Date().toISOString(),
-    }));
-    toast.success('Admin girisi basarili!');
-    router.push('/admin');
-  };
-
   const handleGoogleLogin = () => {
     toast.info('Google login coming soon');
   };
@@ -84,13 +59,6 @@ export default function LoginPage() {
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4 flex justify-center">
           <div className="w-full max-w-md">
-            {/* Demo Banner */}
-            <div className="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
-              <p className="text-sm font-medium text-amber-800">
-                Demo Modu — Gercek veri kullanilmamaktadir.
-              </p>
-            </div>
-
             {/* Card */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
               <div className="text-center mb-8">
@@ -220,27 +188,18 @@ export default function LoginPage() {
                 {t('google_login')}
               </button>
 
-              {/* Demo Quick Access */}
-              <div className="mt-3 space-y-2">
+              {/* Dev bypass — only in development */}
+              {process.env.NODE_ENV === 'development' && (
                 <button
                   type="button"
-                  onClick={handleDemoLogin}
+                  onClick={async () => { await devLogin(); router.push('/app/dashboard'); }}
                   disabled={isLoading}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98]"
+                  className="w-full mt-3 py-2.5 px-4 bg-gray-900 text-gray-300 text-sm font-mono rounded-xl hover:bg-gray-800 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 border border-gray-700 border-dashed"
                 >
-                  Demo ile Giris Yap (Kullanici Paneli)
-                  <ArrowRight className="w-4 h-4" />
+                  [DEV] Skip to Dashboard
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
-                <button
-                  type="button"
-                  onClick={handleAdminDemo}
-                  disabled={isLoading}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-violet-500/25 active:scale-[0.98]"
-                >
-                  Demo ile Giris Yap (Admin Paneli)
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+              )}
 
               {/* Signup Link */}
               <p className="mt-8 text-center text-sm text-gray-600">

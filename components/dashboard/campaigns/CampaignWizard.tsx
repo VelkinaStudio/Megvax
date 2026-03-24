@@ -75,7 +75,6 @@ export function CampaignWizard({ isOpen, onClose }: CampaignWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [objective, setObjective] = useState('');
   const toast = useToast();
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
@@ -373,12 +372,6 @@ export function CampaignWizard({ isOpen, onClose }: CampaignWizardProps) {
 
     try {
       setIsSubmitting(true);
-
-      if (useMockData) {
-        toast.success('Campaign + Ad Set + Ad draft created and submitted for review.');
-        onClose();
-        return;
-      }
 
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 

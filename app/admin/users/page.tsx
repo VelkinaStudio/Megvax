@@ -16,20 +16,14 @@ interface User {
   lastActive: string;
 }
 
-const mockUsers: User[] = [
-  { id: '1', name: 'Ahmet Yilmaz', email: 'ahmet@firma.com', company: 'Firma Inc.', plan: 'Pro', status: 'active', joinedAt: '2024-01-15', lastActive: '2h ago' },
-  { id: '2', name: 'Mehmet Kaya', email: 'mehmet@tekno.com', company: 'Tekno Ltd.', plan: 'Business', status: 'active', joinedAt: '2024-02-20', lastActive: '5m ago' },
-  { id: '3', name: 'Ayse Demir', email: 'ayse@dijital.com', company: 'Digital Agency', plan: 'Starter', status: 'learning', joinedAt: '2024-03-10', lastActive: '-' },
-  { id: '4', name: 'Fatma Sahin', email: 'fatma@reklam.com', company: 'Ad Group', plan: 'Pro', status: 'paused', joinedAt: '2023-12-05', lastActive: '2w ago' },
-  { id: '5', name: 'Ali Yildiz', email: 'ali@pazarlama.com', company: 'Marketing Inc.', plan: 'Business', status: 'active', joinedAt: '2024-01-28', lastActive: '1d ago' },
-];
+const users: User[] = [];
 
 export default function AdminUsersPage() {
   const t = useTranslations('admin');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'pending'>('all');
 
-  const filteredUsers = mockUsers.filter(user => {
+  const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          user.company.toLowerCase().includes(searchQuery.toLowerCase());

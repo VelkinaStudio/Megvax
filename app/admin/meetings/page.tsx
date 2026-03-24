@@ -15,62 +15,11 @@ interface AdminMeeting {
   status: 'confirmed' | 'cancelled' | 'completed';
 }
 
-const MOCK_ADMIN_MEETINGS: AdminMeeting[] = [
-  {
-    id: '1',
-    userName: 'Demo User',
-    userEmail: 'demo@megvax.com',
-    date: '2026-02-10',
-    time: '14:00',
-    topic: 'Ad Strategy Review',
-    notes: '',
-    status: 'confirmed',
-  },
-  {
-    id: '2',
-    userName: 'Ali Yilmaz',
-    userEmail: 'ali@example.com',
-    date: '2026-02-11',
-    time: '10:00',
-    topic: 'Onboarding & Setup',
-    notes: 'New enterprise client',
-    status: 'confirmed',
-  },
-  {
-    id: '3',
-    userName: 'Sarah Chen',
-    userEmail: 'sarah@techflow.io',
-    date: '2026-02-12',
-    time: '15:30',
-    topic: 'Performance Analysis',
-    notes: 'Q1 review',
-    status: 'confirmed',
-  },
-  {
-    id: '4',
-    userName: 'Demo User',
-    userEmail: 'demo@megvax.com',
-    date: '2026-01-28',
-    time: '10:30',
-    topic: 'Onboarding & Setup',
-    notes: 'Initial setup walkthrough',
-    status: 'completed',
-  },
-  {
-    id: '5',
-    userName: 'Marcus Webb',
-    userEmail: 'marcus@nexuslabs.com',
-    date: '2026-01-25',
-    time: '11:00',
-    topic: 'Billing & Account',
-    notes: '',
-    status: 'cancelled',
-  },
-];
+const initialAdminMeetings: AdminMeeting[] = [];
 
 export default function AdminMeetingsPage() {
   const t = useTranslations('admin');
-  const [meetings, setMeetings] = useState<AdminMeeting[]>(MOCK_ADMIN_MEETINGS);
+  const [meetings, setMeetings] = useState<AdminMeeting[]>(initialAdminMeetings);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'confirmed' | 'completed' | 'cancelled'>('all');
 

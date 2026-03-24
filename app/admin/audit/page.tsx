@@ -16,20 +16,14 @@ interface AuditLog {
   ipAddress: string;
 }
 
-const mockAuditLogs: AuditLog[] = [
-  { id: '1', action: 'Campaign Create', userName: 'Ahmet Yilmaz', userEmail: 'ahmet@firma.com', entityType: 'Campaign', entityId: 'camp_123', details: 'New campaign created: "Summer Sale"', timestamp: '2024-03-15 14:32:15', ipAddress: '192.168.1.1' },
-  { id: '2', action: 'User Login', userName: 'Mehmet Kaya', userEmail: 'mehmet@tekno.com', entityType: 'User', entityId: 'user_456', details: 'Successful login', timestamp: '2024-03-15 13:45:22', ipAddress: '192.168.1.2' },
-  { id: '3', action: 'Subscription Update', userName: 'Ayse Demir', userEmail: 'ayse@dijital.com', entityType: 'Subscription', entityId: 'sub_789', details: 'Plan upgrade: Starter → Pro', timestamp: '2024-03-15 12:18:45', ipAddress: '192.168.1.3' },
-  { id: '4', action: 'Invoice Payment', userName: 'Fatma Sahin', userEmail: 'fatma@reklam.com', entityType: 'Invoice', entityId: 'inv_321', details: 'Invoice payment successful: ₺1.999', timestamp: '2024-03-15 11:05:33', ipAddress: '192.168.1.4' },
-  { id: '5', action: 'Campaign Pause', userName: 'Ali Yildiz', userEmail: 'ali@pazarlama.com', entityType: 'Campaign', entityId: 'camp_567', details: 'Campaign paused: "Winter Campaign"', timestamp: '2024-03-15 10:22:18', ipAddress: '192.168.1.5' },
-];
+const auditLogs: AuditLog[] = [];
 
 export default function AdminAuditPage() {
   const t = useTranslations('admin');
   const [searchQuery, setSearchQuery] = useState('');
   const [actionFilter, setActionFilter] = useState('all');
 
-  const filteredLogs = mockAuditLogs.filter(log => {
+  const filteredLogs = auditLogs.filter(log => {
     const matchesSearch = log.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          log.details.toLowerCase().includes(searchQuery.toLowerCase());
@@ -37,7 +31,7 @@ export default function AdminAuditPage() {
     return matchesSearch && matchesAction;
   });
 
-  const uniqueActions = Array.from(new Set(mockAuditLogs.map(log => log.action)));
+  const uniqueActions = Array.from(new Set(auditLogs.map(log => log.action)));
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslations } from '@/lib/i18n';
 import {
   Search, Filter, Download, ArrowUpDown, Eye, Pause, Play,
@@ -10,7 +10,6 @@ import {
 import { PageHeader } from '@/components/dashboard';
 import { Button, Card, Badge, Checkbox } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { mockMetaCampaigns, mockMetaAdSets, mockMetaAds } from '@/components/dashboard/mockData';
 import { ColumnCustomizer } from '@/components/dashboard/ColumnCustomizer';
 import { StatsSummaryBar, type StatItem } from '@/components/dashboard/StatsSummaryBar';
 import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
@@ -52,64 +51,6 @@ interface AllAdsItem {
   videoViews: number;
 }
 
-const MOCK_ACCOUNTS = [
-  { id: 'act_123456', name: 'Main Account - E-commerce' },
-  { id: 'act_789012', name: 'Secondary Account - Brand' },
-  { id: 'act_345678', name: 'Test Account' },
-];
-
-const generateMockAllAds = (): AllAdsItem[] => {
-  const ads: AllAdsItem[] = [];
-
-  MOCK_ACCOUNTS.forEach((account) => {
-    mockMetaAds.forEach((ad) => {
-      const adSet = mockMetaAdSets.find((s) => s.id === ad.adSetId);
-      const campaign = mockMetaCampaigns.find((c) => c.id === adSet?.campaignId);
-
-      if (adSet && campaign) {
-        const baseSpend = 100 + Math.random() * 500;
-        const impressions = Math.floor(5000 + Math.random() * 20000);
-        const reach = Math.floor(impressions * (0.7 + Math.random() * 0.25));
-        const frequency = Math.round((impressions / reach) * 100) / 100;
-        const clicks = Math.floor(impressions * (0.5 + Math.random() * 2) / 100);
-        const linkClicks = Math.floor(clicks * 0.85);
-        const conversions = Math.floor(clicks * (1 + Math.random() * 5) / 100);
-        const conversionValue = conversions * (50 + Math.random() * 150);
-        const addToCart = Math.floor(conversions * (1.5 + Math.random()));
-        const videoViews = Math.floor(impressions * (0.1 + Math.random() * 0.3));
-
-        ads.push({
-          id: `${account.id}_${ad.id}`,
-          name: ad.name,
-          accountId: account.id,
-          accountName: account.name,
-          campaignId: campaign.id,
-          campaignName: campaign.name,
-          adSetId: adSet.id,
-          adSetName: adSet.name,
-          status: ['active', 'paused', 'active', 'active'][Math.floor(Math.random() * 4)] as AdStatus,
-          spend: Math.round(baseSpend * 100) / 100,
-          impressions,
-          reach,
-          frequency,
-          clicks,
-          ctr: Math.round((clicks / impressions) * 10000) / 100,
-          cpc: Math.round((baseSpend / Math.max(clicks, 1)) * 100) / 100,
-          cpm: Math.round((baseSpend / impressions * 1000) * 100) / 100,
-          roas: Math.round((conversionValue / baseSpend) * 100) / 100,
-          conversions,
-          conversionValue: Math.round(conversionValue * 100) / 100,
-          linkClicks,
-          addToCart,
-          videoViews,
-        });
-      }
-    });
-  });
-
-  return ads;
-};
-
 type SortField = keyof AllAdsItem;
 type SortDirection = 'asc' | 'desc';
 
@@ -117,7 +58,35 @@ export default function AllAdsPage() {
   const t = useTranslations('all_ads');
   const toast = useToast();
   const { range, from, to } = useDashboardQuery();
-  const [allAds] = useState<AllAdsItem[]>(generateMockAllAds);
+  const [allAds, setAllAds] = useState<AllAdsItem[]>([]);
+  const [accounts, setAccounts] = useState<{ id: string; name: string }[]>([]);
+
+  // Fetch ads from API
+  useEffect(() => {
+    const fetchAds = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/ads?limit=100`);
+        if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
+        const data = await res.json();
+        const rows: AllAdsItem[] = Array.isArray(data) ? data : Array.isArray(data?.ads) ? data.ads : [];
+        setAllAds(rows);
+
+        // Extract unique accounts
+        const accountMap = new Map<string, string>();
+        rows.forEach((ad: AllAdsItem) => {
+          if (ad.accountId && ad.accountName) {
+            accountMap.set(ad.accountId, ad.accountName);
+          }
+        });
+        setAccounts(Array.from(accountMap.entries()).map(([id, name]) => ({ id, name })));
+      } catch (error) {
+        console.error('Failed to fetch ads', error);
+        setAllAds([]);
+      }
+    };
+
+    fetchAds();
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
@@ -265,7 +234,7 @@ export default function AllAdsPage() {
     <div className="space-y-6">
       <PageHeader
         title={t('title')}
-        description={`${MOCK_ACCOUNTS.length} ${t('description')} ${filteredAds.length}`}
+        description={`${accounts.length} ${t('description')} ${filteredAds.length}`}
         actions={
           <div className="flex items-center gap-2">
             {/* Date Range Selector */}
@@ -388,7 +357,7 @@ export default function AllAdsPage() {
                       <div>
                         <h4 className="text-sm font-medium text-gray-900 mb-2">{t('accounts')}</h4>
                         <div className="space-y-2">
-                          {MOCK_ACCOUNTS.map((account) => (
+                          {accounts.map((account) => (
                             <label key={account.id} className="flex items-center gap-2 cursor-pointer">
                               <Checkbox
                                 checked={selectedAccounts.includes(account.id)}

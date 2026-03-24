@@ -91,29 +91,29 @@ export default function AdminOverviewPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <KpiCard
           label={t('mrr')}
-          value="₺124.500"
-          change={12.5}
+          value="—"
+          change={0}
           changeLabel={t('vs_last_month')}
           icon={BarChart3}
         />
         <KpiCard
           label={t('active_subscriptions')}
-          value="342"
-          change={8.2}
+          value="0"
+          change={0}
           changeLabel={t('vs_last_month')}
           icon={CreditCard}
         />
         <KpiCard
           label={t('total_users_label')}
-          value="1.284"
-          change={15.3}
+          value="0"
+          change={0}
           changeLabel={t('vs_last_month')}
           icon={Users}
         />
         <KpiCard
           label={t('revenue_this_month')}
-          value="₺218.750"
-          change={-2.4}
+          value="—"
+          change={0}
           changeLabel={t('vs_last_month')}
           icon={Receipt}
         />

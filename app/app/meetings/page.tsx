@@ -18,30 +18,7 @@ interface Meeting {
   status: 'confirmed' | 'cancelled' | 'completed';
 }
 
-const MOCK_MEETINGS: Meeting[] = [
-  {
-    id: '1',
-    date: '2026-02-10',
-    time: '14:00',
-    topic: 'Ad Strategy Review',
-    topicKey: 'topic_strategy',
-    name: 'Demo User',
-    email: 'demo@megvax.com',
-    notes: '',
-    status: 'confirmed',
-  },
-  {
-    id: '2',
-    date: '2026-01-28',
-    time: '10:30',
-    topic: 'Onboarding & Setup',
-    topicKey: 'topic_onboarding',
-    name: 'Demo User',
-    email: 'demo@megvax.com',
-    notes: 'Initial setup walkthrough',
-    status: 'completed',
-  },
-];
+const initialMeetings: Meeting[] = [];
 
 function generateTimeSlots(date: Date | null): TimeSlot[] {
   if (!date) return [];
@@ -69,7 +46,7 @@ export default function MeetingsPage() {
   const tc = useTranslations('common');
 
   const [view, setView] = useState<ViewMode>('list');
-  const [meetings, setMeetings] = useState<Meeting[]>(MOCK_MEETINGS);
+  const [meetings, setMeetings] = useState<Meeting[]>(initialMeetings);
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming');
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);

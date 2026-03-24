@@ -5,7 +5,6 @@ import { ChevronRight, Copy, ExternalLink, Pencil, Pause, Play, Plus, X } from '
 
 import type { Ad, AdSet, Campaign } from '@/types/dashboard';
 import { InsightsView } from '@/components/dashboard/insights/InsightsView';
-import { createMockInsightsSingle } from '@/components/dashboard/insights/mock';
 
 export type CampaignEntityLevel = 'campaign' | 'adset' | 'ad';
 
@@ -130,10 +129,7 @@ export function EntityDetailsPanel({
     return ads.find((a) => a.id === selection.id)?.status ?? '';
   }, [adSetById, ads, campaignById, selection]);
 
-  const insights = useMemo(() => {
-    if (!selection) return null;
-    return createMockInsightsSingle(selection.level, selection.id);
-  }, [selection]);
+  const insights = null;
 
   return (
     <div className="bg-brand-white border-2 border-brand-black rounded-[2px] overflow-hidden lg:sticky lg:top-6">

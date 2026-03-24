@@ -1,13 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n';
 import { ArrowRight, CreditCard, Receipt, Wallet, Plus, Trash2, AlertCircle, CheckCircle2, Star } from 'lucide-react';
 import { Button, Card, Badge } from '@/components/ui';
 import { PageHeader } from '@/components/dashboard';
 import { InsightsView } from '@/components/dashboard/insights/InsightsView';
-import { createMockInsightsSingle } from '@/components/dashboard/insights/mock';
 import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
 import { PaymentMethodsView } from './PaymentMethods';
 import { SubscriptionPlansView } from './SubscriptionPlans';
@@ -38,72 +37,9 @@ interface InvoiceRow {
   issuedAt: string;
 }
 
-const mockBilling: BillingOverview = {
-  plan: {
-    name: 'Pro',
-    billingPeriod: 'monthly',
-    status: 'active',
-  },
-  credits: {
-    available: 1200,
-    unit: 'kredi',
-  },
-};
+const billing: BillingOverview | null = null;
 
-const mockInvoices: InvoiceRow[] = [
-  { id: 'in_1', amount: 499, currency: 'TRY', status: 'paid', issuedAt: '2025-12-01' },
-  { id: 'in_2', amount: 499, currency: 'TRY', status: 'paid', issuedAt: '2025-11-01' },
-  { id: 'in_3', amount: 499, currency: 'TRY', status: 'paid', issuedAt: '2025-10-01' },
-];
-
-interface PaymentMethod {
-  id: string;
-  type: 'card' | 'paypal';
-  last4: string;
-  brand: string;
-  expiryMonth: string;
-  expiryYear: string;
-  isDefault: boolean;
-}
-
-const mockPaymentMethods: PaymentMethod[] = [
-  { id: 'pm_1', type: 'card', last4: '4242', brand: 'Visa', expiryMonth: '12', expiryYear: '2027', isDefault: true },
-  { id: 'pm_2', type: 'card', last4: '8888', brand: 'Mastercard', expiryMonth: '08', expiryYear: '2026', isDefault: false },
-];
-
-interface Plan {
-  id: string;
-  name: string;
-  price: number;
-  period: 'monthly' | 'yearly';
-  features: string[];
-  isPopular?: boolean;
-}
-
-const mockPlans: Plan[] = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: 199,
-    period: 'monthly',
-    features: ['3 Ad Accounts', 'Basic Automation', 'Email Support'],
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: 499,
-    period: 'monthly',
-    features: ['10 Ad Accounts', 'Advanced Automation', 'AI Suggestions', 'Priority Support'],
-    isPopular: true,
-  },
-  {
-    id: 'business',
-    name: 'Business',
-    price: 1499,
-    period: 'monthly',
-    features: ['Unlimited Accounts', 'Custom Rules', 'API Access', '24/7 Support', 'Custom Integrations'],
-  },
-];
+const invoices: InvoiceRow[] = [];
 
 function formatCurrencyTRY(value: number) {
   return new Intl.NumberFormat('tr-TR', {
@@ -118,15 +54,8 @@ export default function FinancePage() {
   const t = useTranslations('finance');
 
   const { account, range, from, to, withQuery } = useDashboardQuery();
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
 
-  const insights = useMemo(() => {
-    const seed =
-      range === 'custom'
-        ? `finance:${account}:${range}:${from ?? ''}:${to ?? ''}`
-        : `finance:${account}:${range}`;
-    return createMockInsightsSingle('account', seed);
-  }, [account, range, from, to]);
+  const insights = null;
 
   return (
     <div className="h-full flex flex-col">
@@ -134,14 +63,6 @@ export default function FinancePage() {
         title={t('title')}
         description={t('description')}
       />
-
-      {useMockData && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-sm text-blue-800">
-            <span className="font-semibold">{t('info_label')}:</span> {t('mock_data_info')}
-          </p>
-        </div>
-      )}
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
         <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-xl overflow-x-auto">
@@ -199,9 +120,9 @@ export default function FinancePage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-500 uppercase">{t('plan')}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{mockBilling.plan.name}</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{billing?.plan.name ?? '—'}</p>
                   <p className="text-sm text-gray-600 mt-1">
-                    {t('period')}: <span className="font-medium">{mockBilling.plan.billingPeriod === 'monthly' ? t('period_monthly') : t('period_yearly')}</span>
+                    {t('period')}: <span className="font-medium">{billing?.plan.billingPeriod === 'monthly' ? t('period_monthly') : t('period_yearly')}</span>
                   </p>
                   <p className="text-sm text-gray-600 mt-1">
                     {t('status_label')}: <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">{t('status_active')}</span>
@@ -217,8 +138,8 @@ export default function FinancePage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-500 uppercase">{t('credit')}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{mockBilling.credits.available}</p>
-                  <p className="text-sm text-gray-600 mt-1">{t('unit')}: <span className="font-medium">{mockBilling.credits.unit}</span></p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{billing?.credits.available ?? 0}</p>
+                  <p className="text-sm text-gray-600 mt-1">{t('unit')}: <span className="font-medium">{billing?.credits.unit ?? '—'}</span></p>
                 </div>
                 <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600">
                   <Wallet className="w-6 h-6" />
@@ -248,7 +169,7 @@ export default function FinancePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {mockInvoices.map((row) => (
+                  {invoices.map((row) => (
                     <tr key={row.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 font-mono text-xs text-gray-500">{row.id}</td>
                       <td className="px-6 py-4 text-sm text-gray-700">{row.issuedAt}</td>
@@ -290,7 +211,7 @@ export default function FinancePage() {
             </div>
           </Card>
 
-          <InsightsView insights={insights} />
+          {insights && <InsightsView insights={insights} />}
         </div>
       )}
     </div>

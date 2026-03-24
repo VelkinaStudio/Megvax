@@ -61,10 +61,6 @@ function parsePercentage(value: string): number {
   return parseFloat(cleaned) || 0;
 }
 
-function generateMockSparkline(): number[] {
-  return Array.from({ length: 14 }, () => Math.random() * 100 + 50);
-}
-
 function findEntityType(id: string, campaigns: CampaignNode[]): EntityType {
   for (const c of campaigns) {
     if (c.id === id) return 'campaign';
@@ -81,165 +77,6 @@ function findEntityType(id: string, campaigns: CampaignNode[]): EntityType {
   }
   return 'campaign'; // fallback
 }
-
-const mockCampaigns: CampaignNode[] = [
-  {
-    id: 'camp_1',
-    type: 'campaign',
-    name: 'Retargeting - Sales Campaign',
-    status: 'active',
-    spend: '₺45,230',
-    roas: '3.45',
-    conversions: 128,
-    children: [
-      {
-        id: 'as_1',
-        type: 'adset',
-        name: 'Women 25-34 Istanbul',
-        status: 'active',
-        campaignId: 'camp_1',
-        campaignName: 'Retargeting - Sales Campaign',
-        bidStrategy: 'lowest_cost',
-        dailyBudget: '₺500',
-        spend: '₺18,450',
-        roas: '4.20',
-        conversions: 52,
-        children: [
-          {
-            id: 'ad_1',
-            type: 'ad',
-            name: 'Story_Video_Product_1',
-            status: 'active',
-            adSetId: 'as_1',
-            adSetName: 'Women 25-34 Istanbul',
-            previewUrl: '/creatives/story1.jpg',
-            ctr: '%2.4',
-            spend: '₺8,230',
-            roas: '4.50',
-            conversions: 28,
-          },
-          {
-            id: 'ad_2',
-            type: 'ad',
-            name: 'Feed_Carousel_Product_Set',
-            status: 'active',
-            adSetId: 'as_1',
-            adSetName: 'Women 25-34 Istanbul',
-            previewUrl: '/creatives/carousel1.jpg',
-            ctr: '%1.8',
-            spend: '₺10,220',
-            roas: '3.95',
-            conversions: 24,
-          },
-        ],
-      },
-      {
-        id: 'as_2',
-        type: 'adset',
-        name: 'Men 35-44 Ankara',
-        status: 'paused',
-        campaignId: 'camp_1',
-        campaignName: 'Retargeting - Sales Campaign',
-        bidStrategy: 'cost_cap',
-        dailyBudget: '₺400',
-        spend: '₺12,780',
-        roas: '2.10',
-        conversions: 18,
-        children: [
-          {
-            id: 'ad_3',
-            type: 'ad',
-            name: 'Reels_Video_Discount',
-            status: 'paused',
-            adSetId: 'as_2',
-            adSetName: 'Erkek 35-44 Ankara',
-            previewUrl: '/creatives/reels1.jpg',
-            ctr: '%1.2',
-            spend: '₺12,780',
-            roas: '2.10',
-            conversions: 18,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'camp_2',
-    type: 'campaign',
-    name: 'Prospecting - New Customer',
-    status: 'active',
-    spend: '₺32,150',
-    roas: '2.15',
-    conversions: 67,
-    children: [
-      {
-        id: 'as_3',
-        type: 'adset',
-        name: 'Broad Audience - Lookalike 1%',
-        status: 'active',
-        campaignId: 'camp_2',
-        campaignName: 'Prospecting - New Customer',
-        bidStrategy: 'lowest_cost',
-        dailyBudget: '₺800',
-        spend: '₺32,150',
-        roas: '2.15',
-        conversions: 67,
-        children: [
-          {
-            id: 'ad_4',
-            type: 'ad',
-            name: 'Video_Intro_Brand',
-            status: 'active',
-            adSetId: 'as_3',
-            adSetName: 'Broad Audience - Lookalike 1%',
-            previewUrl: '/creatives/intro1.jpg',
-            ctr: '%1.6',
-            spend: '₺15,080',
-            roas: '2.30',
-            conversions: 35,
-          },
-          {
-            id: 'ad_5',
-            type: 'ad',
-            name: 'Image_Testimonial_1',
-            status: 'active',
-            adSetId: 'as_3',
-            adSetName: 'Broad Audience - Lookalike 1%',
-            previewUrl: '/creatives/testimonial1.jpg',
-            ctr: '%1.4',
-            spend: '₺17,070',
-            roas: '2.02',
-            conversions: 32,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'camp_3',
-    type: 'campaign',
-    name: 'Catalog - Conversion Optimization',
-    status: 'paused',
-    spend: '₺12,450',
-    roas: '1.85',
-    conversions: 23,
-    children: [
-      {
-        id: 'as_4',
-        type: 'adset',
-        name: 'Catalog - Dynamic Ads',
-        status: 'paused',
-        campaignId: 'camp_3',
-        campaignName: 'Catalog - Conversion Optimization',
-        bidStrategy: 'lowest_cost',
-        dailyBudget: '₺300',
-        spend: '₺12,450',
-        roas: '1.85',
-        conversions: 23,
-      },
-    ],
-  },
-];
 
 const levelIcons = {
   0: <Layers className="w-4 h-4" />,
@@ -265,22 +102,20 @@ export default function CampaignsPage() {
   const [isActionLoading, setIsActionLoading] = useState(false);
 
   const accountParam = searchParams.get('account');
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
 
-  // Fetch campaigns from API (or fall back to mock data)
+  // Fetch campaigns from API
   useEffect(() => {
     const fetchTree = async () => {
       setIsLoading(true);
 
-      if (useMockData) {
-        setCampaigns(mockCampaigns);
+      if (!accountParam) {
+        setCampaigns([]);
         setIsLoading(false);
         return;
       }
 
       try {
-        const qs = accountParam ? `accountId=${encodeURIComponent(accountParam)}` : '';
-        const treeData = await api<any[]>(`/campaigns/tree${qs ? `?${qs}` : ''}`);
+        const treeData = await api<any[]>(`/campaigns/tree?accountId=${encodeURIComponent(accountParam)}`);
         const campaigns = Array.isArray(treeData) ? treeData : [];
         const mapped: CampaignNode[] = campaigns.map((c: any) => ({
           id: c.id,
@@ -320,7 +155,7 @@ export default function CampaignsPage() {
         setCampaigns(mapped);
       } catch (error) {
         console.error('Failed to fetch campaigns', error);
-        setCampaigns(mockCampaigns);
+        setCampaigns([]);
       } finally {
         setIsLoading(false);
       }
@@ -520,7 +355,7 @@ export default function CampaignsPage() {
         align: 'center' as const,
         render: () => (
           <Sparkline 
-            data={generateMockSparkline()} 
+            data={[]} 
             width={60} 
             height={20} 
             color="#4F46E5"
@@ -532,13 +367,9 @@ export default function CampaignsPage() {
   );
 
   const refreshCampaigns = useCallback(async () => {
-    if (useMockData) {
-      setCampaigns(mockCampaigns);
-      return;
-    }
+    if (!accountParam) return;
     try {
-      const qs = accountParam ? `accountId=${encodeURIComponent(accountParam)}` : '';
-      const treeData = await api<any[]>(`/campaigns/tree${qs ? `?${qs}` : ''}`);
+      const treeData = await api<any[]>(`/campaigns/tree?accountId=${encodeURIComponent(accountParam)}`);
       const raw = Array.isArray(treeData) ? treeData : [];
       const mapped: CampaignNode[] = raw.map((c: any) => ({
         id: c.id,
@@ -579,7 +410,7 @@ export default function CampaignsPage() {
     } catch {
       // Silently keep existing data on refresh failure
     }
-  }, [useMockData, accountParam]);
+  }, [accountParam]);
 
   const bulkActions = useMemo(
     () => [
@@ -588,11 +419,6 @@ export default function CampaignsPage() {
         icon: <Play className="w-4 h-4" />,
         variant: 'primary' as const,
         onClick: async () => {
-          if (useMockData) {
-            toast.success(`${selectedIds.size} ${t('items_activated')}`);
-            return;
-          }
-          // Resume each selected entity
           const ids = Array.from(selectedIds);
           try {
             await Promise.all(
@@ -615,10 +441,6 @@ export default function CampaignsPage() {
         icon: <Pause className="w-4 h-4" />,
         variant: 'secondary' as const,
         onClick: async () => {
-          if (useMockData) {
-            toast.success(`${selectedIds.size} ${t('items_paused')}`);
-            return;
-          }
           const ids = Array.from(selectedIds);
           try {
             await Promise.all(
@@ -644,7 +466,7 @@ export default function CampaignsPage() {
         },
       },
     ],
-    [selectedIds.size, toast, t, useMockData, campaigns, refreshCampaigns]
+    [selectedIds.size, toast, t, campaigns, refreshCampaigns]
   );
 
   const handleRowClick = useCallback((row: TreeNode) => {
@@ -654,19 +476,6 @@ export default function CampaignsPage() {
   const handlePauseCampaign = useCallback(async (entity: TreeNode) => {
     if (isActionLoading) return;
     setIsActionLoading(true);
-
-    if (useMockData) {
-      // Optimistic update in mock mode
-      setCampaigns((prev) =>
-        prev.map((c) =>
-          c.id === entity.id ? { ...c, status: 'paused' as const } : c
-        )
-      );
-      toast.success(`${entity.name} ${t('paused_status')}`);
-      setIsActionLoading(false);
-      setIsMoreMenuOpen(false);
-      return;
-    }
 
     try {
       const entityPath = entity.type === 'campaign' ? 'campaigns' : entity.type === 'adset' ? 'adsets' : 'ads';
@@ -680,23 +489,11 @@ export default function CampaignsPage() {
       setIsActionLoading(false);
       setIsMoreMenuOpen(false);
     }
-  }, [isActionLoading, useMockData, toast, t, refreshCampaigns]);
+  }, [isActionLoading, toast, t, refreshCampaigns]);
 
   const handleResumeCampaign = useCallback(async (entity: TreeNode) => {
     if (isActionLoading) return;
     setIsActionLoading(true);
-
-    if (useMockData) {
-      setCampaigns((prev) =>
-        prev.map((c) =>
-          c.id === entity.id ? { ...c, status: 'active' as const } : c
-        )
-      );
-      toast.success(`${entity.name} ${t('active_status')}`);
-      setIsActionLoading(false);
-      setIsMoreMenuOpen(false);
-      return;
-    }
 
     try {
       const entityPath = entity.type === 'campaign' ? 'campaigns' : entity.type === 'adset' ? 'adsets' : 'ads';
@@ -710,18 +507,11 @@ export default function CampaignsPage() {
       setIsActionLoading(false);
       setIsMoreMenuOpen(false);
     }
-  }, [isActionLoading, useMockData, toast, t, refreshCampaigns]);
+  }, [isActionLoading, toast, t, refreshCampaigns]);
 
   const handleDuplicateCampaign = useCallback(async (entity: TreeNode) => {
     if (isActionLoading) return;
     setIsActionLoading(true);
-
-    if (useMockData) {
-      toast.success(`${entity.name} ${t('duplicate')}`);
-      setIsActionLoading(false);
-      setIsMoreMenuOpen(false);
-      return;
-    }
 
     try {
       const entityPath = entity.type === 'campaign' ? 'campaigns' : entity.type === 'adset' ? 'adsets' : 'ads';
@@ -735,7 +525,7 @@ export default function CampaignsPage() {
       setIsActionLoading(false);
       setIsMoreMenuOpen(false);
     }
-  }, [isActionLoading, useMockData, toast, t, refreshCampaigns]);
+  }, [isActionLoading, toast, t, refreshCampaigns]);
 
   const handleEdit = useCallback(() => {
     if (!selectedEntity) return;
@@ -850,7 +640,7 @@ export default function CampaignsPage() {
               <h4 className="text-sm font-medium text-gray-900 mb-3">{t('performance_trend')}</h4>
               <div className="h-48 bg-gray-50 rounded-lg flex items-center justify-center">
                 <Sparkline 
-                  data={generateMockSparkline()} 
+                  data={[]} 
                   width={400} 
                   height={150} 
                   color="#4F46E5"

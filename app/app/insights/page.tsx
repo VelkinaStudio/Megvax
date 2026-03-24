@@ -9,11 +9,9 @@ import { useTranslations } from '@/lib/i18n';
 import { Button, Card, Badge } from '@/components/ui';
 import { PageHeader, EmptyStateCard } from '@/components/dashboard';
 import { InsightsView } from '@/components/dashboard/insights/InsightsView';
-import { createMockInsightsSingle } from '@/components/dashboard/insights/mock';
 import type { InsightsLevel, InsightsSingleResponse } from '@/types/dashboard';
 import { Sparkline } from '@/components/ui/Sparkline';
 import { api } from '@/lib/api';
-import { getMockDailyMetrics } from '@/lib/mock-chart-data';
 import { SpendChart, RoasChart } from '@/components/dashboard/charts';
 
 type LevelOption = {
@@ -29,59 +27,74 @@ const levelOptions: LevelOption[] = [
   { key: 'ad', labelKey: 'level_ad', descKey: 'level_ad_desc' },
 ];
 
-const mockCampaignOptions = [
-  { id: 'mc1', name: 'Retargeting - Sales' },
-  { id: 'mc2', name: 'Prospecting - Lead' },
-  { id: 'mc3', name: 'Catalog - Conversion' },
-];
-
-const mockAdSetOptions = [
-  { id: 'mas1', name: 'Women 25-34' },
-  { id: 'mas2', name: 'Men 25-44' },
-];
-
-const mockAdOptions = [
-  { id: 'ma1', name: 'Story_Video_v1' },
-  { id: 'ma2', name: 'Feed_Image_v3' },
-];
-
 export default function InsightsPage() {
   const { platform } = usePlatform();
   const { account, range, withQuery } = useDashboardQuery();
   const t = useTranslations('insights');
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
 
   const [level, setLevel] = useState<InsightsLevel>('account');
   const [entityId, setEntityId] = useState<string>('all');
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d'>('7d');
 
+  const [campaignOptions, setCampaignOptions] = useState<{ id: string; name: string }[]>([]);
+  const [adSetOptions, setAdSetOptions] = useState<{ id: string; name: string }[]>([]);
+  const [adOptions, setAdOptions] = useState<{ id: string; name: string }[]>([]);
+
+  // Fetch entity options from API
+  useEffect(() => {
+    const accountId = account || '';
+    if (!accountId) return;
+
+    const fetchEntities = async () => {
+      try {
+        const [campaignsRes, adSetsRes, adsRes] = await Promise.all([
+          api<any>(`/campaigns?accountId=${encodeURIComponent(accountId)}`).catch(() => []),
+          api<any>(`/adsets?accountId=${encodeURIComponent(accountId)}`).catch(() => []),
+          api<any>(`/ads?accountId=${encodeURIComponent(accountId)}`).catch(() => []),
+        ]);
+
+        const mapEntities = (data: any) => {
+          const rows = Array.isArray(data) ? data : Array.isArray(data?.campaigns) ? data.campaigns : Array.isArray(data?.adsets) ? data.adsets : Array.isArray(data?.ads) ? data.ads : [];
+          return rows.map((e: any) => ({ id: String(e.id ?? ''), name: String(e.name ?? '') }));
+        };
+
+        setCampaignOptions(mapEntities(campaignsRes));
+        setAdSetOptions(mapEntities(adSetsRes));
+        setAdOptions(mapEntities(adsRes));
+      } catch {
+        // Keep empty arrays on failure
+      }
+    };
+
+    fetchEntities();
+  }, [account]);
+
   const entityOptions = useMemo(() => {
-    if (level === 'campaign') return mockCampaignOptions;
-    if (level === 'adset') return mockAdSetOptions;
-    if (level === 'ad') return mockAdOptions;
+    if (level === 'campaign') return campaignOptions;
+    if (level === 'adset') return adSetOptions;
+    if (level === 'ad') return adOptions;
     return [];
-  }, [level]);
+  }, [level, campaignOptions, adSetOptions, adOptions]);
 
   const effectiveEntityId = useMemo(() => {
     if (level === 'account') return `${platform}:${account}:${range}`;
     if (entityId && entityId !== 'all') return entityId;
-    if (level === 'campaign') return mockCampaignOptions[0]?.id ?? 'campaign:missing';
-    if (level === 'adset') return mockAdSetOptions[0]?.id ?? 'adset:missing';
-    if (level === 'ad') return mockAdOptions[0]?.id ?? 'ad:missing';
+    if (level === 'campaign') return campaignOptions[0]?.id ?? 'campaign:missing';
+    if (level === 'adset') return adSetOptions[0]?.id ?? 'adset:missing';
+    if (level === 'ad') return adOptions[0]?.id ?? 'ad:missing';
     return 'all';
-  }, [account, entityId, level, platform, range]);
+  }, [account, entityId, level, platform, range, campaignOptions, adSetOptions, adOptions]);
 
-  const [insights, setInsights] = useState<InsightsSingleResponse>(() =>
-    createMockInsightsSingle(level, effectiveEntityId)
-  );
+  const [insights, setInsights] = useState<InsightsSingleResponse>({
+    level,
+    entityId: effectiveEntityId,
+    summary: { spend: 0, roas: 0, conversions: 0, ctr: 0, cpc: 0, cpm: 0, impressions: 0 },
+    timeseries: [],
+    breakdowns: [],
+  });
 
-  // Fetch real insights data when not using mock
+  // Fetch insights data from API
   useEffect(() => {
-    if (useMockData) {
-      setInsights(createMockInsightsSingle(level, effectiveEntityId));
-      return;
-    }
-
     const accountId = account || '';
     if (!accountId) return;
 
@@ -154,14 +167,20 @@ export default function InsightsPage() {
             impressions: summary.impressions,
           },
           timeseries,
-          breakdowns: createMockInsightsSingle(level, effectiveEntityId).breakdowns,
+          breakdowns: [],
         });
       })
       .catch(() => {
-        // Fall back to mock data on error
-        setInsights(createMockInsightsSingle(level, effectiveEntityId));
+        // Set empty state on error
+        setInsights({
+          level,
+          entityId: effectiveEntityId,
+          summary: { spend: 0, roas: 0, conversions: 0, ctr: 0, cpc: 0, cpm: 0, impressions: 0 },
+          timeseries: [],
+          breakdowns: [],
+        });
       });
-  }, [useMockData, account, level, effectiveEntityId, dateRange]);
+  }, [account, level, effectiveEntityId, dateRange]);
 
   const activeLevelMeta = useMemo(() => levelOptions.find((x) => x.key === level), [level]);
 
@@ -206,14 +225,6 @@ export default function InsightsPage() {
           </div>
         }
       />
-
-      {useMockData && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-sm text-blue-800">
-            <span className="font-semibold">{t('info_label')}:</span> {t('mock_data_info')}
-          </p>
-        </div>
-      )}
 
       {/* Visual Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -265,13 +276,13 @@ export default function InsightsPage() {
           <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
             {t('spend_trend') || 'Harcama Trendi (30 Gün)'}
           </h3>
-          <SpendChart data={getMockDailyMetrics()} />
+          <SpendChart data={[]} />
         </Card>
         <Card padding="lg">
           <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
             ROAS {t('trend_label') || 'Trendi (30 Gün)'}
           </h3>
-          <RoasChart data={getMockDailyMetrics()} />
+          <RoasChart data={[]} />
         </Card>
       </div>
 

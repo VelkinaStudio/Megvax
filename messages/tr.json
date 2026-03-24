@@ -348,7 +348,12 @@
     "pending_suggestions": "Bekleyen Öneriler",
     "total_spend": "Toplam Harcama",
     "avg_roas": "Ortalama ROAS",
-    "suggestion_applied_success": "\"{title}\" önerisi başarıyla uygulandı."
+    "suggestion_applied_success": "\"{title}\" önerisi başarıyla uygulandı.",
+    "performance_charts": "Performans Grafikleri",
+    "daily_spend": "Günlük Harcama",
+    "trend": "Trendi",
+    "daily_conversions": "Günlük Dönüşümler",
+    "campaign_comparison": "Kampanya Karşılaştırma"
   },
   "insights": {
     "title": "İstatistikler",
@@ -430,6 +435,7 @@
     "title": "Hesaplar",
     "subtitle": "Bağlı reklam hesapları",
     "description": "Bağlı olan Meta Reklam hesaplarınızı buradan yönetin.",
+    "select_account": "Hesap Seç",
     "connect": "Hesap Bağla",
     "connect_meta": "Meta Hesabı Bağla",
     "disconnect": "Bağlantıyı Kes",

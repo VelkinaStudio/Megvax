@@ -6,11 +6,6 @@ import { X, ChevronRight, ChevronLeft, Check, Image as ImageIcon, Upload, Sparkl
 import { useToast } from '@/components/ui/Toast';
 import { ConfirmModal, Button } from '@/components/ui';
 
-const DEMO_ADSETS = [
-  { id: 'mas1', name: 'Women 25-34' },
-  { id: 'mas2', name: 'Men 25-44' },
-];
-
 interface CreateAdModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -50,7 +45,6 @@ function extractCreatedId(created: unknown): string | undefined {
 
 export function CreateAdModal({ isOpen, onClose, initialAdSetId }: CreateAdModalProps) {
   const toast = useToast();
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
 
   const [sourceType, setSourceType] = useState<'upload' | 'ai'>('upload');
   const [selectedAiImage, setSelectedAiImage] = useState<string | null>(null);
@@ -91,11 +85,6 @@ export function CreateAdModal({ isOpen, onClose, initialAdSetId }: CreateAdModal
     const fetchAdSets = async () => {
       if (!isOpen) return;
 
-      if (useMockData) {
-        setAdSets(DEMO_ADSETS);
-        return;
-      }
-
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
         const res = await fetch(`${baseUrl}/api/meta/adsets`);
@@ -110,7 +99,7 @@ export function CreateAdModal({ isOpen, onClose, initialAdSetId }: CreateAdModal
     };
 
     fetchAdSets();
-  }, [isOpen, toast, useMockData]);
+  }, [isOpen, toast]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -307,32 +296,6 @@ export function CreateAdModal({ isOpen, onClose, initialAdSetId }: CreateAdModal
 
     try {
       setIsSubmitting(true);
-
-      if (useMockData) {
-        toast.success('New ad created and submitted for review.');
-        onClose();
-        setSelectedAdSetId('');
-        setAdName('');
-        setPageId('');
-        setLinkUrl('');
-        setMessage('');
-        setHeadline('');
-        setDescription('');
-        setCallToAction('LEARN_MORE');
-        setSelectedAiImage(null);
-        setSourceType('upload');
-        setMediaType('image');
-        setCreativeFormat('1:1');
-        setUploadedFile(null);
-        setUploadedMeta(null);
-        setVideoThumbDataUrl(null);
-        setManualThumbFile(null);
-        if (manualThumbPreviewUrl) URL.revokeObjectURL(manualThumbPreviewUrl);
-        setManualThumbPreviewUrl(null);
-        if (uploadedPreviewUrl) URL.revokeObjectURL(uploadedPreviewUrl);
-        setUploadedPreviewUrl(null);
-        return;
-      }
 
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
