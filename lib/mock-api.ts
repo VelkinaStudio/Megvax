@@ -14,8 +14,15 @@ import {
   mockNotifications,
 } from './demo-data';
 
+// Runtime flag — allows forceDemoAuth() to enable demo mode without env var
+let runtimeDemoMode = false;
+
+export function enableRuntimeDemoMode() {
+  runtimeDemoMode = true;
+}
+
 export function isDemoMode(): boolean {
-  return process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+  return process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || runtimeDemoMode;
 }
 
 export async function mockApiHandler<T>(path: string, method: string = 'GET', body?: any): Promise<T> {

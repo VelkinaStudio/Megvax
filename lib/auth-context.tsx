@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { api, setAccessToken, getAccessToken, ApiError } from './api';
-import { isDemoMode } from './mock-api';
+import { isDemoMode, enableRuntimeDemoMode } from './mock-api';
 import { DEMO_USER } from './demo-data';
 
 interface User {
@@ -29,6 +29,7 @@ interface AuthContextValue extends AuthState {
   register: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  forceDemoAuth: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -121,6 +122,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ user: data.user, isLoading: false, isAuthenticated: true });
   }, []);
 
+  // Force demo authentication without requiring NEXT_PUBLIC_DEMO_MODE env var
+  const forceDemoAuth = useCallback(() => {
+    enableRuntimeDemoMode();
+    setAccessToken('demo-token');
+    setState({ user: DEMO_USER as User, isLoading: false, isAuthenticated: true });
+  }, []);
+
   const logout = useCallback(async () => {
     if (isDemoMode()) {
       setAccessToken(null);
@@ -137,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ ...state, login, register, logout, refreshUser, forceDemoAuth }}>
       {children}
     </AuthContext.Provider>
   );

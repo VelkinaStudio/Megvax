@@ -10,14 +10,13 @@ import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
 import { ApiError } from '@/lib/api';
-import { isDemoMode } from '@/lib/mock-api';
 
 export default function LoginPage() {
   const router = useRouter();
   const toast = useToast();
   const t = useTranslations('auth');
   const tc = useTranslations('common');
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, forceDemoAuth } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -52,7 +51,8 @@ export default function LoginPage() {
   const handleDemoLogin = async () => {
     setIsLoading(true);
     try {
-      await login('demo@megvax.io', 'demo');
+      // Force demo mode for this login even if env var isn't set on host
+      forceDemoAuth();
       toast.success(tc('success') + '!');
       router.push('/app/dashboard');
     } catch {
@@ -60,6 +60,17 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleAdminDemo = () => {
+    // Admin uses localStorage-based auth, no env var needed
+    localStorage.setItem('adminSession', JSON.stringify({
+      email: 'admin@megvax.com',
+      role: 'admin',
+      loggedInAt: new Date().toISOString(),
+    }));
+    toast.success('Admin girisi basarili!');
+    router.push('/admin');
   };
 
   const handleGoogleLogin = () => {
@@ -74,13 +85,11 @@ export default function LoginPage() {
         <div className="container mx-auto px-4 flex justify-center">
           <div className="w-full max-w-md">
             {/* Demo Banner */}
-            {isDemoMode() && (
-              <div className="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
-                <p className="text-sm font-medium text-amber-800">
-                  Demo Modu — Gercek veri kullanilmamaktadir.
-                </p>
-              </div>
-            )}
+            <div className="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
+              <p className="text-sm font-medium text-amber-800">
+                Demo Modu — Gercek veri kullanilmamaktadir.
+              </p>
+            </div>
 
             {/* Card */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
@@ -211,18 +220,27 @@ export default function LoginPage() {
                 {t('google_login')}
               </button>
 
-              {/* Demo Login */}
-              {isDemoMode() && (
+              {/* Demo Quick Access */}
+              <div className="mt-3 space-y-2">
                 <button
                   type="button"
                   onClick={handleDemoLogin}
                   disabled={isLoading}
-                  className="w-full mt-3 py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98]"
+                  className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98]"
                 >
-                  Demo ile Giris Yap
+                  Demo ile Giris Yap (Kullanici Paneli)
                   <ArrowRight className="w-4 h-4" />
                 </button>
-              )}
+                <button
+                  type="button"
+                  onClick={handleAdminDemo}
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-violet-500/25 active:scale-[0.98]"
+                >
+                  Demo ile Giris Yap (Admin Paneli)
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
 
               {/* Signup Link */}
               <p className="mt-8 text-center text-sm text-gray-600">

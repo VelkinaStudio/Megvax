@@ -36,3 +36,5 @@ next-env.d.ts
 
 # api deps
 /megvax-api/node_modules
+
+.vercel
