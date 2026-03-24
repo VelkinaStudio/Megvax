@@ -3,8 +3,6 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { api, setAccessToken, getAccessToken, ApiError } from './api';
-import { isDemoMode, enableRuntimeDemoMode } from './mock-api';
-import { DEMO_USER } from './demo-data';
 
 interface User {
   id: string;
@@ -29,7 +27,7 @@ interface AuthContextValue extends AuthState {
   register: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
-  forceDemoAuth: () => void;
+  devLogin: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -52,13 +50,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // On mount, try to restore session via refresh token cookie
   useEffect(() => {
-    // Demo mode — skip network restore, authenticate immediately
-    if (isDemoMode()) {
-      setAccessToken('demo-token');
-      setState({ user: DEMO_USER as User, isLoading: false, isAuthenticated: true });
-      return;
-    }
-
     const tryRestore = async () => {
       try {
         const res = await fetch(
@@ -93,11 +84,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    if (isDemoMode()) {
-      setAccessToken('demo-token');
-      setState({ user: DEMO_USER as User, isLoading: false, isAuthenticated: true });
-      return;
-    }
     const data = await api<{ accessToken: string; user: User }>('/auth/login', {
       method: 'POST',
       body: { email, password },
@@ -108,11 +94,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (email: string, password: string, fullName: string) => {
-    if (isDemoMode()) {
-      setAccessToken('demo-token');
-      setState({ user: DEMO_USER as User, isLoading: false, isAuthenticated: true });
-      return;
-    }
     const data = await api<{ accessToken: string; user: User }>('/auth/register', {
       method: 'POST',
       body: { email, password, fullName },
@@ -122,19 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ user: data.user, isLoading: false, isAuthenticated: true });
   }, []);
 
-  // Force demo authentication without requiring NEXT_PUBLIC_DEMO_MODE env var
-  const forceDemoAuth = useCallback(() => {
-    enableRuntimeDemoMode();
-    setAccessToken('demo-token');
-    setState({ user: DEMO_USER as User, isLoading: false, isAuthenticated: true });
-  }, []);
-
   const logout = useCallback(async () => {
-    if (isDemoMode()) {
-      setAccessToken(null);
-      setState({ user: null, isLoading: false, isAuthenticated: false });
-      return;
-    }
     try {
       await api('/auth/logout', { method: 'POST' });
     } catch {
@@ -144,8 +113,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ user: null, isLoading: false, isAuthenticated: false });
   }, []);
 
+  const devLogin = useCallback(async () => {
+    const email = process.env.NEXT_PUBLIC_DEV_EMAIL;
+    const password = process.env.NEXT_PUBLIC_DEV_PASSWORD;
+    if (!email || !password) {
+      throw new Error('Dev credentials not configured in .env.local');
+    }
+    const data = await api<{ accessToken: string; user: User }>('/auth/login', {
+      method: 'POST',
+      body: { email, password },
+      skipAuth: true,
+    });
+    setAccessToken(data.accessToken);
+    setState({ user: data.user, isLoading: false, isAuthenticated: true });
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, refreshUser, forceDemoAuth }}>
+    <AuthContext.Provider value={{ ...state, login, register, logout, refreshUser, devLogin }}>
       {children}
     </AuthContext.Provider>
   );
