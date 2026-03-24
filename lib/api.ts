@@ -1,5 +1,4 @@
 // lib/api.ts
-import { isDemoMode, mockApiHandler } from './mock-api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -28,13 +27,14 @@ export class ApiError extends Error {
   }
 }
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
   const { method = 'GET', body, token, skipAuth = false } = options;
-
-  // Demo mode — return mock data, zero network requests
-  if (isDemoMode()) {
-    return mockApiHandler<T>(path, method, body);
-  }
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -44,6 +44,11 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
   const authToken = token || accessToken;
   if (authToken && !skipAuth) {
     headers.Authorization = `Bearer ${authToken}`;
+  }
+
+  if (method !== 'GET') {
+    const csrfToken = getCookie('csrf_token');
+    if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
   }
 
   const res = await fetch(`${API_URL}${path}`, {
