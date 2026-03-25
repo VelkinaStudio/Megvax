@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { MarketingNav } from '@/components/marketing/MarketingNav';
-import { MarketingFooter } from '@/components/marketing/MarketingFooter';
+import { Nav } from '@/components/marketing/landing/Nav';
+import { Footer } from '@/components/marketing/landing/Footer';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
@@ -53,17 +53,17 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <MarketingNav />
+    <main className="min-h-screen bg-[#FAFAF8]">
+      <Nav />
 
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4 flex justify-center">
           <div className="w-full max-w-md">
             {/* Card */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <div className="bg-white rounded-2xl shadow-lg border border-black/[0.06] p-8">
               <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold text-gray-900">{t('login_title')}</h1>
-                <p className="text-gray-600 mt-2 text-sm">
+                <h1 className="text-2xl font-bold text-[#1A1A1A]">{t('login_title')}</h1>
+                <p className="text-[#6B7280] mt-2 text-sm">
                   {t('login_subtitle')}
                 </p>
               </div>
@@ -71,18 +71,18 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Email */}
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  <label htmlFor="email" className="text-sm font-medium text-[#374151]">
                     {t('email')}
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
                     <input
                       id="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="email@company.com"
-                      className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full pl-11 pr-4 py-3 bg-[#F3F2EF] border border-black/[0.08] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all"
                       required
                     />
                   </div>
@@ -90,24 +90,24 @@ export default function LoginPage() {
 
                 {/* Password */}
                 <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                  <label htmlFor="password" className="text-sm font-medium text-[#374151]">
                     {t('password')}
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
                     <input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       placeholder="••••••••"
-                      className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full pl-11 pr-12 py-3 bg-[#F3F2EF] border border-black/[0.08] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -121,13 +121,13 @@ export default function LoginPage() {
                       type="checkbox"
                       checked={formData.rememberMe}
                       onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-black/[0.12] text-[#2563EB] focus:ring-[#2563EB]"
                     />
-                    <span className="text-gray-600">{t('remember_me')}</span>
+                    <span className="text-[#6B7280]">{t('remember_me')}</span>
                   </label>
                   <Link
                     href="/forgot-password"
-                    className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                    className="text-[#2563EB] hover:text-[#1D4ED8] font-medium transition-colors"
                   >
                     {t('forgot_password')}
                   </Link>
@@ -137,7 +137,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.98]"
+                  className="w-full py-3 px-4 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-[#2563EB]/25 active:scale-[0.98]"
                 >
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -153,10 +153,10 @@ export default function LoginPage() {
               {/* Divider */}
               <div className="relative my-8">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200" />
+                  <div className="w-full border-t border-black/[0.08]" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500">{t('or')}</span>
+                  <span className="px-4 bg-white text-[#6B7280]">{t('or')}</span>
                 </div>
               </div>
 
@@ -165,7 +165,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={isLoading}
-                className="w-full py-3 px-4 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed hover:border-gray-300 hover:shadow-sm active:scale-[0.98]"
+                className="w-full py-3 px-4 bg-white border border-black/[0.08] text-[#374151] font-medium rounded-xl hover:bg-[#F3F2EF] transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed hover:border-black/[0.12] hover:shadow-sm active:scale-[0.98]"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -194,7 +194,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={async () => { await devLogin(); router.push('/app/dashboard'); }}
                   disabled={isLoading}
-                  className="w-full mt-3 py-2.5 px-4 bg-gray-900 text-gray-300 text-sm font-mono rounded-xl hover:bg-gray-800 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 border border-gray-700 border-dashed"
+                  className="w-full mt-3 py-2.5 px-4 bg-gray-900 text-[#D1D5DB] text-sm font-mono rounded-xl hover:bg-gray-800 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 border border-gray-700 border-dashed"
                 >
                   [DEV] Skip to Dashboard
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -202,11 +202,11 @@ export default function LoginPage() {
               )}
 
               {/* Signup Link */}
-              <p className="mt-8 text-center text-sm text-gray-600">
+              <p className="mt-8 text-center text-sm text-[#6B7280]">
                 {t('no_account')}{' '}
                 <Link
                   href="/signup"
-                  className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
+                  className="text-[#2563EB] hover:text-[#1D4ED8] font-semibold transition-colors"
                 >
                   {t('create_account')}
                 </Link>
@@ -216,7 +216,7 @@ export default function LoginPage() {
         </div>
       </section>
 
-      <MarketingFooter />
+      <Footer />
     </main>
   );
 }

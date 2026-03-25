@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { Mail, Lock, User, Building, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { MarketingNav } from '@/components/marketing/MarketingNav';
-import { MarketingFooter } from '@/components/marketing/MarketingFooter';
+import { Nav } from '@/components/marketing/landing/Nav';
+import { Footer } from '@/components/marketing/landing/Footer';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
@@ -60,17 +60,17 @@ export default function SignupPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <MarketingNav />
+    <main className="min-h-screen bg-[#FAFAF8]">
+      <Nav />
 
       <section className="py-12 md:py-20">
         <div className="container mx-auto px-4 flex justify-center">
           <div className="w-full max-w-md">
             {/* Card */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <div className="bg-white rounded-2xl shadow-lg border border-black/[0.06] p-8">
               <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold text-gray-900">{t('signup_title')}</h1>
-                <p className="text-gray-600 mt-2 text-sm">
+                <h1 className="text-2xl font-bold text-[#1A1A1A]">{t('signup_title')}</h1>
+                <p className="text-[#6B7280] mt-2 text-sm">
                   {t('signup_subtitle')}
                 </p>
               </div>
@@ -78,18 +78,18 @@ export default function SignupPage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Name */}
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium text-gray-700">
+                  <label htmlFor="name" className="text-sm font-medium text-[#374151]">
                     {t('full_name')}
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
                     <input
                       id="name"
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="John Doe"
-                      className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full pl-11 pr-4 py-3 bg-[#F3F2EF] border border-black/[0.08] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all"
                       required
                     />
                   </div>
@@ -97,36 +97,36 @@ export default function SignupPage() {
 
                 {/* Company */}
                 <div className="space-y-2">
-                  <label htmlFor="company" className="text-sm font-medium text-gray-700">
+                  <label htmlFor="company" className="text-sm font-medium text-[#374151]">
                     {t('company_name')}
                   </label>
                   <div className="relative">
-                    <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
                     <input
                       id="company"
                       type="text"
                       value={formData.company}
                       onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                       placeholder="Company Inc."
-                      className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full pl-11 pr-4 py-3 bg-[#F3F2EF] border border-black/[0.08] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
 
                 {/* Email */}
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  <label htmlFor="email" className="text-sm font-medium text-[#374151]">
                     {t('work_email')}
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
                     <input
                       id="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="email@company.com"
-                      className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full pl-11 pr-4 py-3 bg-[#F3F2EF] border border-black/[0.08] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all"
                       required
                     />
                   </div>
@@ -134,30 +134,30 @@ export default function SignupPage() {
 
                 {/* Password */}
                 <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                  <label htmlFor="password" className="text-sm font-medium text-[#374151]">
                     {t('password')}
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
                     <input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       placeholder="••••••••"
-                      className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full pl-11 pr-12 py-3 bg-[#F3F2EF] border border-black/[0.08] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all"
                       required
                       minLength={8}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500">{t('password_requirements')}</p>
+                  <p className="text-xs text-[#6B7280]">{t('password_requirements')}</p>
                 </div>
 
                 {/* Terms */}
@@ -167,15 +167,15 @@ export default function SignupPage() {
                     id="terms"
                     checked={formData.terms}
                     onChange={(e) => setFormData({ ...formData, terms: e.target.checked })}
-                    className="w-4 h-4 mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4 mt-1 rounded border-black/[0.12] text-[#2563EB] focus:ring-[#2563EB]"
                     required
                   />
-                  <label htmlFor="terms" className="text-sm text-gray-600">
-                    <Link href="/terms" className="text-blue-600 hover:text-blue-700 font-medium">
+                  <label htmlFor="terms" className="text-sm text-[#6B7280]">
+                    <Link href="/terms" className="text-[#2563EB] hover:text-[#1D4ED8] font-medium">
                       {t('terms_of_service')}
                     </Link>{' '}
                     {t('and')}{' '}
-                    <Link href="/privacy" className="text-blue-600 hover:text-blue-700 font-medium">
+                    <Link href="/privacy" className="text-[#2563EB] hover:text-[#1D4ED8] font-medium">
                       {t('privacy_policy')}
                     </Link>
                     {t('terms_accept')}
@@ -186,7 +186,7 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.98]"
+                  className="w-full py-3 px-4 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-[#2563EB]/25 active:scale-[0.98]"
                 >
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -202,10 +202,10 @@ export default function SignupPage() {
               {/* Divider */}
               <div className="relative my-8">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200" />
+                  <div className="w-full border-t border-black/[0.08]" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500">{t('or')}</span>
+                  <span className="px-4 bg-white text-[#6B7280]">{t('or')}</span>
                 </div>
               </div>
 
@@ -214,7 +214,7 @@ export default function SignupPage() {
                 type="button"
                 onClick={handleGoogleSignup}
                 disabled={isLoading}
-                className="w-full py-3 px-4 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed hover:border-gray-300 hover:shadow-sm active:scale-[0.98]"
+                className="w-full py-3 px-4 bg-white border border-black/[0.08] text-[#374151] font-medium rounded-xl hover:bg-[#F3F2EF] transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed hover:border-black/[0.12] hover:shadow-sm active:scale-[0.98]"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -238,11 +238,11 @@ export default function SignupPage() {
               </button>
 
               {/* Login Link */}
-              <p className="mt-8 text-center text-sm text-gray-600">
+              <p className="mt-8 text-center text-sm text-[#6B7280]">
                 {t('have_account')}{' '}
                 <Link
                   href="/login"
-                  className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
+                  className="text-[#2563EB] hover:text-[#1D4ED8] font-semibold transition-colors"
                 >
                   {t('login_link')}
                 </Link>
@@ -252,7 +252,7 @@ export default function SignupPage() {
         </div>
       </section>
 
-      <MarketingFooter />
+      <Footer />
     </main>
   );
 }
