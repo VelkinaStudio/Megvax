@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, MessageSquare, MapPin, Send, Loader2 } from 'lucide-react';
+import { Mail, MessageSquare, MapPin, Send } from 'lucide-react';
 import { MarketingNav } from '@/components/marketing/MarketingNav';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { useTranslations } from '@/lib/i18n';
@@ -11,16 +11,16 @@ import { useToast } from '@/components/ui/Toast';
 export default function ContactPage() {
   const t = useTranslations('contact');
   const toast = useToast();
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
+    const { name, email, subject, message } = formData;
+    const body = `${message}\n\n---\nFrom: ${name}\nEmail: ${email}`;
+    const mailto = `mailto:hello@megvax.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
     toast.success(t('success'));
     setFormData({ name: '', email: '', subject: '', message: '' });
-    setIsLoading(false);
   };
 
   const contactInfo = [
@@ -119,11 +119,10 @@ export default function ContactPage() {
                 </div>
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20"
                 >
-                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  {isLoading ? t('sending') : t('send')}
+                  <Send className="w-4 h-4" />
+                  {t('send')}
                 </button>
               </motion.form>
             </div>

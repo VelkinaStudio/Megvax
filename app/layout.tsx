@@ -9,44 +9,51 @@ import "./globals.css";
 
 const spaceGroteskHeading = Space_Grotesk({
   variable: "--font-heading",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
 });
 
 const inter = Inter({
   variable: "--font-body",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Megvax - Manage Your Ads in One Dashboard",
-    template: "%s | Megvax"
+    default: "MegVax — Tüm Reklamlarınızı Tek Yerden Yönetin",
+    template: "%s | MegVax"
   },
-  description: "Manage your Meta ad campaigns from one place. AI-powered optimizations and automations for better ROAS.",
-  keywords: ["meta ads", "facebook ads", "ad management", "ROAS optimization", "AI advertising", "campaign management", "ad automation"],
-  authors: [{ name: "Megvax" }],
-  creator: "Megvax",
+  description: "Meta reklam hesaplarınızı tek panelden yönetin. AI destekli optimizasyon ve otomasyon ile ROAS'ınızı artırın.",
+  keywords: ["meta reklamları", "facebook reklamları", "reklam yönetimi", "ROAS optimizasyon", "AI reklam", "kampanya yönetimi", "reklam otomasyonu", "meta ads", "ad management"],
+  authors: [{ name: "MegVax" }],
+  creator: "MegVax",
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://megvax.com"),
+  alternates: {
+    languages: {
+      'tr': '/',
+      'en': '/?locale=en',
+    },
+  },
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "tr_TR",
+    alternateLocale: "en_US",
     url: "/",
-    siteName: "Megvax",
-    title: "Megvax - Manage Your Ads in One Dashboard",
-    description: "Manage your Meta ad campaigns from one place. AI-powered optimizations and automations for better ROAS.",
+    siteName: "MegVax",
+    title: "MegVax — Tüm Reklamlarınızı Tek Yerden Yönetin",
+    description: "Meta reklam hesaplarınızı tek panelden yönetin. AI destekli optimizasyon ve otomasyon ile ROAS'ınızı artırın.",
     images: [
       {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "Megvax - AI-Powered Ad Management Platform",
+        alt: "MegVax — AI Destekli Reklam Yönetim Platformu",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Megvax - Manage Your Ads in One Dashboard",
-    description: "Manage your Meta ad campaigns from one place. AI-powered optimizations and automations for better ROAS.",
+    title: "MegVax — Tüm Reklamlarınızı Tek Yerden Yönetin",
+    description: "Meta reklam hesaplarınızı tek panelden yönetin. AI destekli optimizasyon ve otomasyon ile ROAS'ınızı artırın.",
     creator: "@megvax",
     images: ["/opengraph-image"],
   },
@@ -67,7 +74,7 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body
-        className={`${spaceGroteskHeading.variable} ${inter.variable} antialiased bg-gray-50 text-gray-900 font-sans overflow-x-hidden`}
+        className={`${spaceGroteskHeading.variable} ${inter.variable} antialiased bg-[#FAFAF8] text-[#1A1A1A] font-sans overflow-x-hidden`}
       >
         <I18nProvider>
           <AuthProvider>

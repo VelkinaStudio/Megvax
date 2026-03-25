@@ -316,7 +316,7 @@ function AICreativeContent() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.3, ease: EXPO_OUT }}
               >
-                AI Generated
+                AI Üretimi
               </motion.div>
             </div>
             <div className="p-3 space-y-1.5">

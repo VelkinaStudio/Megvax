@@ -8,10 +8,10 @@ export function Footer() {
   const t = useTranslations('landing');
 
   const links = [
-    { href: '/about', label: 'About' },
-    { href: '/privacy', label: 'Privacy' },
-    { href: '/terms', label: 'Terms' },
-    { href: '/contact', label: 'Contact' },
+    { href: '/about', label: t('footer_about') },
+    { href: '/privacy', label: t('footer_privacy') },
+    { href: '/terms', label: t('footer_terms') },
+    { href: '/contact', label: t('footer_contact') },
   ];
 
   return (

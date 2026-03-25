@@ -205,7 +205,7 @@ function SuggestionsAnimation() {
               className="text-[11px] font-semibold tracking-tight"
               style={{ color: CHARCOAL }}
             >
-              AI Suggestion
+              AI Öneri
             </span>
           </div>
 
@@ -221,7 +221,7 @@ function SuggestionsAnimation() {
                 <path d="M6 1L7 4.5L10.5 5L7.5 7.5L8.5 11L6 9L3.5 11L4.5 7.5L1.5 5L5 4.5L6 1Z" fill={BLUE} opacity={0.2} />
               </svg>
               <span className="text-[11px]" style={{ color: '#6B7280' }}>
-                Increase budget by 20%
+                Bütçeyi %20 artır
               </span>
             </motion.div>
             <motion.div
@@ -284,7 +284,7 @@ function SuggestionsAnimation() {
               </motion.svg>
 
               <span>
-                {phase >= 4 ? 'Applied' : phase >= 3 ? 'Approved' : 'Approve'}
+                {phase >= 4 ? 'Uygulandı' : phase >= 3 ? 'Onaylandı' : 'Onayla'}
               </span>
 
               {/* Ripple effect */}
@@ -445,7 +445,7 @@ function DashboardAnimation() {
         }
         transition={{ duration: 0.4, delay: 0.5, ease: EXPO_OUT }}
       >
-        &#10003; Consolidated
+        &#10003; Birleştirildi
       </motion.div>
     </div>
   );
@@ -487,7 +487,7 @@ export function WhatItDoes() {
   const t = useTranslations('landing');
 
   return (
-    <section className="py-24">
+    <section id="features" className="py-24 scroll-mt-20">
       <div className="max-w-5xl mx-auto px-6">
         <ScrollReveal>
           <h2

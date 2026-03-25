@@ -198,7 +198,7 @@ export function Hero() {
                       </span>
                       <span
                         className="text-[10px] font-medium"
-                        style={{ color: kpi.up ? '#10B981' : '#10B981' }}
+                        style={{ color: kpi.up ? '#10B981' : '#EF4444' }}
                       >
                         {kpi.change}
                       </span>

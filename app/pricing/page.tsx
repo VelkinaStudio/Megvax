@@ -94,14 +94,14 @@ export default function PricingPage() {
                 </ul>
 
                 <Link
-                  href="/signup"
+                  href={plan.name === 'Business' ? '/contact' : '/signup'}
                   className={`block w-full py-3 px-4 rounded-xl font-semibold text-center transition-all ${
                     plan.popular
                       ? "bg-white text-blue-600 hover:bg-gray-100"
                       : "bg-blue-600 text-white hover:bg-blue-700"
                   }`}
                 >
-                  {plan.popular ? t('get_started') : t('contact_sales')}
+                  {plan.name === 'Business' ? t('contact_sales') : t('get_started')}
                 </Link>
               </div>
             ))}
