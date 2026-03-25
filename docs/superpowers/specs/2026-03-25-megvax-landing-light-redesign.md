@@ -74,7 +74,7 @@ Trigger:   Once on scroll-into-view (IntersectionObserver via Framer Motion)
 Reduced motion: respect prefers-reduced-motion — instant show, no animation
 ```
 
-**Note:** Update `ScrollReveal.tsx` easing from `[0.33, 1, 0.68, 1]` to `[0.22, 1, 0.36, 1]` to match spec defaults.
+**Note:** Update `ScrollReveal.tsx` easing from `[0.33, 1, 0.68, 1]` to `[0.22, 1, 0.36, 1]` in both `ScrollReveal` and `StaggerItem` components to match spec defaults.
 
 ---
 
@@ -262,20 +262,16 @@ Minimal. Static.
 
 ## 6. i18n Keys
 
-**Strategy:** This redesign rewrites content, not just restyling. All visible text changes. We keep the existing namespace structure (`hero.*`, `navigation.*`, `landing.*`) to avoid unnecessary key renames. Where keys exist, update their values. Where new keys are needed, add under `landing.*`.
+**Strategy:** All landing components currently use `useTranslations('landing')`. We keep this single namespace for all landing page content. Nav uses `useTranslations('navigation')` separately. The `hero.*` namespace in `tr.json` is legacy — those keys become dead code.
 
-### Existing keys — update content (in both `tr.json` and `en.json`)
+**All components use `useTranslations('landing')` except Nav which uses `useTranslations('navigation')`.**
+
+### `navigation.*` keys — update values (in both `tr.json` and `en.json`)
+
+These keys are only used by the landing Nav and MarketingNav (verified — dashboard sidebar uses different keys).
 
 ```json
 {
-  "hero": {
-    "badge": "AI destekli reklam yönetimi",
-    "title": "Tüm hesaplarınızı",
-    "highlight": "tek yerden yönetin.",
-    "subtitle": "Meta reklam hesaplarınızı bağlayın. AI optimize etsin, siz büyütün.",
-    "cta_primary": "Ücretsiz Dene",
-    "cta_secondary": "Demo İzle"
-  },
   "navigation": {
     "features": "Ürün",
     "pricing": "Fiyatlar",
@@ -286,13 +282,21 @@ Minimal. Static.
 }
 ```
 
-### New keys — add under `landing.*`
+### `landing.*` keys — update existing + add new (in both `tr.json` and `en.json`)
+
+Keys marked ✏️ already exist and need value updates. Keys marked ➕ are new.
 
 ```json
 {
   "landing": {
-    "trusted_by": "150+ ajans tarafından kullanılıyor",
+    "hero_badge": "AI destekli reklam yönetimi",
+    "hero_title": "Tüm hesaplarınızı\ntek yerden yönetin.",
+    "hero_subtitle": "Meta reklam hesaplarınızı bağlayın. AI optimize etsin, siz büyütün.",
+    "hero_cta": "Ücretsiz Dene",
+    "hero_cta_secondary": "Demo İzle",
+    "hero_trusted_by": "150+ ajans tarafından kullanılıyor",
     "cta_trust": "14 gün ücretsiz · Kredi kartı gerekmez",
+
     "features_heading": "Ne Yapar?",
     "feature_autopilot_title": "Otopilot",
     "feature_autopilot_desc": "Düşük ROAS'lu reklamları durdurur, kazananları ölçekler.",
@@ -300,6 +304,7 @@ Minimal. Static.
     "feature_suggestions_desc": "AI önerileri incele, tek tıkla onayla.",
     "feature_dashboard_title": "Tek Panel",
     "feature_dashboard_desc": "Tüm hesaplar tek ekranda.",
+
     "how_it_works_heading": "Nasıl Çalışır?",
     "step1_title": "Bağla",
     "step1_desc": "Meta hesaplarını bağla.",
@@ -307,11 +312,14 @@ Minimal. Static.
     "step2_desc": "Bütçe limitleri ve hedefleri belirle.",
     "step3_title": "Otopilot",
     "step3_desc": "Gerisini bize bırak.",
+
     "metric_spend": "optimize edilen reklam bütçesi",
     "metric_accounts": "yönetilen hesap",
     "metric_roas": "ortalama ROAS",
+
     "cta_heading": "Reklamlarınızı otopilote alın.",
     "cta_button": "Ücretsiz Dene",
+
     "footer_about": "Hakkımızda",
     "footer_privacy": "Gizlilik",
     "footer_terms": "Kullanım Şartları",
@@ -326,10 +334,13 @@ Minimal. Static.
 ### Dead keys to clean up
 
 After rewrite, these existing keys become unused and should be removed:
-- `hero.description`, `hero.benefit_1`, `hero.benefit_2`, `hero.stat_*` keys
+- **`hero.*` namespace entirely** — legacy, all hero content now under `landing.*`
 - `landing.testimonial_*` keys (testimonials section removed)
 - `landing.result_*` keys (results section removed)
-- `footer_tagline`, `footer_features`, `footer_pricing`, `footer_demo`, `footer_status`, `footer_*_heading` keys (simplified footer)
+- `landing.feature_scaling_*`, `landing.feature_protection_*`, `landing.feature_realtime_*` (reduced from 6 to 3 features)
+- `landing.features_label`, `landing.features_subheading`, `landing.how_it_works_label` (old section chrome)
+- `landing.footer_tagline`, `landing.footer_features`, `landing.footer_pricing`, `landing.footer_demo`, `landing.footer_status`, `landing.footer_*_heading` (simplified footer)
+- `navigation.about` (about link moved to footer only, nav no longer includes it)
 
 English translations mirror the same structure in `messages/en.json`.
 
