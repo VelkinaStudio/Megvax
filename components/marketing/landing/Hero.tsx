@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -54,8 +54,14 @@ const campaigns = [
 export function Hero() {
   const t = useTranslations('landing');
 
+  const stats = [
+    { value: t('hero_stat_roas'), label: t('hero_stat_roas_label') },
+    { value: t('hero_stat_time'), label: t('hero_stat_time_label') },
+    { value: t('hero_stat_accounts'), label: t('hero_stat_accounts_label') },
+  ];
+
   return (
-    <section className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden pt-32 md:pt-40">
+    <section className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden pt-28 md:pt-36 pb-8">
       {/* Inject CSS animations */}
       <style dangerouslySetInnerHTML={{ __html: cssAnimations }} />
 
@@ -63,20 +69,20 @@ export function Hero() {
       <div
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(37,99,235,0.08) 0%, rgba(37,99,235,0.03) 40%, transparent 70%)',
+          background: 'radial-gradient(ellipse at center, rgba(37,99,235,0.06) 0%, rgba(37,99,235,0.02) 40%, transparent 70%)',
           filter: 'blur(60px)',
         }}
       />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0, ease }}
-          className="mb-8"
+          className="mb-6"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-black/[0.08] bg-white/80 backdrop-blur-sm text-[13px] font-medium text-[#6B7280]">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-black/[0.06] bg-white/80 backdrop-blur-sm text-[13px] font-medium text-[#6B7280]">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             {t('hero_badge')}
           </span>
@@ -84,7 +90,7 @@ export function Hero() {
 
         {/* Headline */}
         <motion.h1
-          className="text-[clamp(2.75rem,6vw+0.5rem,5rem)] font-extrabold leading-[0.95] tracking-[-0.04em] text-[#1A1A1A]"
+          className="text-[clamp(2.5rem,5.5vw,4.5rem)] font-extrabold leading-[1] tracking-[-0.04em] text-[#1A1A1A]"
           style={{
             fontFamily: 'var(--font-display)',
             textWrap: 'balance',
@@ -98,7 +104,7 @@ export function Hero() {
 
         {/* Subtitle */}
         <motion.p
-          className="mt-6 text-[clamp(1.1rem,1.5vw,1.25rem)] text-[#6B7280] max-w-2xl mx-auto leading-relaxed"
+          className="mt-5 text-[clamp(1.05rem,1.4vw,1.2rem)] text-[#6B7280] max-w-xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2, ease }}
@@ -108,7 +114,7 @@ export function Hero() {
 
         {/* CTAs */}
         <motion.div
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3"
+          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3, ease }}
@@ -121,32 +127,49 @@ export function Hero() {
             <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
           <Link
-            href="/book"
-            className="group inline-flex items-center gap-2.5 px-7 py-3.5 text-[#1A1A1A]/50 text-[15px] font-medium hover:text-[#1A1A1A]/80 transition-colors"
+            href="#how-it-works"
+            className="inline-flex items-center gap-2 px-7 py-3.5 text-[#6B7280] text-[15px] font-medium hover:text-[#1A1A1A] transition-colors"
           >
-            <Play className="w-3.5 h-3.5" />
             {t('hero_cta_secondary')}
           </Link>
         </motion.div>
 
         {/* Trust line */}
         <motion.p
-          className="mt-4 text-[13px] text-[#71717A]"
+          className="mt-3 text-[13px] text-[#9CA3AF]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4, ease }}
         >
-          {t('cta_trust')}
+          {t('hero_trust')}
         </motion.p>
 
-        {/* ────────────────────────────────────────────
-            Dashboard frame
-        ──────────────────────────────────────────── */}
+        {/* Stats strip — inline proof */}
         <motion.div
-          className="mt-20 md:mt-28 relative"
+          className="mt-10 flex items-center justify-center gap-8 md:gap-12"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5, ease }}
+        >
+          {stats.map((stat, i) => (
+            <div key={i} className="flex flex-col items-center">
+              <span
+                className="text-[clamp(1.5rem,2.5vw,2rem)] font-bold text-[#1A1A1A] tracking-[-0.02em]"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                {stat.value}
+              </span>
+              <span className="text-[12px] text-[#9CA3AF] mt-0.5">{stat.label}</span>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* ──── Dashboard frame ──── */}
+        <motion.div
+          className="mt-16 md:mt-20 relative"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.5, ease }}
+          transition={{ duration: 0.7, delay: 0.6, ease }}
         >
           {/* Subtle glow */}
           <div
@@ -181,7 +204,6 @@ export function Hero() {
                   </span>
                 </div>
               </div>
-              {/* AI çalışıyor indicator */}
               <div className="flex items-center gap-1.5">
                 <span
                   className="w-1.5 h-1.5 rounded-full bg-[#10B981]"
@@ -224,7 +246,6 @@ export function Hero() {
                         {kpi.change}
                       </span>
                     </div>
-                    {/* Mini sparkline with shimmer */}
                     <div
                       className="mt-2 flex items-end gap-[2px] h-4"
                       style={{ animation: 'kpi-shimmer 4s ease-in-out infinite' }}
@@ -312,45 +333,6 @@ export function Hero() {
                     <span className="text-white/50 font-medium">{row.roas}</span>
                   </div>
                 ))}
-              </div>
-
-              {/* ── Sektör Karşılaştırması ── */}
-              <div className="relative rounded-lg bg-white/[0.05] border border-white/[0.07] p-3">
-                <div className="text-[10px] font-medium text-white/35 mb-2.5">
-                  Sektör Karşılaştırması
-                </div>
-                <div className="space-y-2">
-                  {/* Your ROAS */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-white/40 w-24 text-left shrink-0">
-                      Sizin ROAS
-                    </span>
-                    <div className="flex-1 h-3 rounded-full bg-white/[0.05] overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-[#10B981]/60"
-                        style={{ width: '81%' }}
-                      />
-                    </div>
-                    <span className="text-[11px] font-bold text-[#10B981] w-10 text-right shrink-0">
-                      3.4x
-                    </span>
-                  </div>
-                  {/* Sector avg */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-white/40 w-24 text-left shrink-0">
-                      Sektör Ort.
-                    </span>
-                    <div className="flex-1 h-3 rounded-full bg-white/[0.05] overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-white/15"
-                        style={{ width: '50%' }}
-                      />
-                    </div>
-                    <span className="text-[11px] font-medium text-white/40 w-10 text-right shrink-0">
-                      2.1x
-                    </span>
-                  </div>
-                </div>
               </div>
 
             </div>

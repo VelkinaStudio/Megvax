@@ -8,12 +8,6 @@ import { ScrollReveal } from './ScrollReveal';
 export function FinalCTA() {
   const t = useTranslations('landing');
 
-  const checks = [
-    t('cta_check_1'),
-    t('cta_check_2'),
-    t('cta_check_3'),
-  ];
-
   return (
     <section
       className="py-28 md:py-40"
@@ -26,7 +20,7 @@ export function FinalCTA() {
         <ScrollReveal>
           <div className="h-px bg-gradient-to-r from-transparent via-black/[0.06] to-transparent max-w-lg mx-auto mb-20" />
           <h2
-            className="text-[clamp(2rem,4vw,2.5rem)] font-bold text-[#1A1A1A] tracking-[-0.03em]"
+            className="text-[clamp(2rem,4vw,2.75rem)] font-bold text-[#1A1A1A] tracking-[-0.03em]"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             {t('cta_heading')}
@@ -44,15 +38,9 @@ export function FinalCTA() {
             <ArrowRight className="w-4.5 h-4.5" />
           </Link>
 
-          <p className="mt-4 text-[13px] text-[#71717A]">
+          <p className="mt-4 text-[13px] text-[#9CA3AF]">
             {t('cta_trust')}
           </p>
-
-          <div className="mt-6 flex items-center justify-center gap-8 text-[13px] text-[#6B7280]">
-            {checks.map((c) => (
-              <span key={c}>{c}</span>
-            ))}
-          </div>
         </ScrollReveal>
       </div>
     </section>

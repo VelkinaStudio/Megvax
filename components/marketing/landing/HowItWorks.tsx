@@ -490,7 +490,7 @@ export function HowItWorks() {
   ];
 
   return (
-    <section className="py-24 md:py-32">
+    <section id="how-it-works" className="py-24 md:py-32 scroll-mt-20">
       <div className="max-w-4xl mx-auto px-6">
         <ScrollReveal>
           <h2
