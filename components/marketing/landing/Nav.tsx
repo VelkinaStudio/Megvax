@@ -2,16 +2,16 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 
 export function Nav() {
-  const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const t = useTranslations('navigation');
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -19,26 +19,26 @@ export function Nav() {
   const links = [
     { href: '/#features', label: t('features') },
     { href: '/pricing', label: t('pricing') },
-    { href: '/about', label: t('about') },
+    { href: '/contact', label: t('contact') },
   ];
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-[#0A0A0F]/90 backdrop-blur-xl border-b border-white/[0.06]'
-          : 'bg-transparent border-b border-transparent'
+          ? 'bg-[#FAFAF8]/80 backdrop-blur-xl border-b border-black/[0.05]'
+          : 'bg-transparent'
       }`}
     >
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-5xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link
             href="/"
-            className="text-lg font-bold tracking-tight text-white"
+            className="text-xl font-bold text-[#1A1A1A]"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            MEGVAX
+            MegVax
           </Link>
 
           {/* Desktop Links */}
@@ -47,74 +47,72 @@ export function Nav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-[13px] font-medium text-white/40 hover:text-white/80 transition-colors duration-200"
+                className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors"
               >
                 {link.label}
               </Link>
             ))}
           </div>
 
-          {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-5">
+          {/* Desktop CTAs */}
+          <div className="hidden md:flex items-center gap-4">
             <Link
               href="/login"
-              className="text-[13px] font-medium text-white/40 hover:text-white/80 transition-colors duration-200"
+              className="text-sm font-medium text-[#1A1A1A]"
             >
               {t('login')}
             </Link>
             <Link
               href="/signup"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#2563EB] text-white text-[13px] font-semibold rounded-lg hover:bg-[#1D4ED8] transition-colors duration-200"
+              className="bg-[#2563EB] text-white rounded-full px-5 py-2 text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
             >
               {t('signup')}
-              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {/* Mobile toggle */}
+          {/* Mobile Hamburger */}
           <button
-            onClick={() => setOpen(!open)}
-            className="md:hidden p-2 text-white/60 hover:text-white"
-            aria-label="Menu"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden p-2 text-[#1A1A1A]"
+            aria-label="Toggle menu"
           >
-            {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
-
-        {/* Mobile Menu */}
-        {open && (
-          <div className="md:hidden pb-6 border-t border-white/[0.06] pt-4 bg-[#0A0A0F]/95 backdrop-blur-xl">
-            <div className="flex flex-col gap-4">
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className="text-sm font-medium text-white/60 hover:text-white transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <hr className="border-white/[0.06]" />
-              <Link
-                href="/login"
-                onClick={() => setOpen(false)}
-                className="text-sm font-medium text-white/60 hover:text-white transition-colors"
-              >
-                {t('login')}
-              </Link>
-              <Link
-                href="/signup"
-                onClick={() => setOpen(false)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#2563EB] text-white text-sm font-semibold rounded-lg hover:bg-[#1D4ED8] transition-colors"
-              >
-                {t('signup')}
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Mobile Menu */}
+      {mobileOpen && (
+        <div className="md:hidden bg-[#FAFAF8] border-b border-black/[0.06]">
+          <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col gap-4">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <hr className="border-black/[0.06]" />
+            <Link
+              href="/login"
+              onClick={() => setMobileOpen(false)}
+              className="text-sm font-medium text-[#1A1A1A]"
+            >
+              {t('login')}
+            </Link>
+            <Link
+              href="/signup"
+              onClick={() => setMobileOpen(false)}
+              className="bg-[#2563EB] text-white rounded-full px-5 py-2 text-sm font-medium hover:bg-[#1D4ED8] transition-colors text-center"
+            >
+              {t('signup')}
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
