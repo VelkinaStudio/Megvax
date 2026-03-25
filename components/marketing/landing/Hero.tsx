@@ -7,59 +7,20 @@ import { useTranslations } from '@/lib/i18n';
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
-const logos = [
-  'TrendModa',
-  'GrowthLab',
-  'FitShop',
-  'Modanisa',
-  'Hepsiburada',
-  'N11',
-];
-
 export function Hero() {
   const t = useTranslations('landing');
 
   return (
     <section className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden pt-16">
-      {/* Background layers */}
-      <div className="absolute inset-0 bg-[#0A0A0F]" />
-
-      {/* Radial gradient — warm center glow */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 70% 50% at 50% 40%, rgba(37,99,235,0.08) 0%, transparent 70%)',
-        }}
-      />
-
-      {/* Subtle noise texture overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.025]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
-        }}
-      />
-
-      {/* Faint grid */}
-      <div
-        className="absolute inset-0 opacity-[0.02]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)`,
-          backgroundSize: '80px 80px',
-        }}
-      />
-
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease }}
+          transition={{ duration: 0.5, delay: 0, ease }}
           className="mb-8"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] text-xs font-medium text-white/50 backdrop-blur-sm">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-black/[0.06] bg-white text-xs font-medium text-[#6B7280]">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             {t('hero_badge')}
           </span>
@@ -67,42 +28,42 @@ export function Hero() {
 
         {/* Headline */}
         <motion.h1
-          className="text-[clamp(2.5rem,7vw,5rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-white"
-          style={{ fontFamily: 'var(--font-display)' }}
-          initial={{ opacity: 0, y: 32 }}
+          className="text-[clamp(2.5rem,6vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-[#1A1A1A]"
+          style={{ fontFamily: 'var(--font-display)', whiteSpace: 'pre-line' }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1, ease }}
+          transition={{ duration: 0.5, delay: 0.1, ease }}
         >
           {t('hero_title')}
         </motion.h1>
 
         {/* Subtext */}
         <motion.p
-          className="mt-6 text-base md:text-lg text-white/50 max-w-2xl mx-auto leading-relaxed"
-          initial={{ opacity: 0, y: 24 }}
+          className="mt-6 text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed"
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2, ease }}
+          transition={{ duration: 0.5, delay: 0.2, ease }}
         >
           {t('hero_subtitle')}
         </motion.p>
 
-        {/* Dual CTAs */}
+        {/* CTAs */}
         <motion.div
           className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.35, ease }}
+          transition={{ duration: 0.5, delay: 0.3, ease }}
         >
           <Link
             href="/signup"
-            className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#2563EB] text-white text-[15px] font-semibold rounded-xl hover:bg-[#1D4ED8] transition-all duration-200 hover:shadow-[0_0_40px_rgba(37,99,235,0.3)]"
+            className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#2563EB] text-white text-[15px] font-semibold rounded-xl hover:bg-[#1D4ED8] hover:shadow-[0_0_30px_rgba(37,99,235,0.2)] transition-all duration-200"
           >
             {t('hero_cta')}
             <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
           <Link
             href="/book"
-            className="group inline-flex items-center gap-2.5 px-7 py-3.5 text-white/60 text-[15px] font-medium rounded-xl border border-white/[0.1] hover:border-white/[0.2] hover:text-white/80 transition-all duration-200 hover:bg-white/[0.03]"
+            className="group inline-flex items-center gap-2.5 px-7 py-3.5 text-[#1A1A1A]/60 text-[15px] font-medium hover:text-[#1A1A1A]/80 transition-colors"
           >
             <Play className="w-3.5 h-3.5" />
             {t('hero_cta_secondary')}
@@ -111,54 +72,38 @@ export function Hero() {
 
         {/* Trust line */}
         <motion.p
-          className="mt-4 text-xs text-white/30"
+          className="mt-4 text-[13px] text-[#71717A]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.5, ease }}
+          transition={{ duration: 0.5, delay: 0.4, ease }}
         >
           {t('cta_trust')}
         </motion.p>
 
-        {/* Logo strip */}
-        <motion.div
-          className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.6, ease }}
-        >
-          <span className="text-[11px] uppercase tracking-widest text-white/25 font-medium">
-            {t('hero_trusted_by')}
-          </span>
-          {logos.map((name) => (
-            <span
-              key={name}
-              className="text-[13px] font-semibold text-white/25 tracking-wide"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              {name}
-            </span>
-          ))}
-        </motion.div>
-
-        {/* Dashboard Preview */}
+        {/* Dashboard frame */}
         <motion.div
           className="mt-16 md:mt-20 relative"
-          initial={{ opacity: 0, y: 60 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.5, ease }}
+          transition={{ duration: 0.7, delay: 0.5, ease }}
         >
-          {/* Glow behind the preview */}
-          <div className="absolute -inset-10 rounded-3xl opacity-60" style={{
-            background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(37,99,235,0.12) 0%, transparent 70%)',
-          }} />
-
-          {/* Dashboard mockup frame */}
+          {/* Subtle glow */}
           <div
-            className="relative rounded-2xl border border-white/[0.08] bg-[#0C0D14] overflow-hidden"
+            className="absolute -inset-10 rounded-3xl opacity-30"
+            style={{
+              background:
+                'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(37,99,235,0.08) 0%, transparent 70%)',
+            }}
+          />
+
+          {/* Frame container */}
+          <div
+            className="relative rounded-2xl border border-black/[0.08] bg-[#0C0D14] overflow-hidden"
             style={{
               transform: 'perspective(2000px) rotateX(2deg)',
               transformOrigin: 'bottom center',
-              boxShadow: '0 25px 80px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
+              boxShadow:
+                '0 25px 80px -12px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.04)',
             }}
           >
             {/* Browser chrome */}
@@ -170,7 +115,9 @@ export function Hero() {
               </div>
               <div className="flex-1 mx-12">
                 <div className="h-5 bg-white/[0.04] rounded-md max-w-xs mx-auto flex items-center justify-center">
-                  <span className="text-[10px] text-white/15">app.megvax.com/dashboard</span>
+                  <span className="text-[10px] text-white/15">
+                    app.megvax.com/dashboard
+                  </span>
                 </div>
               </div>
             </div>
@@ -191,9 +138,7 @@ export function Hero() {
                   >
                     <div className="text-[10px] text-white/35 mb-1.5">{kpi.label}</div>
                     <div className="flex items-end justify-between">
-                      <span
-                        className="text-sm md:text-base font-bold text-white"
-                      >
+                      <span className="text-sm md:text-base font-bold text-white">
                         {kpi.value}
                       </span>
                       <span
@@ -284,14 +229,11 @@ export function Hero() {
               </div>
             </div>
 
-            {/* Fade-out at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0A0A0F] to-transparent pointer-events-none" />
+            {/* Bottom fade inside frame */}
+            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#FAFAF8] to-transparent pointer-events-none" />
           </div>
         </motion.div>
       </div>
-
-      {/* Bottom gradient fade into next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0A0A0F] to-transparent pointer-events-none z-20" />
     </section>
   );
 }
