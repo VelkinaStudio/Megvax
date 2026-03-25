@@ -53,7 +53,7 @@ export function ScrollReveal({
       transition={{
         duration,
         delay,
-        ease: [0.33, 1, 0.68, 1],
+        ease: [0.22, 1, 0.36, 1],
       }}
     >
       {children}
@@ -133,7 +133,7 @@ export function StaggerItem({ children, className = '', direction = 'up' }: Stag
       y: 0,
       transition: {
         duration: 0.5,
-        ease: [0.33, 1, 0.68, 1],
+        ease: [0.22, 1, 0.36, 1],
       },
     },
   };
