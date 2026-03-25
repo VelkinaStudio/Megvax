@@ -579,14 +579,14 @@ export function ProductShowcase() {
   const ActiveContent = TAB_CONTENT[activeTab];
 
   return (
-    <section className="py-24">
+    <section className="py-24 md:py-32">
       <style dangerouslySetInnerHTML={{ __html: cssAnimations }} />
       <div className="max-w-5xl mx-auto px-6">
         {/* Section heading */}
         <ScrollReveal>
           <div className="text-center mb-12">
             <h2
-              className="text-[32px] font-bold text-[#1A1A1A] mb-3"
+              className="text-[clamp(2rem,4vw,2.75rem)] font-bold text-[#1A1A1A] mb-4 tracking-[-0.03em]"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {t('showcase_heading')}
@@ -631,11 +631,11 @@ export function ProductShowcase() {
         {/* Dark illustration frame */}
         <ScrollReveal delay={0.2}>
           <div
-            className="relative rounded-2xl overflow-hidden"
+            className="relative rounded-2xl overflow-hidden ring-1 ring-black/[0.04]"
             style={{
               backgroundColor: '#0C0D14',
               minHeight: 320,
-              boxShadow: '0 25px 80px -12px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.04)',
+              boxShadow: '0 25px 80px -12px rgba(0,0,0,0.15), 0 8px 24px -8px rgba(0,0,0,0.08)',
             }}
           >
             <AnimatePresence mode="wait">

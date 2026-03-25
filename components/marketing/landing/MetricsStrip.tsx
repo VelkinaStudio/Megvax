@@ -14,10 +14,13 @@ export function MetricsStrip() {
   ];
 
   return (
-    <section className="py-20 bg-[#F3F2EF]">
-      <div className="max-w-4xl mx-auto px-6">
+    <section className="bg-[#FAFAF8]">
+      {/* Top gradient border */}
+      <div className="h-px bg-gradient-to-r from-transparent via-black/[0.06] to-transparent" />
+
+      <div className="max-w-3xl mx-auto px-6 py-24 md:py-32">
         <ScrollReveal>
-          <p className="text-center text-[13px] font-medium tracking-widest uppercase text-[#6B7280] mb-10">
+          <p className="text-center text-[11px] font-medium tracking-[0.15em] uppercase text-[#9CA3AF] mb-12">
             {t('metrics_label')}
           </p>
 
@@ -39,8 +42,11 @@ export function MetricsStrip() {
                 )}
 
                 <div
-                  className="text-[52px] font-extrabold text-[#1A1A1A] leading-none"
-                  style={{ fontFamily: 'var(--font-display)' }}
+                  className="bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] bg-clip-text text-transparent font-extrabold tracking-[-0.03em] leading-none"
+                  style={{
+                    fontSize: 'clamp(3rem, 5vw, 4rem)',
+                    fontFamily: 'var(--font-display)',
+                  }}
                 >
                   <Counter
                     value={m.value}
@@ -50,10 +56,7 @@ export function MetricsStrip() {
                   />
                 </div>
 
-                {/* Blue accent line */}
-                <div className="w-6 h-[2px] bg-[#2563EB] rounded-full mt-3 mb-2 opacity-60" />
-
-                <div className="text-[14px] text-[#6B7280]">
+                <div className="text-[15px] text-[#6B7280] mt-3">
                   {m.label}
                 </div>
               </div>

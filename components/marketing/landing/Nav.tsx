@@ -27,7 +27,7 @@ export function Nav() {
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-[#FAFAF8]/80 backdrop-blur-xl border-b border-black/[0.05]'
+          ? 'bg-[#FAFAF8]/70 backdrop-blur-xl saturate-[1.8] border-b border-black/[0.04]'
           : 'bg-transparent'
       }`}
     >
@@ -36,7 +36,7 @@ export function Nav() {
           {/* Logo */}
           <Link
             href="/"
-            className="text-xl font-bold text-[#1A1A1A]"
+            className="text-xl font-bold text-[#1A1A1A] tracking-[-0.02em]"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             MegVax
@@ -48,7 +48,7 @@ export function Nav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors"
+                className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors duration-200"
               >
                 {link.label}
               </Link>
@@ -65,7 +65,7 @@ export function Nav() {
             </Link>
             <Link
               href="/signup"
-              className="bg-[#2563EB] text-white rounded-full px-5 py-2 text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
+              className="bg-[#2563EB] text-white rounded-full px-5 py-2 text-sm font-medium hover:bg-[#1D4ED8] shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200"
             >
               {t('signup')}
             </Link>

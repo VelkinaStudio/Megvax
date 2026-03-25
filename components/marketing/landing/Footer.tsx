@@ -20,18 +20,18 @@ export function Footer() {
       {/* Gradient top border */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#2563EB]/40 to-transparent" />
 
-      <div className="max-w-5xl mx-auto px-6 py-12">
+      <div className="max-w-5xl mx-auto px-6 py-16 md:py-20">
         {/* Top row */}
         <div className="flex flex-col md:flex-row gap-8 md:gap-0 md:items-start justify-between">
           {/* Brand column */}
           <div className="flex flex-col gap-3">
             <span
-              className="text-xl font-bold text-[#1A1A1A]"
+              className="text-xl font-bold text-[#1A1A1A] tracking-[-0.02em]"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               MegVax
             </span>
-            <p className="text-[13px] text-[#6B7280] max-w-[260px] leading-relaxed">
+            <p className="text-[14px] text-[#6B7280] max-w-[260px] leading-[1.6]">
               {t('footer_tagline')}
             </p>
           </div>
@@ -63,7 +63,8 @@ export function Footer() {
         </div>
 
         {/* Bottom row */}
-        <div className="flex flex-col md:flex-row items-center justify-between mt-10 pt-6 border-t border-black/[0.04] gap-4">
+        <div className="h-px bg-gradient-to-r from-transparent via-black/[0.06] to-transparent mt-12 mb-8" />
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <span className="text-[13px] text-[#9CA3AF]">
             {t('footer_copyright')}
           </span>

@@ -490,11 +490,11 @@ export function HowItWorks() {
   ];
 
   return (
-    <section className="py-20">
+    <section className="py-24 md:py-32">
       <div className="max-w-4xl mx-auto px-6">
         <ScrollReveal>
           <h2
-            className="text-[32px] font-bold text-[#1A1A1A] text-center mb-14"
+            className="text-[clamp(2rem,4vw,2.75rem)] font-bold text-[#1A1A1A] text-center mb-16 md:mb-20 tracking-[-0.03em]"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             {t('how_it_works_heading')}

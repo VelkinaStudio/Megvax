@@ -460,7 +460,7 @@ interface FeatureCardProps {
 
 function FeatureCard({ illustration, title, description }: FeatureCardProps) {
   return (
-    <div className="bg-white border border-black/[0.06] rounded-2xl overflow-hidden transition-all duration-200 hover:border-black/[0.1] hover:shadow-sm">
+    <div className="bg-white border border-black/[0.04] rounded-2xl overflow-hidden transition-all duration-300 hover:border-black/[0.08] hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
       {/* Illustration area */}
       <div className="border-b border-black/[0.04]">
         {illustration}
@@ -487,18 +487,18 @@ export function WhatItDoes() {
   const t = useTranslations('landing');
 
   return (
-    <section id="features" className="py-24 scroll-mt-20">
+    <section id="features" className="py-24 md:py-32 scroll-mt-20">
       <div className="max-w-5xl mx-auto px-6">
         <ScrollReveal>
           <h2
-            className="text-[32px] font-bold text-[#1A1A1A] text-center mb-12"
+            className="text-[clamp(2rem,4vw,2.75rem)] font-bold text-[#1A1A1A] text-center mb-12 tracking-[-0.03em]"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             {t('features_heading')}
           </h2>
         </ScrollReveal>
 
-        <StaggerContainer className="grid md:grid-cols-3 gap-4">
+        <StaggerContainer className="grid md:grid-cols-3 gap-8">
           <StaggerItem>
             <FeatureCard
               illustration={<AutopilotAnimation />}

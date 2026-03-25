@@ -1,9 +1,9 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { Fragment, useRef } from 'react';
+import { useRef } from 'react';
 import { useTranslations } from '@/lib/i18n';
-import { Shield, Zap, Clock } from 'lucide-react';
+import { Clock, Shield, Zap } from 'lucide-react';
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -19,34 +19,46 @@ export function SocialProof() {
   ];
 
   return (
-    <section className="py-12">
-      <div className="max-w-3xl mx-auto px-6">
+    <section className="py-16 md:py-20">
+      <div className="max-w-4xl mx-auto px-6">
+        {/* Gradient line separator */}
+        <div className="h-px bg-gradient-to-r from-transparent via-black/[0.06] to-transparent mb-16" />
+
         <motion.div
           ref={ref}
-          className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3"
-          initial={{ opacity: 0, y: 10 }}
+          className="flex flex-col items-center gap-8"
+          initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, ease }}
+          transition={{ duration: 0.6, ease }}
         >
-          {signals.map((signal, i) => (
-            <Fragment key={i}>
-              {i > 0 && (
-                <div className="h-4 w-px bg-black/[0.08] shrink-0" />
-              )}
+          {/* Label */}
+          <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#9CA3AF]">
+            {t('hero_trusted_by')}
+          </p>
+
+          {/* Trust signals */}
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+            {signals.map((signal, i) => (
               <motion.div
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-black/[0.04]"
+                key={i}
+                className="flex items-center gap-2.5"
                 initial={{ opacity: 0 }}
                 animate={inView ? { opacity: 1 } : {}}
-                transition={{ duration: 0.4, delay: i * 0.1, ease }}
+                transition={{ duration: 0.5, delay: 0.15 + i * 0.1, ease }}
               >
-                <signal.icon className="w-3.5 h-3.5 text-[#6B7280]" strokeWidth={1.8} />
-                <span className="text-[13px] text-[#6B7280] font-medium">
+                <div className="w-8 h-8 rounded-lg bg-[#F3F2EF] flex items-center justify-center">
+                  <signal.icon className="w-4 h-4 text-[#6B7280]" strokeWidth={1.8} />
+                </div>
+                <span className="text-[14px] text-[#6B7280] font-medium">
                   {signal.text}
                 </span>
               </motion.div>
-            </Fragment>
-          ))}
+            ))}
+          </div>
         </motion.div>
+
+        {/* Bottom gradient line */}
+        <div className="h-px bg-gradient-to-r from-transparent via-black/[0.06] to-transparent mt-16" />
       </div>
     </section>
   );

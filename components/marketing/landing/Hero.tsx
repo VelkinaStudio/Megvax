@@ -55,9 +55,18 @@ export function Hero() {
   const t = useTranslations('landing');
 
   return (
-    <section className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden pt-16">
+    <section className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden pt-32 md:pt-40">
       {/* Inject CSS animations */}
       <style dangerouslySetInnerHTML={{ __html: cssAnimations }} />
+
+      {/* Gradient orb */}
+      <div
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(37,99,235,0.08) 0%, rgba(37,99,235,0.03) 40%, transparent 70%)',
+          filter: 'blur(60px)',
+        }}
+      />
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
         {/* Badge */}
@@ -67,7 +76,7 @@ export function Hero() {
           transition={{ duration: 0.5, delay: 0, ease }}
           className="mb-8"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-black/[0.06] bg-white text-xs font-medium text-[#6B7280]">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-black/[0.08] bg-white/80 backdrop-blur-sm text-[13px] font-medium text-[#6B7280]">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             {t('hero_badge')}
           </span>
@@ -75,8 +84,11 @@ export function Hero() {
 
         {/* Headline */}
         <motion.h1
-          className="text-[clamp(2.5rem,6vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-[#1A1A1A]"
-          style={{ fontFamily: 'var(--font-display)', whiteSpace: 'pre-line' }}
+          className="text-[clamp(2.75rem,6vw+0.5rem,5rem)] font-extrabold leading-[0.95] tracking-[-0.04em] text-[#1A1A1A]"
+          style={{
+            fontFamily: 'var(--font-display)',
+            textWrap: 'balance',
+          }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease }}
@@ -84,9 +96,9 @@ export function Hero() {
           {t('hero_title')}
         </motion.h1>
 
-        {/* Subtext */}
+        {/* Subtitle */}
         <motion.p
-          className="mt-6 text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed"
+          className="mt-6 text-[clamp(1.1rem,1.5vw,1.25rem)] text-[#6B7280] max-w-2xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2, ease }}
@@ -103,14 +115,14 @@ export function Hero() {
         >
           <Link
             href="/signup"
-            className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#2563EB] text-white text-[15px] font-semibold rounded-xl hover:bg-[#1D4ED8] hover:shadow-[0_0_30px_rgba(37,99,235,0.2)] transition-all duration-200"
+            className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#2563EB] text-white text-[15px] font-semibold rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.08),0_0_0_1px_rgba(37,99,235,0.4)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.25)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
           >
             {t('hero_cta')}
             <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
           <Link
             href="/book"
-            className="group inline-flex items-center gap-2.5 px-7 py-3.5 text-[#1A1A1A]/60 text-[15px] font-medium hover:text-[#1A1A1A]/80 transition-colors"
+            className="group inline-flex items-center gap-2.5 px-7 py-3.5 text-[#1A1A1A]/50 text-[15px] font-medium hover:text-[#1A1A1A]/80 transition-colors"
           >
             <Play className="w-3.5 h-3.5" />
             {t('hero_cta_secondary')}
@@ -131,7 +143,7 @@ export function Hero() {
             Dashboard frame
         ──────────────────────────────────────────── */}
         <motion.div
-          className="mt-16 md:mt-20 relative"
+          className="mt-20 md:mt-28 relative"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.5, ease }}
@@ -147,7 +159,7 @@ export function Hero() {
 
           {/* Frame container */}
           <div
-            className="relative rounded-2xl border border-black/[0.08] bg-[#0C0D14] overflow-hidden"
+            className="relative rounded-2xl border border-black/[0.08] ring-1 ring-black/[0.04] bg-[#0C0D14] overflow-hidden"
             style={{
               transform: 'perspective(2000px) rotateX(2deg)',
               transformOrigin: 'bottom center',
@@ -182,10 +194,19 @@ export function Hero() {
             </div>
 
             {/* Dashboard content */}
-            <div className="p-4 md:p-6 space-y-4">
+            <div className="relative p-4 md:p-6 space-y-4">
+
+              {/* Dot-grid pattern overlay */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)',
+                  backgroundSize: '16px 16px',
+                }}
+              />
 
               {/* ── KPI cards ── */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+              <div className="relative grid grid-cols-2 md:grid-cols-4 gap-2.5">
                 {kpis.map((kpi) => (
                   <div
                     key={kpi.label}
@@ -225,7 +246,7 @@ export function Hero() {
               </div>
 
               {/* ── Chart area ── */}
-              <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-4">
+              <div className="relative rounded-lg bg-white/[0.03] border border-white/[0.06] p-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[11px] font-medium text-white/35">
                     Performans Özeti
@@ -256,7 +277,7 @@ export function Hero() {
               </div>
 
               {/* ── Campaign rows ── */}
-              <div className="space-y-1.5">
+              <div className="relative space-y-1.5">
                 {campaigns.map((row) => (
                   <div
                     key={row.name}
@@ -294,7 +315,7 @@ export function Hero() {
               </div>
 
               {/* ── Sektör Karşılaştırması ── */}
-              <div className="rounded-lg bg-white/[0.05] border border-white/[0.07] p-3">
+              <div className="relative rounded-lg bg-white/[0.05] border border-white/[0.07] p-3">
                 <div className="text-[10px] font-medium text-white/35 mb-2.5">
                   Sektör Karşılaştırması
                 </div>
