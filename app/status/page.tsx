@@ -2,8 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { CheckCircle, Clock, AlertTriangle } from 'lucide-react';
-import { MarketingNav } from '@/components/marketing/MarketingNav';
-import { MarketingFooter } from '@/components/marketing/MarketingFooter';
+import { Nav } from '@/components/marketing/landing/Nav';
+import { Footer } from '@/components/marketing/landing/Footer';
 import { useTranslations } from '@/lib/i18n';
 
 export default function StatusPage() {
@@ -20,12 +20,12 @@ export default function StatusPage() {
   const statusConfig = {
     operational: { icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50', label: t('operational') },
     degraded: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50', label: t('degraded') },
-    maintenance: { icon: Clock, color: 'text-blue-500', bg: 'bg-blue-50', label: t('maintenance') },
+    maintenance: { icon: Clock, color: 'text-[#2563EB]', bg: 'bg-[#2563EB]/10', label: t('maintenance') },
   };
 
   return (
-    <main className="min-h-screen bg-white">
-      <MarketingNav />
+    <main className="min-h-screen bg-[#FAFAF8]">
+      <Nav />
       <section className="pt-28 pb-20">
         <div className="container mx-auto px-6 max-w-3xl">
           <motion.div
@@ -37,8 +37,8 @@ export default function StatusPage() {
               <CheckCircle className="w-4 h-4" />
               {t('all_operational')}
             </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">{t('title')}</h1>
-            <p className="text-lg text-gray-500">{t('subtitle')}</p>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-[#1A1A1A] mb-4 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t('title')}</h1>
+            <p className="text-lg text-[#6B7280]">{t('subtitle')}</p>
           </motion.div>
 
           <div className="space-y-3">
@@ -47,12 +47,12 @@ export default function StatusPage() {
               return (
                 <motion.div
                   key={i}
-                  className="flex items-center justify-between p-5 rounded-xl border border-gray-100 bg-gray-50/30"
+                  className="flex items-center justify-between p-5 rounded-xl border border-black/[0.06] bg-[#F3F2EF]/30"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                 >
-                  <span className="font-medium text-gray-900 text-sm">{service.name}</span>
+                  <span className="font-medium text-[#1A1A1A] text-sm">{service.name}</span>
                   <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.color}`}>
                     <config.icon className="w-3.5 h-3.5" />
                     {config.label}
@@ -62,12 +62,12 @@ export default function StatusPage() {
             })}
           </div>
 
-          <div className="mt-12 p-6 rounded-xl border border-gray-100 bg-gray-50/30 text-center">
-            <p className="text-sm text-gray-500">{t('uptime_note')}</p>
+          <div className="mt-12 p-6 rounded-xl border border-black/[0.06] bg-[#F3F2EF]/30 text-center">
+            <p className="text-sm text-[#6B7280]">{t('uptime_note')}</p>
           </div>
         </div>
       </section>
-      <MarketingFooter />
+      <Footer />
     </main>
   );
 }
