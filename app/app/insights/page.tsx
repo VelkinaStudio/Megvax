@@ -90,7 +90,7 @@ export default function InsightsPage() {
     entityId: effectiveEntityId,
     summary: { spend: 0, roas: 0, conversions: 0, ctr: 0, cpc: 0, cpm: 0, impressions: 0 },
     timeseries: [],
-    breakdowns: [],
+    breakdowns: { placement: [], age: [], gender: [], device: [] },
   });
 
   // Fetch insights data from API
@@ -167,7 +167,7 @@ export default function InsightsPage() {
             impressions: summary.impressions,
           },
           timeseries,
-          breakdowns: [],
+          breakdowns: { placement: [], age: [], gender: [], device: [] },
         });
       })
       .catch(() => {
@@ -177,7 +177,7 @@ export default function InsightsPage() {
           entityId: effectiveEntityId,
           summary: { spend: 0, roas: 0, conversions: 0, ctr: 0, cpc: 0, cpm: 0, impressions: 0 },
           timeseries: [],
-          breakdowns: [],
+          breakdowns: { placement: [], age: [], gender: [], device: [] },
         });
       });
   }, [account, level, effectiveEntityId, dateRange]);
