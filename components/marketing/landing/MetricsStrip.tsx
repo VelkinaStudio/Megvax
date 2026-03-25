@@ -4,37 +4,29 @@ import { useTranslations } from '@/lib/i18n';
 import { Counter } from './Counter';
 import { ScrollReveal } from './ScrollReveal';
 
-const metrics = [
-  { value: 2, prefix: '₺', suffix: 'M+', key: 'spend', decimals: 0 },
-  { value: 150, prefix: '', suffix: '+', key: 'accounts', decimals: 0 },
-  { value: 3.2, prefix: '', suffix: 'x', key: 'roas', decimals: 1 },
-  { value: 40, prefix: '%', suffix: '', key: 'roas_increase', decimals: 0 },
-] as const;
-
 export function MetricsStrip() {
   const t = useTranslations('landing');
 
+  const metrics = [
+    { value: 2, suffix: 'M+', prefix: '₺', label: t('metric_spend') },
+    { value: 150, suffix: '+', label: t('metric_accounts') },
+    { value: 3.2, suffix: 'x', decimals: 1, label: t('metric_roas') },
+  ];
+
   return (
-    <section className="relative py-20 md:py-24">
-      {/* Glow */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(37,99,235,0.04) 0%, transparent 70%)',
-        }}
-      />
-
-      {/* Top / bottom borders */}
-      <div className="absolute inset-x-0 top-0 h-px bg-white/[0.04]" />
-      <div className="absolute inset-x-0 bottom-0 h-px bg-white/[0.04]" />
-
-      <div className="max-w-5xl mx-auto px-6">
+    <section className="py-20 bg-[#F3F2EF]">
+      <div className="max-w-4xl mx-auto px-6">
         <ScrollReveal>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 text-center">
-            {metrics.map((m) => (
-              <div key={m.key}>
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            {metrics.map((m, i) => (
+              <div
+                key={i}
+                className={
+                  i < 2 ? 'md:border-r md:border-black/[0.06]' : undefined
+                }
+              >
                 <div
-                  className="text-3xl md:text-[44px] font-extrabold text-white tracking-[-0.03em] leading-none"
+                  className="text-[48px] font-extrabold text-[#1A1A1A]"
                   style={{ fontFamily: 'var(--font-display)' }}
                 >
                   <Counter
@@ -42,12 +34,11 @@ export function MetricsStrip() {
                     prefix={m.prefix}
                     suffix={m.suffix}
                     decimals={m.decimals}
-                    duration={2.5}
                   />
                 </div>
-                <p className="text-xs md:text-sm text-white/35 mt-2">
-                  {t(`metric_${m.key}`)}
-                </p>
+                <div className="text-[14px] text-[#6B7280] mt-1">
+                  {m.label}
+                </div>
               </div>
             ))}
           </div>
