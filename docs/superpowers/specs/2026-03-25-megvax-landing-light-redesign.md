@@ -40,7 +40,7 @@ Base background:     #FAFAF8   (warm off-white)
 Metrics strip bg:    #F3F2EF   (slightly warmer, only different-bg section)
 Text primary:        #1A1A1A   (charcoal)
 Text muted:          #6B7280   (gray-500)
-Text faint:          #9CA3AF   (gray-400)
+Text faint:          #71717A   (zinc-500, 5.1:1 contrast on #FAFAF8 — WCAG AA)
 Card bg:             #FFFFFF   (white)
 Card border:         rgba(0,0,0,0.06)
 Card hover border:   rgba(0,0,0,0.10)
@@ -74,6 +74,8 @@ Trigger:   Once on scroll-into-view (IntersectionObserver via Framer Motion)
 Reduced motion: respect prefers-reduced-motion — instant show, no animation
 ```
 
+**Note:** Update `ScrollReveal.tsx` easing from `[0.33, 1, 0.68, 1]` to `[0.22, 1, 0.36, 1]` to match spec defaults.
+
 ---
 
 ## 3. Page Sections
@@ -89,17 +91,19 @@ Sticky top bar. Transparent on load, gains blur + border on scroll.
 - **Scroll state:** `bg-[#FAFAF8]/80 backdrop-blur-xl border-b border-black/[0.05]`
 - **Height:** 64px fixed
 - **Animation:** None. Instant.
+- **Mobile:** Hamburger menu icon, slide-down drawer with same links + CTAs. Same warm bg.
 
 ### Section 2: Hero
 
 Typography-driven with real dashboard screenshot as centerpiece.
 
 - **Background:** Solid `#FAFAF8`. No gradients, no noise, no grid.
+- **Badge:** Pill above headline — "AI destekli reklam yönetimi" with pulsing green dot. `border border-black/[0.06] bg-white text-xs font-medium text-[#6B7280]`, rounded-full, `px-4 py-1.5`
 - **H1:** "Tüm hesaplarınızı tek yerden yönetin." — Space Grotesk, `clamp(2.5rem, 6vw, 4rem)`, `#1A1A1A`, font-extrabold, leading-[0.95], tracking-[-0.03em], centered
 - **Subtext:** "Meta reklam hesaplarınızı bağlayın. AI optimize etsin, siz büyütün." — Inter, 18px, `#6B7280`, max-w-lg, centered, leading-relaxed
 - **Primary CTA:** Blue pill, "Ücretsiz Dene →", `px-7 py-3.5`, rounded-xl, ArrowRight icon. Hover: `#1D4ED8` + subtle shadow
 - **Secondary CTA:** Text link, "Demo İzle", charcoal, Play icon, no border
-- **Trust line:** "14 gün ücretsiz · Kredi kartı gerekmez" — `#9CA3AF`, 13px
+- **Trust line:** "14 gün ücretsiz · Kredi kartı gerekmez" — `#71717A`, 13px
 - **Dashboard visual:** Real screenshot of MegVax dashboard inside dark browser chrome frame:
   - Frame: `#0C0D14`, rounded-2xl, traffic light dots, address bar with "app.megvax.com/dashboard"
   - Transform: `perspective(2000px) rotateX(2deg)`, origin bottom center
@@ -107,10 +111,12 @@ Typography-driven with real dashboard screenshot as centerpiece.
   - Bottom fade: gradient from dashboard bottom into page bg
 - **Height:** ~100vh
 - **Animations:**
-  - H1: `opacity 0→1, y 20→0, 500ms`
-  - Subtext: same, +100ms delay
-  - CTAs: same, +200ms delay
-  - Dashboard: `opacity 0→1, y 40→0, 700ms, +300ms delay`
+  - Badge: `opacity 0→1, y 16→0, 500ms`
+  - H1: `opacity 0→1, y 20→0, 500ms, +100ms delay`
+  - Subtext: same, +200ms delay
+  - CTAs: same, +300ms delay
+  - Dashboard: `opacity 0→1, y 40→0, 700ms, +400ms delay`
+- **Mobile:** H1 clamp handles scaling. CTAs stack vertically (`flex-col`). Dashboard frame loses perspective tilt. `max-w-2xl` for subtext on wider screens, naturally constrains on mobile.
 
 ### Section 3: Social Proof Strip
 
@@ -136,9 +142,10 @@ Three cards, no icons, words do the work.
   - Akıllı Öneriler: "AI önerileri incele, tek tıkla onayla."
   - Tek Panel: "Tüm hesaplar tek ekranda."
 - **Card desc style:** Inter, 15px, `#6B7280`, leading-relaxed
-- **Grid:** 3 columns desktop, stack mobile, `gap-4`
+- **Grid:** 3 columns desktop (`md:grid-cols-3`), single column mobile, `gap-4`
 - **Spacing:** `py-24`
 - **Animations:** Heading fade-up 400ms, cards stagger 100ms delay each
+- **Mobile:** Cards stack vertically, full width
 
 ### Section 5: How It Works — "Nasıl Çalışır?"
 
@@ -152,10 +159,11 @@ Compact horizontal 3-step flow.
   - ② Ayarla: "Bütçe limitleri ve hedefleri belirle."
   - ③ Otopilot: "Gerisini bize bırak."
 - **Step desc style:** Inter, 14px, `#6B7280`, one line
-- **Connector:** 1px horizontal line in `#E5E7EB` connecting circles
+- **Connector:** 1px horizontal line in `#E5E7EB` connecting circles (desktop only)
 - **Height:** ~250px
 - **Spacing:** `py-20`
 - **Animation:** Fade-up, single group, 400ms
+- **Mobile:** Steps stack vertically, connector becomes vertical line on left side. Or simply stack without connector.
 
 ### Section 6: Metrics Strip
 
@@ -172,6 +180,7 @@ Only section with a different background color.
 - **Spacing:** `py-20`
 - **Height:** ~200px
 - **Counter animation:** Numbers count up from 0 via Counter component, spring physics, ~800ms, triggered on scroll
+- **Mobile:** Stack to single column, remove vertical dividers. Numbers centered.
 
 ### Section 7: Final CTA
 
@@ -180,7 +189,7 @@ Three lines centered. Maximum whitespace.
 - **Background:** `#FAFAF8`
 - **Heading:** "Reklamlarınızı otopilote alın." — Space Grotesk, 36px, `#1A1A1A`, font-bold, centered
 - **CTA:** Same blue pill as hero
-- **Trust line:** "14 gün ücretsiz · Kredi kartı gerekmez" — `#9CA3AF`, 13px
+- **Trust line:** "14 gün ücretsiz · Kredi kartı gerekmez" — `#71717A`, 13px
 - **Spacing:** `py-32`
 - **Animation:** Fade-up, 400ms
 
@@ -216,27 +225,31 @@ Minimal. Static.
 
 ## 5. Component Architecture
 
-### Files to modify
+### Files to modify (rewrite)
 
 | File | Change |
 |------|--------|
-| `app/page.tsx` | Update section imports, remove dark bg class |
-| `app/globals.css` | Add light theme tokens, keep dashboard dark tokens |
-| `components/marketing/landing/Nav.tsx` | Rewrite for light theme |
+| `app/page.tsx` | Remove `Results` import, update bg to `#FAFAF8`, text to charcoal |
+| `app/globals.css` | Add light landing theme tokens as CSS custom properties, keep dashboard dark tokens |
+| `components/marketing/landing/Nav.tsx` | Rewrite for light theme. Keep using `useTranslations('navigation')` namespace. |
 | `components/marketing/landing/Hero.tsx` | Rewrite for light theme + real screenshot |
 | `components/marketing/landing/WhatItDoes.tsx` | Rewrite cards for light theme |
 | `components/marketing/landing/HowItWorks.tsx` | Rewrite for light theme |
 | `components/marketing/landing/MetricsStrip.tsx` | Rewrite for warm gray bg |
 | `components/marketing/landing/FinalCTA.tsx` | Rewrite for light theme |
-| `components/marketing/landing/Footer.tsx` | Rewrite for light theme |
-| `components/marketing/landing/ScrollReveal.tsx` | Keep as-is (theme-agnostic) |
-| `components/marketing/landing/Counter.tsx` | Keep as-is (theme-agnostic) |
+| `components/marketing/landing/Footer.tsx` | Rewrite for light theme (minimal flat layout, replaces 5-column grid) |
+| `components/marketing/landing/SocialProof.tsx` | **Rewrite entirely** — replace testimonial cards with brand logo strip |
+| `components/marketing/landing/ScrollReveal.tsx` | Update easing to `[0.22, 1, 0.36, 1]` |
+| `components/marketing/landing/Counter.tsx` | Keep `Counter` function as-is. Note: `StatCard` export in this file has dark-theme styles — it is NOT used in the light landing page. |
+| `components/marketing/landing/index.ts` | Remove `Results` export |
+| `messages/tr.json` | Update `hero.*` keys with new copy, add new `landing.*` keys |
+| `messages/en.json` | Mirror Turkish key changes with English translations |
 
-### Files to create
+### Files to delete
 
-| File | Purpose |
-|------|---------|
-| `components/marketing/landing/SocialProof.tsx` | New social proof strip section |
+| File | Reason |
+|------|--------|
+| `components/marketing/landing/Results.tsx` | Section removed from landing page. Not in new design. |
 
 ### No changes to
 
@@ -249,48 +262,56 @@ Minimal. Static.
 
 ## 6. i18n Keys
 
-New/updated keys under `landing.*` namespace:
+**Strategy:** This redesign rewrites content, not just restyling. All visible text changes. We keep the existing namespace structure (`hero.*`, `navigation.*`, `landing.*`) to avoid unnecessary key renames. Where keys exist, update their values. Where new keys are needed, add under `landing.*`.
+
+### Existing keys — update content (in both `tr.json` and `en.json`)
+
+```json
+{
+  "hero": {
+    "badge": "AI destekli reklam yönetimi",
+    "title": "Tüm hesaplarınızı",
+    "highlight": "tek yerden yönetin.",
+    "subtitle": "Meta reklam hesaplarınızı bağlayın. AI optimize etsin, siz büyütün.",
+    "cta_primary": "Ücretsiz Dene",
+    "cta_secondary": "Demo İzle"
+  },
+  "navigation": {
+    "features": "Ürün",
+    "pricing": "Fiyatlar",
+    "contact": "İletişim",
+    "login": "Giriş Yap",
+    "signup": "Başla"
+  }
+}
+```
+
+### New keys — add under `landing.*`
 
 ```json
 {
   "landing": {
-    "nav": {
-      "product": "Ürün",
-      "pricing": "Fiyatlar",
-      "contact": "İletişim",
-      "login": "Giriş",
-      "cta": "Başla"
-    },
-    "hero_badge": "AI destekli reklam yönetimi",
-    "hero_title": "Tüm hesaplarınızı\ntek yerden yönetin.",
-    "hero_subtitle": "Meta reklam hesaplarınızı bağlayın. AI optimize etsin, siz büyütün.",
-    "hero_cta": "Ücretsiz Dene",
-    "hero_cta_secondary": "Demo İzle",
-    "hero_trusted_by": "150+ ajans tarafından kullanılıyor",
+    "trusted_by": "150+ ajans tarafından kullanılıyor",
     "cta_trust": "14 gün ücretsiz · Kredi kartı gerekmez",
     "features_heading": "Ne Yapar?",
-    "features_autopilot_title": "Otopilot",
-    "features_autopilot_desc": "Düşük ROAS'lu reklamları durdurur, kazananları ölçekler.",
-    "features_suggestions_title": "Akıllı Öneriler",
-    "features_suggestions_desc": "AI önerileri incele, tek tıkla onayla.",
-    "features_dashboard_title": "Tek Panel",
-    "features_dashboard_desc": "Tüm hesaplar tek ekranda.",
-    "steps_heading": "Nasıl Çalışır?",
-    "steps_1_title": "Bağla",
-    "steps_1_desc": "Meta hesaplarını bağla.",
-    "steps_2_title": "Ayarla",
-    "steps_2_desc": "Bütçe limitleri ve hedefleri belirle.",
-    "steps_3_title": "Otopilot",
-    "steps_3_desc": "Gerisini bize bırak.",
-    "metrics_spend_value": "₺2M+",
-    "metrics_spend_label": "optimize edilen reklam bütçesi",
-    "metrics_accounts_value": "150+",
-    "metrics_accounts_label": "yönetilen hesap",
-    "metrics_roas_value": "3.2x",
-    "metrics_roas_label": "ortalama ROAS",
-    "final_cta_heading": "Reklamlarınızı otopilote alın.",
-    "final_cta_button": "Ücretsiz Dene",
-    "final_cta_trust": "14 gün ücretsiz · Kredi kartı gerekmez",
+    "feature_autopilot_title": "Otopilot",
+    "feature_autopilot_desc": "Düşük ROAS'lu reklamları durdurur, kazananları ölçekler.",
+    "feature_suggestions_title": "Akıllı Öneriler",
+    "feature_suggestions_desc": "AI önerileri incele, tek tıkla onayla.",
+    "feature_dashboard_title": "Tek Panel",
+    "feature_dashboard_desc": "Tüm hesaplar tek ekranda.",
+    "how_it_works_heading": "Nasıl Çalışır?",
+    "step1_title": "Bağla",
+    "step1_desc": "Meta hesaplarını bağla.",
+    "step2_title": "Ayarla",
+    "step2_desc": "Bütçe limitleri ve hedefleri belirle.",
+    "step3_title": "Otopilot",
+    "step3_desc": "Gerisini bize bırak.",
+    "metric_spend": "optimize edilen reklam bütçesi",
+    "metric_accounts": "yönetilen hesap",
+    "metric_roas": "ortalama ROAS",
+    "cta_heading": "Reklamlarınızı otopilote alın.",
+    "cta_button": "Ücretsiz Dene",
     "footer_about": "Hakkımızda",
     "footer_privacy": "Gizlilik",
     "footer_terms": "Kullanım Şartları",
@@ -300,7 +321,17 @@ New/updated keys under `landing.*` namespace:
 }
 ```
 
-English translations follow the same structure in `messages/en.json`.
+**Note:** Metric values (`₺2M+`, `150+`, `3.2x`) are hardcoded in the component, not i18n keys — they are numbers, not translatable text.
+
+### Dead keys to clean up
+
+After rewrite, these existing keys become unused and should be removed:
+- `hero.description`, `hero.benefit_1`, `hero.benefit_2`, `hero.stat_*` keys
+- `landing.testimonial_*` keys (testimonials section removed)
+- `landing.result_*` keys (results section removed)
+- `footer_tagline`, `footer_features`, `footer_pricing`, `footer_demo`, `footer_status`, `footer_*_heading` keys (simplified footer)
+
+English translations mirror the same structure in `messages/en.json`.
 
 ---
 
@@ -315,7 +346,7 @@ The hero requires a real screenshot of the MegVax dashboard. Steps:
 5. Optimize with sharp/squoosh to keep under 200KB
 6. Reference in Hero component via `next/image`
 
-If no screenshot is available at build time, fall back to the existing coded mockup (adapted to sit inside the dark frame).
+If no screenshot is available at build time, fall back to the existing coded mockup inside the dark frame. The mockup's internal dark-theme styles (`bg-white/[0.03]`, etc.) work correctly because they sit inside the dark frame container — the frame provides the dark context.
 
 ---
 
@@ -327,4 +358,5 @@ If no screenshot is available at build time, fall back to the existing coded moc
 - Admin panel
 - Lib / hooks / types
 - i18n system (just updating message keys)
-- ScrollReveal / Counter components (theme-agnostic)
+- Counter component's `Counter` function (theme-agnostic; `StatCard` export is unused by landing)
+- ScrollReveal (minor easing update only)
