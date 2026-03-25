@@ -32,7 +32,7 @@ export function Footer() {
               MegVax
             </span>
             <p className="text-[13px] text-[#6B7280] max-w-[260px] leading-relaxed">
-              Meta reklamlarınız için AI destekli yönetim platformu
+              {t('footer_tagline')}
             </p>
           </div>
 
@@ -51,7 +51,7 @@ export function Footer() {
 
           {/* Contact column */}
           <div className="flex flex-col gap-3">
-            <span className="text-[14px] font-medium text-[#1A1A1A]">Bize Ulaşın</span>
+            <span className="text-[14px] font-medium text-[#1A1A1A]">{t('footer_contact_title')}</span>
             <a
               href="mailto:hello@megvax.com"
               className="flex items-center gap-2 text-[14px] text-[#6B7280] hover:text-[#2563EB] transition-colors"

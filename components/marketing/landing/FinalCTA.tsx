@@ -5,14 +5,14 @@ import { ArrowRight } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 import { ScrollReveal } from './ScrollReveal';
 
-const checks = [
-  '✓ Kurulum 2 dakika',
-  '✓ Kredi kartı gerekmez',
-  '✓ İstediğin zaman iptal',
-];
-
 export function FinalCTA() {
   const t = useTranslations('landing');
+
+  const checks = [
+    t('cta_check_1'),
+    t('cta_check_2'),
+    t('cta_check_3'),
+  ];
 
   return (
     <section

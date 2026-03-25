@@ -201,7 +201,10 @@
     "team_role_3": "Ürün Müdürü",
     "careers_title": "Ekibimize Katılmak İster misiniz?",
     "careers_description": "Her zaman yetenekli insanlar arıyoruz.",
-    "careers_button": "Açık Pozisyonlar"
+    "careers_button": "Açık Pozisyonlar",
+    "story_title": "Hikayemiz",
+    "story_description": "MegVax, dijital pazarlamacıların Meta reklamlarını yönetirken yaşadığı karmaşıklığı çözmek için doğdu. Birden fazla hesap, dağınık veriler ve manuel optimizasyon süreçleri — hepsini tek bir panelde, AI desteğiyle otomatikleştiriyoruz.",
+    "stats_roas": "Ortalama ROAS"
   },
   "pricing": {
     "title": "Basit ve Şeffaf Fiyatlandırma",
@@ -1329,6 +1332,11 @@
     "footer_privacy": "Gizlilik",
     "footer_terms": "Kullanım Şartları",
     "footer_contact": "İletişim",
-    "footer_copyright": "© 2026 MegVax. Tüm hakları saklıdır."
+    "footer_copyright": "© 2026 MegVax. Tüm hakları saklıdır.",
+    "cta_check_1": "✓ Kurulum 2 dakika",
+    "cta_check_2": "✓ Kredi kartı gerekmez",
+    "cta_check_3": "✓ İstediğin zaman iptal",
+    "footer_tagline": "Meta reklamlarınız için AI destekli yönetim platformu",
+    "footer_contact_title": "Bize Ulaşın"
   }
 }

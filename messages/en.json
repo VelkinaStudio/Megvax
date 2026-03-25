@@ -201,7 +201,10 @@
     "team_role_3": "Product Manager",
     "careers_title": "Want to Join Our Team?",
     "careers_description": "We're always looking for talented people.",
-    "careers_button": "Open Positions"
+    "careers_button": "Open Positions",
+    "story_title": "Our Story",
+    "story_description": "MegVax was born to solve the complexity digital marketers face managing Meta ads. Multiple accounts, scattered data, manual optimization — we automate it all in one dashboard, powered by AI.",
+    "stats_roas": "Average ROAS"
   },
   "pricing": {
     "title": "Simple and Transparent Pricing",
@@ -1293,6 +1296,11 @@
     "footer_privacy": "Privacy",
     "footer_terms": "Terms",
     "footer_contact": "Contact",
-    "footer_copyright": "© 2026 MegVax. All rights reserved."
+    "footer_copyright": "© 2026 MegVax. All rights reserved.",
+    "cta_check_1": "✓ 2-minute setup",
+    "cta_check_2": "✓ No credit card required",
+    "cta_check_3": "✓ Cancel anytime",
+    "footer_tagline": "AI-powered management platform for your Meta ads",
+    "footer_contact_title": "Contact Us"
   }
 }
