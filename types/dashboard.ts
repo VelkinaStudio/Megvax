@@ -96,6 +96,8 @@ export interface MetaAccount {
   accountId: string;
   status: 'connected' | 'error' | 'expired';
   lastSync: string;
+  currency?: string;
+  timezone?: string;
 }
 
 export interface AdSet {
