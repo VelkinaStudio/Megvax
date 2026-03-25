@@ -3,7 +3,6 @@ export { WhatItDoes } from './WhatItDoes';
 export { HowItWorks } from './HowItWorks';
 export { MetricsStrip } from './MetricsStrip';
 export { SocialProof } from './SocialProof';
-export { Results } from './Results';
 export { FinalCTA } from './FinalCTA';
 export { Footer } from './Footer';
 export { Nav } from './Nav';
