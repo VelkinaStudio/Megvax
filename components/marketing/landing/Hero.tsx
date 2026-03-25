@@ -7,11 +7,58 @@ import { useTranslations } from '@/lib/i18n';
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
+/* ─── CSS keyframes injected once ─── */
+const cssAnimations = `
+@keyframes kpi-shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+@keyframes row-highlight {
+  0%, 100% { background: rgba(255,255,255,0.03); }
+  50% { background: rgba(255,255,255,0.06); }
+}
+@keyframes amber-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+`;
+
+/* ─── Data ─── */
+const kpis = [
+  { label: 'Reklam Harcaması', value: '₺48.2K', change: '+12%', up: true, accent: '#3B82F6' },
+  { label: 'ROAS', value: '3.4x', change: '+0.6x', up: true, accent: '#10B981' },
+  { label: 'Dönüşüm', value: '1,247', change: '+18%', up: true, accent: '#8B5CF6' },
+  { label: 'CPA', value: '₺38.6', change: '-14%', up: false, accent: '#F59E0B' },
+] as const;
+
+const sparklineHeights = [30, 45, 35, 55, 50, 65, 60, 75, 68, 80, 72, 85];
+
+const chartBars = [
+  { s: 35, r: 50 }, { s: 40, r: 55 }, { s: 30, r: 45 },
+  { s: 55, r: 70 }, { s: 45, r: 62 }, { s: 60, r: 78 },
+  { s: 50, r: 72 }, { s: 65, r: 85 }, { s: 55, r: 75 },
+  { s: 70, r: 90 }, { s: 60, r: 82 }, { s: 75, r: 95 },
+  { s: 68, r: 88 }, { s: 80, r: 98 },
+];
+
+const campaigns = [
+  { name: 'Yaz İndirimi — Geniş Kitle', status: 'Aktif', spend: '₺12.4K', roas: '4.1x', active: true, highlight: true },
+  { name: 'Sepet Terk — Retargeting', status: 'Aktif', spend: '₺8.7K', roas: '5.8x', active: true, highlight: false },
+  { name: 'Benzer Kitle — Top %5', status: 'AI Durdurdu', spend: '₺4.2K', roas: '1.2x', active: false, highlight: false },
+] as const;
+
 export function Hero() {
   const t = useTranslations('landing');
 
   return (
     <section className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden pt-16">
+      {/* Inject CSS animations */}
+      <style dangerouslySetInnerHTML={{ __html: cssAnimations }} />
+
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
         {/* Badge */}
         <motion.div
@@ -80,7 +127,9 @@ export function Hero() {
           {t('cta_trust')}
         </motion.p>
 
-        {/* Dashboard frame */}
+        {/* ────────────────────────────────────────────
+            Dashboard frame
+        ──────────────────────────────────────────── */}
         <motion.div
           className="mt-16 md:mt-20 relative"
           initial={{ opacity: 0, y: 40 }}
@@ -120,18 +169,24 @@ export function Hero() {
                   </span>
                 </div>
               </div>
+              {/* AI çalışıyor indicator */}
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-[#10B981]"
+                  style={{ animation: 'pulse-dot 2s ease-in-out infinite' }}
+                />
+                <span className="text-[10px] text-white/25 whitespace-nowrap hidden sm:inline">
+                  AI çalışıyor...
+                </span>
+              </div>
             </div>
 
             {/* Dashboard content */}
             <div className="p-4 md:p-6 space-y-4">
-              {/* Top row — KPIs */}
+
+              {/* ── KPI cards ── */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                {[
-                  { label: 'Ad Spend', value: '₺48.2K', change: '+12%', up: true, accent: '#3B82F6' },
-                  { label: 'ROAS', value: '3.4x', change: '+0.6x', up: true, accent: '#10B981' },
-                  { label: 'Conversions', value: '1,247', change: '+18%', up: true, accent: '#8B5CF6' },
-                  { label: 'CPA', value: '₺38.6', change: '-14%', up: false, accent: '#F59E0B' },
-                ].map((kpi) => (
+                {kpis.map((kpi) => (
                   <div
                     key={kpi.label}
                     className="rounded-lg bg-white/[0.05] border border-white/[0.07] p-3"
@@ -148,9 +203,12 @@ export function Hero() {
                         {kpi.change}
                       </span>
                     </div>
-                    {/* Mini sparkline */}
-                    <div className="mt-2 flex items-end gap-[2px] h-4">
-                      {[30, 45, 35, 55, 50, 65, 60, 75, 68, 80, 72, 85].map((h, i) => (
+                    {/* Mini sparkline with shimmer */}
+                    <div
+                      className="mt-2 flex items-end gap-[2px] h-4"
+                      style={{ animation: 'kpi-shimmer 4s ease-in-out infinite' }}
+                    >
+                      {sparklineHeights.map((h, i) => (
                         <div
                           key={i}
                           className="flex-1 rounded-[1px]"
@@ -166,27 +224,23 @@ export function Hero() {
                 ))}
               </div>
 
-              {/* Chart area */}
+              {/* ── Chart area ── */}
               <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-medium text-white/35">Performance Overview</span>
+                  <span className="text-[11px] font-medium text-white/35">
+                    Performans Özeti
+                  </span>
                   <div className="flex gap-3">
                     <span className="text-[10px] text-white/20 flex items-center gap-1.5">
-                      <span className="w-2 h-[3px] rounded-full bg-[#3B82F6]" /> Spend
+                      <span className="w-2 h-[3px] rounded-full bg-[#3B82F6]" /> Harcama
                     </span>
                     <span className="text-[10px] text-white/20 flex items-center gap-1.5">
-                      <span className="w-2 h-[3px] rounded-full bg-[#10B981]" /> Revenue
+                      <span className="w-2 h-[3px] rounded-full bg-[#10B981]" /> Gelir
                     </span>
                   </div>
                 </div>
                 <div className="h-28 md:h-36 flex items-end gap-[3px]">
-                  {[
-                    { s: 35, r: 50 }, { s: 40, r: 55 }, { s: 30, r: 45 },
-                    { s: 55, r: 70 }, { s: 45, r: 62 }, { s: 60, r: 78 },
-                    { s: 50, r: 72 }, { s: 65, r: 85 }, { s: 55, r: 75 },
-                    { s: 70, r: 90 }, { s: 60, r: 82 }, { s: 75, r: 95 },
-                    { s: 68, r: 88 }, { s: 80, r: 98 },
-                  ].map((bar, i) => (
+                  {chartBars.map((bar, i) => (
                     <div key={i} className="flex-1 flex gap-[1px]">
                       <div
                         className="flex-1 rounded-t-[2px] bg-[#3B82F6]/25"
@@ -201,32 +255,83 @@ export function Hero() {
                 </div>
               </div>
 
-              {/* Campaign rows */}
+              {/* ── Campaign rows ── */}
               <div className="space-y-1.5">
-                {[
-                  { name: 'Summer Sale — Broad Audience', status: 'Active', spend: '₺12.4K', roas: '4.1x', active: true },
-                  { name: 'Retargeting — Cart Abandonment', status: 'Active', spend: '₺8.7K', roas: '5.8x', active: true },
-                  { name: 'Lookalike — Top 5% Customers', status: 'Paused by AI', spend: '₺4.2K', roas: '1.2x', active: false },
-                ].map((row) => (
+                {campaigns.map((row) => (
                   <div
                     key={row.name}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[11px] md:text-xs"
+                    className="flex items-center justify-between px-3 py-2 rounded-lg border border-white/[0.05] text-[11px] md:text-xs"
+                    style={{
+                      background: 'rgba(255,255,255,0.03)',
+                      borderLeft: !row.active
+                        ? '2px solid rgba(245, 158, 11, 0.5)'
+                        : undefined,
+                      animation: row.highlight
+                        ? 'row-highlight 3s ease-in-out 2s 1 forwards'
+                        : undefined,
+                    }}
                   >
                     <span className="text-white/50 truncate max-w-[35%]">{row.name}</span>
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-medium ${
-                        row.active
-                          ? 'bg-emerald-500/10 text-emerald-400'
-                          : 'bg-amber-500/10 text-amber-400'
-                      }`}
-                    >
-                      {row.status}
-                    </span>
+
+                    {row.active ? (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400">
+                        {row.status}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20">
+                        <span
+                          className="w-2 h-2 rounded-full bg-[#F59E0B]"
+                          style={{ animation: 'amber-pulse 1.5s ease-in-out infinite' }}
+                        />
+                        {row.status}
+                      </span>
+                    )}
+
                     <span className="text-white/30 hidden sm:block">{row.spend}</span>
                     <span className="text-white/50 font-medium">{row.roas}</span>
                   </div>
                 ))}
               </div>
+
+              {/* ── Sektör Karşılaştırması ── */}
+              <div className="rounded-lg bg-white/[0.05] border border-white/[0.07] p-3">
+                <div className="text-[10px] font-medium text-white/35 mb-2.5">
+                  Sektör Karşılaştırması
+                </div>
+                <div className="space-y-2">
+                  {/* Your ROAS */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-white/40 w-24 text-left shrink-0">
+                      Sizin ROAS
+                    </span>
+                    <div className="flex-1 h-3 rounded-full bg-white/[0.05] overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-[#10B981]/60"
+                        style={{ width: '81%' }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-bold text-[#10B981] w-10 text-right shrink-0">
+                      3.4x
+                    </span>
+                  </div>
+                  {/* Sector avg */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-white/40 w-24 text-left shrink-0">
+                      Sektör Ort.
+                    </span>
+                    <div className="flex-1 h-3 rounded-full bg-white/[0.05] overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-white/15"
+                        style={{ width: '50%' }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-medium text-white/40 w-10 text-right shrink-0">
+                      2.1x
+                    </span>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
             {/* Bottom fade inside frame */}

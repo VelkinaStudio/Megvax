@@ -2,6 +2,7 @@ import { Nav } from '@/components/marketing/landing/Nav';
 import { Hero } from '@/components/marketing/landing/Hero';
 import { SocialProof } from '@/components/marketing/landing/SocialProof';
 import { WhatItDoes } from '@/components/marketing/landing/WhatItDoes';
+import { ProductShowcase } from '@/components/marketing/landing/ProductShowcase';
 import { HowItWorks } from '@/components/marketing/landing/HowItWorks';
 import { MetricsStrip } from '@/components/marketing/landing/MetricsStrip';
 import { FinalCTA } from '@/components/marketing/landing/FinalCTA';
@@ -14,6 +15,7 @@ export default function Home() {
       <Hero />
       <SocialProof />
       <WhatItDoes />
+      <ProductShowcase />
       <HowItWorks />
       <MetricsStrip />
       <FinalCTA />
