@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslations } from '@/lib/i18n';
 
 export function Nav() {
@@ -82,37 +83,45 @@ export function Nav() {
       </div>
 
       {/* Mobile Menu */}
-      {mobileOpen && (
-        <div className="md:hidden bg-[#FAFAF8] border-b border-black/[0.06]">
-          <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col gap-4">
-            {links.map((link) => (
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="md:hidden bg-[#FAFAF8] border-b border-black/[0.06]"
+          >
+            <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col gap-4">
+              {links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <hr className="border-black/[0.06]" />
               <Link
-                key={link.href}
-                href={link.href}
+                href="/login"
                 onClick={() => setMobileOpen(false)}
-                className="text-sm text-[#6B7280] hover:text-[#1A1A1A] transition-colors"
+                className="text-sm font-medium text-[#1A1A1A]"
               >
-                {link.label}
+                {t('login')}
               </Link>
-            ))}
-            <hr className="border-black/[0.06]" />
-            <Link
-              href="/login"
-              onClick={() => setMobileOpen(false)}
-              className="text-sm font-medium text-[#1A1A1A]"
-            >
-              {t('login')}
-            </Link>
-            <Link
-              href="/signup"
-              onClick={() => setMobileOpen(false)}
-              className="bg-[#2563EB] text-white rounded-full px-5 py-2 text-sm font-medium hover:bg-[#1D4ED8] transition-colors text-center"
-            >
-              {t('signup')}
-            </Link>
-          </div>
-        </div>
-      )}
+              <Link
+                href="/signup"
+                onClick={() => setMobileOpen(false)}
+                className="bg-[#2563EB] text-white rounded-full px-5 py-2 text-sm font-medium hover:bg-[#1D4ED8] transition-colors text-center"
+              >
+                {t('signup')}
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }
