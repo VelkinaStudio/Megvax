@@ -340,7 +340,7 @@ After rewrite, these existing keys become unused and should be removed:
 - `landing.feature_scaling_*`, `landing.feature_protection_*`, `landing.feature_realtime_*` (reduced from 6 to 3 features)
 - `landing.features_label`, `landing.features_subheading`, `landing.how_it_works_label` (old section chrome)
 - `landing.footer_tagline`, `landing.footer_features`, `landing.footer_pricing`, `landing.footer_demo`, `landing.footer_status`, `landing.footer_*_heading` (simplified footer)
-- `navigation.about` (about link moved to footer only, nav no longer includes it)
+- ~~`navigation.about`~~ — **KEEP**: used by MarketingNav and MarketingFooter on non-landing pages (about, pricing, etc.)
 
 English translations mirror the same structure in `messages/en.json`.
 
