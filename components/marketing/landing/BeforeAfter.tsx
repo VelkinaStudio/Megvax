@@ -3,44 +3,43 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { useTranslations } from '@/lib/i18n';
-import { X, Check } from 'lucide-react';
+import { X, Check, ArrowRight } from 'lucide-react';
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 export function BeforeAfter() {
   const t = useTranslations('landing');
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, amount: 0.3 });
+  const inView = useInView(ref, { once: true, amount: 0.2 });
 
-  const beforeItems = [
-    t('before_1'),
-    t('before_2'),
-    t('before_3'),
-    t('before_4'),
-  ];
-
-  const afterItems = [
-    t('after_1'),
-    t('after_2'),
-    t('after_3'),
-    t('after_4'),
-  ];
+  const beforeItems = [t('before_1'), t('before_2'), t('before_3'), t('before_4')];
+  const afterItems = [t('after_1'), t('after_2'), t('after_3'), t('after_4')];
 
   return (
     <section className="py-20 md:py-28">
       <div className="max-w-4xl mx-auto px-6">
         <div className="h-px bg-gradient-to-r from-transparent via-black/[0.06] to-transparent mb-16 md:mb-20" />
 
-        <motion.div
-          ref={ref}
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, ease }}
-        >
-          <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+        <div ref={ref}>
+          <div className="grid md:grid-cols-2 gap-6 md:gap-0 relative">
+            {/* Center arrow (desktop) */}
+            <motion.div
+              className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-[#2563EB] items-center justify-center shadow-[0_4px_20px_rgba(37,99,235,0.3)]"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={inView ? { scale: 1, opacity: 1 } : {}}
+              transition={{ duration: 0.5, delay: 0.6, ease }}
+            >
+              <ArrowRight className="w-4 h-4 text-white" />
+            </motion.div>
+
             {/* Before */}
-            <div className="rounded-2xl border border-black/[0.06] bg-white p-6 md:p-8">
-              <div className="flex items-center gap-2 mb-6">
+            <motion.div
+              className="rounded-2xl md:rounded-r-none border border-black/[0.06] bg-white p-6 md:p-8"
+              initial={{ opacity: 0, x: -20 }}
+              animate={inView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.6, ease }}
+            >
+              <div className="flex items-center gap-2.5 mb-6">
                 <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center">
                   <X className="w-3.5 h-3.5 text-red-400" strokeWidth={2.5} />
                 </div>
@@ -51,25 +50,30 @@ export function BeforeAfter() {
                   {t('before_title')}
                 </h3>
               </div>
-              <div className="space-y-3.5">
+              <div className="space-y-4">
                 {beforeItems.map((item, i) => (
                   <motion.div
                     key={i}
                     className="flex items-start gap-3"
-                    initial={{ opacity: 0, x: -10 }}
+                    initial={{ opacity: 0, x: -12 }}
                     animate={inView ? { opacity: 1, x: 0 } : {}}
-                    transition={{ duration: 0.4, delay: 0.2 + i * 0.08, ease }}
+                    transition={{ duration: 0.4, delay: 0.15 + i * 0.1, ease }}
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-300 mt-2 shrink-0" />
-                    <span className="text-[15px] text-[#6B7280] leading-snug">{item}</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-300/70 mt-[7px] shrink-0" />
+                    <span className="text-[15px] text-[#9CA3AF] leading-snug">{item}</span>
                   </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
             {/* After */}
-            <div className="rounded-2xl border border-[#2563EB]/10 bg-[#2563EB]/[0.02] p-6 md:p-8">
-              <div className="flex items-center gap-2 mb-6">
+            <motion.div
+              className="rounded-2xl md:rounded-l-none border border-[#2563EB]/15 bg-gradient-to-br from-[#2563EB]/[0.03] to-transparent p-6 md:p-8"
+              initial={{ opacity: 0, x: 20 }}
+              animate={inView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.3, ease }}
+            >
+              <div className="flex items-center gap-2.5 mb-6">
                 <div className="w-7 h-7 rounded-lg bg-[#2563EB]/10 flex items-center justify-center">
                   <Check className="w-3.5 h-3.5 text-[#2563EB]" strokeWidth={2.5} />
                 </div>
@@ -80,23 +84,28 @@ export function BeforeAfter() {
                   {t('after_title')}
                 </h3>
               </div>
-              <div className="space-y-3.5">
+              <div className="space-y-4">
                 {afterItems.map((item, i) => (
                   <motion.div
                     key={i}
                     className="flex items-start gap-3"
-                    initial={{ opacity: 0, x: -10 }}
+                    initial={{ opacity: 0, x: -12 }}
                     animate={inView ? { opacity: 1, x: 0 } : {}}
-                    transition={{ duration: 0.4, delay: 0.4 + i * 0.08, ease }}
+                    transition={{ duration: 0.4, delay: 0.5 + i * 0.1, ease }}
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#2563EB] mt-2 shrink-0" />
+                    <motion.div
+                      className="w-1.5 h-1.5 rounded-full bg-[#2563EB] mt-[7px] shrink-0"
+                      initial={{ scale: 0 }}
+                      animate={inView ? { scale: 1 } : {}}
+                      transition={{ duration: 0.3, delay: 0.55 + i * 0.1, ease }}
+                    />
                     <span className="text-[15px] text-[#1A1A1A] leading-snug font-medium">{item}</span>
                   </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

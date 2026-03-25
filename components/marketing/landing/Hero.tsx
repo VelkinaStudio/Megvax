@@ -7,7 +7,7 @@ import { useTranslations } from '@/lib/i18n';
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
-/* ─── CSS keyframes injected once ─── */
+/* ─── CSS keyframes ─── */
 const cssAnimations = `
 @keyframes kpi-shimmer {
   0%, 100% { opacity: 1; }
@@ -26,6 +26,32 @@ const cssAnimations = `
   50% { opacity: 0.4; }
 }
 `;
+
+/* ─── Split word animation component ─── */
+function SplitHeadline({ text, className, style }: { text: string; className?: string; style?: React.CSSProperties }) {
+  const words = text.replace(/\n/g, ' ').split(' ');
+
+  return (
+    <h1 className={className} style={style}>
+      {words.map((word, i) => (
+        <span key={i} className="inline-block overflow-hidden mr-[0.28em] last:mr-0">
+          <motion.span
+            className="inline-block"
+            initial={{ y: '100%', opacity: 0 }}
+            animate={{ y: '0%', opacity: 1 }}
+            transition={{
+              duration: 0.7,
+              delay: 0.15 + i * 0.06,
+              ease,
+            }}
+          >
+            {word}
+          </motion.span>
+        </span>
+      ))}
+    </h1>
+  );
+}
 
 /* ─── Data ─── */
 const kpis = [
@@ -62,7 +88,6 @@ export function Hero() {
 
   return (
     <section className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden pt-28 md:pt-36 pb-8">
-      {/* Inject CSS animations */}
       <style dangerouslySetInnerHTML={{ __html: cssAnimations }} />
 
       {/* Gradient orb */}
@@ -88,26 +113,19 @@ export function Hero() {
           </span>
         </motion.div>
 
-        {/* Headline */}
-        <motion.h1
-          className="text-[clamp(2.5rem,5.5vw,4.5rem)] font-extrabold leading-[1] tracking-[-0.04em] text-[#1A1A1A]"
-          style={{
-            fontFamily: 'var(--font-display)',
-            textWrap: 'balance',
-          }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1, ease }}
-        >
-          {t('hero_title')}
-        </motion.h1>
+        {/* Headline — split word reveal */}
+        <SplitHeadline
+          text={t('hero_title')}
+          className="text-[clamp(2.5rem,5.5vw,4.5rem)] font-extrabold leading-[1.05] tracking-[-0.04em] text-[#1A1A1A]"
+          style={{ fontFamily: 'var(--font-display)' }}
+        />
 
         {/* Subtitle */}
         <motion.p
           className="mt-5 text-[clamp(1.05rem,1.4vw,1.2rem)] text-[#6B7280] max-w-xl mx-auto leading-relaxed"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2, ease }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.6, ease }}
         >
           {t('hero_subtitle')}
         </motion.p>
@@ -115,9 +133,9 @@ export function Hero() {
         {/* CTAs */}
         <motion.div
           className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3, ease }}
+          transition={{ duration: 0.5, delay: 0.7, ease }}
         >
           <Link
             href="/signup"
@@ -139,20 +157,23 @@ export function Hero() {
           className="mt-3 text-[13px] text-[#9CA3AF]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4, ease }}
+          transition={{ duration: 0.5, delay: 0.8, ease }}
         >
           {t('hero_trust')}
         </motion.p>
 
-        {/* Stats strip — inline proof */}
+        {/* Stats strip */}
         <motion.div
-          className="mt-10 flex items-center justify-center gap-8 md:gap-12"
+          className="mt-10 inline-flex items-center gap-8 md:gap-10"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5, ease }}
+          transition={{ duration: 0.5, delay: 0.9, ease }}
         >
           {stats.map((stat, i) => (
-            <div key={i} className="flex flex-col items-center">
+            <div key={i} className="flex flex-col items-center relative">
+              {i > 0 && (
+                <div className="absolute -left-4 md:-left-5 top-1/2 -translate-y-1/2 w-px h-8 bg-black/[0.06]" />
+              )}
               <span
                 className="text-[clamp(1.5rem,2.5vw,2rem)] font-bold text-[#1A1A1A] tracking-[-0.02em]"
                 style={{ fontFamily: 'var(--font-display)' }}
@@ -167,16 +188,15 @@ export function Hero() {
         {/* ──── Dashboard frame ──── */}
         <motion.div
           className="mt-16 md:mt-20 relative"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.6, ease }}
+          initial={{ opacity: 0, y: 50, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.9, delay: 1.0, ease }}
         >
           {/* Subtle glow */}
           <div
             className="absolute -inset-10 rounded-3xl opacity-30"
             style={{
-              background:
-                'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(37,99,235,0.08) 0%, transparent 70%)',
+              background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(37,99,235,0.08) 0%, transparent 70%)',
             }}
           />
 
@@ -186,8 +206,7 @@ export function Hero() {
             style={{
               transform: 'perspective(2000px) rotateX(2deg)',
               transformOrigin: 'bottom center',
-              boxShadow:
-                '0 25px 80px -12px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.04)',
+              boxShadow: '0 25px 80px -12px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.04)',
             }}
           >
             {/* Browser chrome */}
@@ -199,26 +218,18 @@ export function Hero() {
               </div>
               <div className="flex-1 mx-12">
                 <div className="h-5 bg-white/[0.04] rounded-md max-w-xs mx-auto flex items-center justify-center">
-                  <span className="text-[10px] text-white/15">
-                    app.megvax.com/dashboard
-                  </span>
+                  <span className="text-[10px] text-white/15">app.megvax.com/dashboard</span>
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                <span
-                  className="w-1.5 h-1.5 rounded-full bg-[#10B981]"
-                  style={{ animation: 'pulse-dot 2s ease-in-out infinite' }}
-                />
-                <span className="text-[10px] text-white/25 whitespace-nowrap hidden sm:inline">
-                  AI çalışıyor...
-                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" style={{ animation: 'pulse-dot 2s ease-in-out infinite' }} />
+                <span className="text-[10px] text-white/25 whitespace-nowrap hidden sm:inline">AI çalışıyor...</span>
               </div>
             </div>
 
-            {/* Dashboard content */}
+            {/* Dashboard content — staggered reveal */}
             <div className="relative p-4 md:p-6 space-y-4">
-
-              {/* Dot-grid pattern overlay */}
+              {/* Dot-grid */}
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
@@ -227,51 +238,43 @@ export function Hero() {
                 }}
               />
 
-              {/* ── KPI cards ── */}
+              {/* KPI cards — stagger in */}
               <div className="relative grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                {kpis.map((kpi) => (
-                  <div
+                {kpis.map((kpi, kpiIndex) => (
+                  <motion.div
                     key={kpi.label}
                     className="rounded-lg bg-white/[0.05] border border-white/[0.07] p-3"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 1.3 + kpiIndex * 0.1, ease }}
                   >
                     <div className="text-[10px] text-white/35 mb-1.5">{kpi.label}</div>
                     <div className="flex items-end justify-between">
-                      <span className="text-sm md:text-base font-bold text-white">
-                        {kpi.value}
-                      </span>
-                      <span
-                        className="text-[10px] font-medium"
-                        style={{ color: kpi.up ? '#10B981' : '#EF4444' }}
-                      >
-                        {kpi.change}
-                      </span>
+                      <span className="text-sm md:text-base font-bold text-white">{kpi.value}</span>
+                      <span className="text-[10px] font-medium" style={{ color: kpi.up ? '#10B981' : '#EF4444' }}>{kpi.change}</span>
                     </div>
-                    <div
-                      className="mt-2 flex items-end gap-[2px] h-4"
-                      style={{ animation: 'kpi-shimmer 4s ease-in-out infinite' }}
-                    >
+                    <div className="mt-2 flex items-end gap-[2px] h-4" style={{ animation: 'kpi-shimmer 4s ease-in-out infinite' }}>
                       {sparklineHeights.map((h, i) => (
                         <div
                           key={i}
                           className="flex-1 rounded-[1px]"
-                          style={{
-                            height: `${h}%`,
-                            backgroundColor: kpi.accent,
-                            opacity: 0.15 + (i / 12) * 0.35,
-                          }}
+                          style={{ height: `${h}%`, backgroundColor: kpi.accent, opacity: 0.15 + (i / 12) * 0.35 }}
                         />
                       ))}
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
-              {/* ── Chart area ── */}
-              <div className="relative rounded-lg bg-white/[0.03] border border-white/[0.06] p-4">
+              {/* Chart area */}
+              <motion.div
+                className="relative rounded-lg bg-white/[0.03] border border-white/[0.06] p-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 1.7, ease }}
+              >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-medium text-white/35">
-                    Performans Özeti
-                  </span>
+                  <span className="text-[11px] font-medium text-white/35">Performans Özeti</span>
                   <div className="flex gap-3">
                     <span className="text-[10px] text-white/20 flex items-center gap-1.5">
                       <span className="w-2 h-[3px] rounded-full bg-[#3B82F6]" /> Harcama
@@ -284,60 +287,55 @@ export function Hero() {
                 <div className="h-28 md:h-36 flex items-end gap-[3px]">
                   {chartBars.map((bar, i) => (
                     <div key={i} className="flex-1 flex gap-[1px]">
-                      <div
+                      <motion.div
                         className="flex-1 rounded-t-[2px] bg-[#3B82F6]/25"
-                        style={{ height: `${bar.s}%` }}
+                        initial={{ height: 0 }}
+                        animate={{ height: `${bar.s}%` }}
+                        transition={{ duration: 0.6, delay: 1.9 + i * 0.04, ease }}
                       />
-                      <div
+                      <motion.div
                         className="flex-1 rounded-t-[2px] bg-[#10B981]/25"
-                        style={{ height: `${bar.r}%` }}
+                        initial={{ height: 0 }}
+                        animate={{ height: `${bar.r}%` }}
+                        transition={{ duration: 0.6, delay: 1.95 + i * 0.04, ease }}
                       />
                     </div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
 
-              {/* ── Campaign rows ── */}
+              {/* Campaign rows — slide in one by one */}
               <div className="relative space-y-1.5">
-                {campaigns.map((row) => (
-                  <div
+                {campaigns.map((row, rowIndex) => (
+                  <motion.div
                     key={row.name}
                     className="flex items-center justify-between px-3 py-2 rounded-lg border border-white/[0.05] text-[11px] md:text-xs"
                     style={{
                       background: 'rgba(255,255,255,0.03)',
-                      borderLeft: !row.active
-                        ? '2px solid rgba(245, 158, 11, 0.5)'
-                        : undefined,
-                      animation: row.highlight
-                        ? 'row-highlight 3s ease-in-out 2s 1 forwards'
-                        : undefined,
+                      borderLeft: !row.active ? '2px solid rgba(245, 158, 11, 0.5)' : undefined,
+                      animation: row.highlight ? 'row-highlight 3s ease-in-out 3.5s 1 forwards' : undefined,
                     }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 2.5 + rowIndex * 0.12, ease }}
                   >
                     <span className="text-white/50 truncate max-w-[35%]">{row.name}</span>
-
                     {row.active ? (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400">
-                        {row.status}
-                      </span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400">{row.status}</span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20">
-                        <span
-                          className="w-2 h-2 rounded-full bg-[#F59E0B]"
-                          style={{ animation: 'amber-pulse 1.5s ease-in-out infinite' }}
-                        />
+                        <span className="w-2 h-2 rounded-full bg-[#F59E0B]" style={{ animation: 'amber-pulse 1.5s ease-in-out infinite' }} />
                         {row.status}
                       </span>
                     )}
-
                     <span className="text-white/30 hidden sm:block">{row.spend}</span>
                     <span className="text-white/50 font-medium">{row.roas}</span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-
             </div>
 
-            {/* Bottom fade inside frame */}
+            {/* Bottom fade */}
             <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#FAFAF8] to-transparent pointer-events-none" />
           </div>
         </motion.div>
