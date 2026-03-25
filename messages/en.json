@@ -348,7 +348,12 @@
     "pending_suggestions": "Pending Suggestions",
     "total_spend": "Total Spend",
     "avg_roas": "Average ROAS",
-    "suggestion_applied_success": "\"{title}\" suggestion applied successfully."
+    "suggestion_applied_success": "\"{title}\" suggestion applied successfully.",
+    "performance_charts": "Performance Charts",
+    "daily_spend": "Daily Spend",
+    "trend": "Trend",
+    "daily_conversions": "Daily Conversions",
+    "campaign_comparison": "Campaign Comparison"
   },
   "campaigns": {
     "title": "Campaigns",
@@ -440,6 +445,15 @@
     "rerun": "Re-run",
     "strategy_executed": "Optimization executed successfully",
     "scope_all": "All",
+    "autopilot_config": "Autopilot Config",
+    "status": "Status",
+    "mode": "Mode",
+    "max_actions_day": "Max Actions/Day",
+    "approval_required": "Approval Required",
+    "yes": "Yes",
+    "no": "No",
+    "recent_actions": "Recent Actions",
+    "actions": "actions",
     "suggestion_types": {
       "budget": "Budget Optimization",
       "targeting": "Targeting Improvement",
@@ -587,6 +601,7 @@
     "title": "Accounts",
     "subtitle": "Connected ad accounts",
     "description": "Manage your connected Meta Ad accounts here.",
+    "select_account": "Select Account",
     "connect": "Connect Account",
     "connect_meta": "Connect Meta Account",
     "disconnect": "Disconnect",

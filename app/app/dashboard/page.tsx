@@ -11,12 +11,12 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/Toast';
 import { Button, Card, Skeleton, ConfirmModal } from '@/components/ui';
 import { PageHeader, EmptyStateCard, SectorComparison, OnboardingChecklist, WelcomeModal } from '@/components/dashboard';
-import { mockKpiMetrics, mockMetaCampaigns, mockSuggestions } from '@/components/dashboard/mockData';
+
 import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
 import { usePlatform } from '@/components/dashboard/PlatformContext';
 import { useTranslations } from '@/lib/i18n';
 import { api } from '@/lib/api';
-import { getMockDailyMetrics, getMockCampaignComparison } from '@/lib/mock-chart-data';
+
 import { SpendChart, RoasChart, ConversionsChart, CampaignComparisonChart } from '@/components/dashboard/charts';
 
 export default function DashboardPage() {
@@ -25,7 +25,6 @@ export default function DashboardPage() {
   const { platform } = usePlatform();
   const t = useTranslations('dashboard');
   const tc = useTranslations('common');
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
   const { account, range, from, to, withQuery } = useDashboardQuery();
   const [metrics, setMetrics] = useState<KpiMetric[]>([]);
   const [topCampaigns, setTopCampaigns] = useState<Campaign[]>([]);
@@ -87,8 +86,8 @@ export default function DashboardPage() {
       setIsMetricsLoading(true);
       setMetricsError(null);
 
-      if (useMockData) {
-        setMetrics(mockKpiMetrics);
+      if (!account) {
+        setMetrics([]);
         setIsMetricsLoading(false);
         return;
       }
@@ -113,7 +112,7 @@ export default function DashboardPage() {
         setMetrics(kpis);
       } catch (error) {
         console.error('Failed to fetch metrics', error);
-        setMetrics(mockKpiMetrics);
+        setMetrics([]);
         setMetricsError(tc('live_data_unavailable'));
       } finally {
         setIsMetricsLoading(false);
@@ -121,34 +120,34 @@ export default function DashboardPage() {
     };
 
     fetchOverview();
-  }, [useMockData, account, range, from, to]);
+  }, [account, range, from, to]);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
       setIsSuggestionsLoading(true);
       setSuggestionsError(null);
 
-      if (useMockData) {
-        setSuggestions(mockSuggestions);
+      if (!account) {
+        setSuggestions([]);
         setIsSuggestionsLoading(false);
         return;
       }
 
-      // Suggestions engine is Phase 2 — always use mock data for now
-      setSuggestions(mockSuggestions);
+      // Suggestions engine is Phase 2
+      setSuggestions([]);
       setIsSuggestionsLoading(false);
     };
 
     fetchSuggestions();
-  }, [useMockData, account, range, from, to]);
+  }, [account, range, from, to]);
 
   useEffect(() => {
     const fetchTopCampaigns = async () => {
       setIsTopCampaignsLoading(true);
       setTopCampaignsError(null);
 
-      if (useMockData) {
-        setTopCampaigns(mockMetaCampaigns.slice(0, 5));
+      if (!account) {
+        setTopCampaigns([]);
         setIsTopCampaignsLoading(false);
         return;
       }
@@ -167,7 +166,7 @@ export default function DashboardPage() {
         setTopCampaigns(mapped);
       } catch (error) {
         console.error('Failed to fetch campaigns', error);
-        setTopCampaigns(mockMetaCampaigns.slice(0, 5));
+        setTopCampaigns([]);
         setTopCampaignsError(tc('live_data_unavailable'));
       } finally {
         setIsTopCampaignsLoading(false);
@@ -175,7 +174,7 @@ export default function DashboardPage() {
     };
 
     fetchTopCampaigns();
-  }, [useMockData, account, range, from, to]);
+  }, [account, range, from, to]);
 
   if (platform !== 'meta') {
     return (
@@ -249,25 +248,25 @@ export default function DashboardPage() {
             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
               {t('daily_spend') || 'Günlük Harcama'}
             </h3>
-            <SpendChart data={getMockDailyMetrics()} />
+            <SpendChart data={[]} />
           </Card>
           <Card padding="lg">
             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
               ROAS {t('trend') || 'Trendi'}
             </h3>
-            <RoasChart data={getMockDailyMetrics()} />
+            <RoasChart data={[]} />
           </Card>
           <Card padding="lg">
             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
               {t('daily_conversions') || 'Günlük Dönüşümler'}
             </h3>
-            <ConversionsChart data={getMockDailyMetrics()} />
+            <ConversionsChart data={[]} />
           </Card>
           <Card padding="lg">
             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
               {t('campaign_comparison') || 'Kampanya Karşılaştırma'}
             </h3>
-            <CampaignComparisonChart data={getMockCampaignComparison()} />
+            <CampaignComparisonChart data={[]} />
           </Card>
         </div>
       </section>

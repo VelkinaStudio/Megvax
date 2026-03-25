@@ -19,60 +19,11 @@ interface Message {
   createdAt: string;
 }
 
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    subject: 'Campaign creation error',
-    content: 'Hi, I\'m getting an error when trying to create a new campaign. Can you help?',
-    from: 'Ahmet Yilmaz',
-    fromEmail: 'ahmet@firma.com',
-    to: 'Support',
-    status: 'unread',
-    priority: 'high',
-    category: 'bug',
-    createdAt: '5m ago',
-  },
-  {
-    id: '2',
-    subject: 'Feature request',
-    content: 'Can you add an automatic reporting feature? Weekly performance summaries sent via email would be great.',
-    from: 'Mehmet Kaya',
-    fromEmail: 'mehmet@sirket.com',
-    to: 'Support',
-    status: 'read',
-    priority: 'normal',
-    category: 'feature',
-    createdAt: '2h ago',
-  },
-  {
-    id: '3',
-    subject: 'Account connection issue',
-    content: 'I\'m getting an authorization error when connecting my Meta account.',
-    from: 'Ayse Demir',
-    fromEmail: 'ayse@marka.com',
-    to: 'Support',
-    status: 'replied',
-    priority: 'high',
-    category: 'support',
-    createdAt: '1d ago',
-  },
-  {
-    id: '4',
-    subject: 'Thank you!',
-    content: 'We love the platform, it saves our team so much time.',
-    from: 'Fatma Sahin',
-    fromEmail: 'fatma@reklam.com',
-    to: 'Support',
-    status: 'archived',
-    priority: 'low',
-    category: 'general',
-    createdAt: '3d ago',
-  },
-];
+const initialMessages: Message[] = [];
 
 export default function AdminMessagesPage() {
   const t = useTranslations('admin');
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | 'unread' | 'replied' | 'archived'>('all');

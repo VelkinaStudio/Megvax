@@ -15,17 +15,12 @@ interface Subscription {
   startDate: string;
 }
 
-const mockSubscriptions: Subscription[] = [
-  { id: '1', userName: 'Ahmet Yilmaz', userEmail: 'ahmet@firma.com', plan: 'Pro', status: 'active', price: '₺1.999', nextBilling: '2024-04-15', startDate: '2024-01-15' },
-  { id: '2', userName: 'Mehmet Kaya', userEmail: 'mehmet@tekno.com', plan: 'Business', status: 'active', price: '₺4.999', nextBilling: '2024-04-20', startDate: '2024-02-20' },
-  { id: '3', userName: 'Ayse Demir', userEmail: 'ayse@dijital.com', plan: 'Starter', status: 'paused', price: '₺499', nextBilling: '-', startDate: '2024-03-10' },
-  { id: '4', userName: 'Fatma Sahin', userEmail: 'fatma@reklam.com', plan: 'Pro', status: 'archived', price: '₺1.999', nextBilling: '-', startDate: '2023-12-05' },
-];
+const subscriptions: Subscription[] = [];
 
 export default function AdminSubscriptionsPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredSubscriptions = mockSubscriptions.filter(sub =>
+  const filteredSubscriptions = subscriptions.filter(sub =>
     sub.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     sub.userEmail.toLowerCase().includes(searchQuery.toLowerCase())
   );

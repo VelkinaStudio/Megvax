@@ -1,4 +1,6 @@
-import { IsString, IsOptional, IsNumber, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsObject, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { TargetingDto } from './targeting.dto';
 
 export class CreateAdSetDto {
   @IsString()
@@ -10,11 +12,11 @@ export class CreateAdSetDto {
   @IsString()
   name: string;
 
-  @IsOptional() @IsObject()
-  targeting?: any;
+  @IsOptional() @ValidateNested() @Type(() => TargetingDto)
+  targeting?: TargetingDto;
 
   @IsOptional() @IsObject()
-  placements?: any;
+  placements?: Record<string, string[]>;
 
   @IsOptional() @IsNumber()
   dailyBudget?: number;

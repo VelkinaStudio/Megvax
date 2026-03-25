@@ -11,7 +11,7 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from 'recharts';
-import type { DailyMetric } from '@/lib/mock-chart-data';
+import type { DailyMetric } from '@/types/dashboard';
 
 interface RoasChartProps {
   data: DailyMetric[];

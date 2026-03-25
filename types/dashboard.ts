@@ -175,3 +175,22 @@ export interface InsightsSingleResponse {
   timeseries: InsightsTimeseriesPoint[];
   breakdowns: Record<InsightsBreakdownKey, InsightsBreakdownRow[]>;
 }
+
+export interface DailyMetric {
+  date: string;       // YYYY-MM-DD
+  dateLabel: string;  // "15 Mar" style for axis labels
+  spend: number;
+  roas: number;
+  conversions: number;
+  impressions: number;
+  clicks: number;
+  ctr: number;
+  cpc: number;
+}
+
+export interface CampaignMetric {
+  name: string;
+  spend: number;
+  roas: number;
+  conversions: number;
+}

@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from '@/lib/i18n';
 import { Menu, ChevronDown, User, Settings, LogOut, Plus } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useNotifications } from '@/lib/hooks/use-notifications';
 import { useAuth } from '@/lib/auth-context';
 import { NotificationBell } from './NotificationBell';
+import { api } from '@/lib/api';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -17,7 +18,10 @@ interface HeaderProps {
 export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
   const t = useTranslations('navigation');
   const tHeader = useTranslations('header');
+  const tAccounts = useTranslations('accounts');
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { user, logout } = useAuth();
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -30,13 +34,41 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
     markAllRead,
   } = useNotifications();
 
-  // Mock data - will be replaced with real data
-  const accounts = [
-    { id: '1', name: 'Main Account', status: 'connected' },
-    { id: '2', name: 'Test Account', status: 'connected' },
-  ];
+  const [accounts, setAccounts] = useState<{ id: string; name: string; status: string }[]>([]);
+  const [selectedAccount, setSelectedAccount] = useState<{ id: string; name: string; status: string } | null>(null);
 
-  const [selectedAccount, setSelectedAccount] = useState(accounts[0]);
+  useEffect(() => {
+    if (!user) return; // Wait for auth before fetching accounts
+
+    api<{ data: any[] }>('/campaigns?limit=500')
+      .then((res) => {
+        const seen = new Map<string, { id: string; name: string; status: string }>();
+        for (const c of res.data || []) {
+          if (c.adAccountId && !seen.has(c.adAccountId)) {
+            seen.set(c.adAccountId, {
+              id: c.adAccountId,
+              name: c.adAccount?.name || c.adAccountId,
+              status: 'connected',
+            });
+          }
+        }
+        return Array.from(seen.values());
+      })
+      .catch(() => [] as { id: string; name: string; status: string }[])
+      .then((items) => {
+        setAccounts(items);
+        const currentAccountId = searchParams.get('account');
+        const match = items.find((a) => a.id === currentAccountId);
+        if (match) {
+          setSelectedAccount(match);
+        } else if (items.length > 0) {
+          setSelectedAccount(items[0]);
+          const params = new URLSearchParams(searchParams.toString());
+          params.set('account', items[0].id);
+          router.replace(`${pathname}?${params.toString()}`);
+        }
+      });
+  }, [user]);
 
   const dateRanges = [
     { value: '7d', label: tHeader('last_7_days') },
@@ -82,14 +114,14 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
                 <div
                   className={`
                     w-2 h-2 rounded-full
-                    ${selectedAccount.status === 'connected'
+                    ${selectedAccount?.status === 'connected'
                       ? 'bg-accent-success'
                       : 'bg-accent-warning'
                     }
                   `}
                 />
                 <span className="text-sm font-medium text-gray-900">
-                  {selectedAccount.name}
+                  {selectedAccount?.name || tAccounts('select_account')}
                 </span>
               </div>
               <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -116,11 +148,14 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
                         onClick={() => {
                           setSelectedAccount(account);
                           setShowAccountMenu(false);
+                          const params = new URLSearchParams(searchParams.toString());
+                          params.set('account', account.id);
+                          router.replace(`${pathname}?${params.toString()}`);
                         }}
                         className={`
                           w-full flex items-center gap-3 px-3 py-2.5 rounded-md
                           transition-colors duration-150
-                          ${account.id === selectedAccount.id
+                          ${account.id === selectedAccount?.id
                             ? 'bg-accent-primary/10 text-accent-primary'
                             : 'hover:bg-gray-100 text-gray-900'
                           }
@@ -155,7 +190,7 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
                       "
                     >
                       <Plus className="w-4 h-4" />
-                      {useTranslations('accounts')('connect')}
+                      {tAccounts('connect')}
                     </button>
                   </div>
                 </div>

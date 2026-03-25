@@ -10,7 +10,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts';
-import type { DailyMetric } from '@/lib/mock-chart-data';
+import type { DailyMetric } from '@/types/dashboard';
 
 interface ConversionsChartProps {
   data: DailyMetric[];

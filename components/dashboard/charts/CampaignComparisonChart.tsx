@@ -11,7 +11,7 @@ import {
   CartesianGrid,
   Cell,
 } from 'recharts';
-import type { CampaignMetric } from '@/lib/mock-chart-data';
+import type { CampaignMetric } from '@/types/dashboard';
 
 interface CampaignComparisonChartProps {
   data: CampaignMetric[];

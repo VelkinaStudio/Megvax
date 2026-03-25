@@ -13,25 +13,7 @@ import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
 import { useTranslations } from '@/lib/i18n';
 import { api } from '@/lib/api';
 
-// Mock Data
 const initialAccounts: MetaAccount[] = [];
-
-const demoAccounts: MetaAccount[] = [
-  {
-    id: 'acc_1',
-    name: 'Megvax Demo Inc.',
-    accountId: 'act_1234567890',
-    status: 'connected',
-    lastSync: 'Now',
-  },
-  {
-    id: 'acc_2',
-    name: 'Other Account Inc.',
-    accountId: 'act_9876543210',
-    status: 'connected',
-    lastSync: 'Now',
-  },
-];
 
 export default function AccountsPage() {
   const [accounts, setAccounts] = useState<MetaAccount[]>(initialAccounts);
@@ -41,7 +23,6 @@ export default function AccountsPage() {
   const [isAccountsLoading, setIsAccountsLoading] = useState(false);
   const [accountsError, setAccountsError] = useState<string | null>(null);
 
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
   const { account: activeAccountId, range, from, to } = useDashboardQuery();
 
   const router = useRouter();
@@ -69,31 +50,27 @@ export default function AccountsPage() {
       setIsAccountsLoading(true);
       setAccountsError(null);
 
-      if (useMockData) {
-        setAccounts(demoAccounts);
-        setIsAccountsLoading(false);
-        return;
-      }
-
       try {
-        // GET /meta/ad-accounts returns available Meta ad accounts (with alreadyConnected flag)
-        const adAccounts = await api<any[]>('/meta/ad-accounts');
-
-        // Filter to only show already-connected accounts
-        const connected = (adAccounts || []).filter((a: any) => a.alreadyConnected);
-        const mapped: MetaAccount[] = connected.map((a: any) => ({
-          id: a.metaAccountId,
-          name: a.name || `act_${a.metaAccountId}`,
-          accountId: `act_${a.metaAccountId}`,
-          status: 'connected',
-          lastSync: '—',
-          currency: a.currency,
-          timezone: a.timezone,
-        }));
-        setAccounts(mapped);
+        // Extract unique ad accounts from campaigns (works without live Meta API)
+        const res = await api<{ data: any[] }>('/campaigns?limit=500');
+        const seen = new Map<string, MetaAccount>();
+        for (const c of res.data || []) {
+          if (c.adAccountId && !seen.has(c.adAccountId)) {
+            seen.set(c.adAccountId, {
+              id: c.adAccountId,
+              name: c.adAccount?.name || c.adAccountId,
+              accountId: `act_${c.adAccountId}`,
+              status: 'connected',
+              lastSync: c.adAccount?.lastSyncAt || '—',
+              currency: c.adAccount?.currency || 'TRY',
+              timezone: c.adAccount?.timezone || 'Europe/Istanbul',
+            });
+          }
+        }
+        setAccounts(Array.from(seen.values()));
       } catch (error) {
         console.error('Failed to fetch accounts', error);
-        setAccounts(demoAccounts);
+        setAccounts([]);
         setAccountsError('Hesaplar yüklenemedi');
       } finally {
         setIsAccountsLoading(false);
@@ -101,15 +78,9 @@ export default function AccountsPage() {
     };
 
     fetchAccounts();
-  }, [useMockData]);
+  }, []);
 
   const handleConnect = () => {
-    setAccounts((prev) => {
-      const next = prev.length === 0 ? [demoAccounts[0]] : prev.length === 1 ? [demoAccounts[0], demoAccounts[1]] : prev;
-      const active = next[next.length - 1];
-      if (active) setActiveAccount(active.accountId);
-      return next;
-    });
     toast.success(t('connected_success'));
   };
 
@@ -119,14 +90,6 @@ export default function AccountsPage() {
         title={t('title')}
         description={t('description')}
       />
-
-      {useMockData && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-sm text-blue-800">
-            <span className="font-semibold">{t('info_label')}:</span> {t('mock_data_info')}
-          </p>
-        </div>
-      )}
 
       <div className="flex justify-end mb-6">
         <Button 

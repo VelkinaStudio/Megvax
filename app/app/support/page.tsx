@@ -59,8 +59,6 @@ export default function SupportPage() {
   const prefillCategory = normalizeCategory(searchParams.get('category'));
   const toast = useToast();
 
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
-
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
 
   const { register, handleSubmit, watch, reset, formState: { errors, isSubmitting } } = useForm<SupportTicketInput>({
@@ -109,14 +107,6 @@ export default function SupportPage() {
         title={t('title')}
         description={t('description')}
       />
-
-      {useMockData && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-sm text-blue-800">
-            <span className="font-semibold">{t('mock_notice_label')}</span> {t('mock_notice_text')}
-          </p>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6">

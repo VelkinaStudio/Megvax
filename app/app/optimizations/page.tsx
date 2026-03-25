@@ -11,28 +11,17 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Button, Card, Skeleton, ConfirmModal } from '@/components/ui';
 import { EmptyStateCard, PageHeader } from '@/components/dashboard';
-import {
-  mockMetaAdSets,
-  mockMetaAds,
-  mockMetaCampaigns,
-  mockOptimizationStrategies,
-  mockSuggestions,
-} from '@/components/dashboard/mockData';
 import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
 import {
   OptimizationSettingsModal,
 } from '@/components/dashboard/optimizations/OptimizationSettingsModal';
 import type { ExecutionHistoryEntry } from '@/components/dashboard/optimizations/OptimizationSettingsModal';
 
-// Mock Data based on Image 1
-const defaultStrategies: OptimizationStrategy[] = mockOptimizationStrategies;
-
 export default function OptimizationsPage() {
   const t = useTranslations('optimizations');
   const tc = useTranslations('common');
   const toast = useToast();
   const router = useRouter();
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
   const { account, range, from, to, withQuery } = useDashboardQuery();
   const [strategies, setStrategies] = useState<OptimizationStrategy[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -107,20 +96,6 @@ export default function OptimizationsPage() {
 
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
-    if (useMockData) {
-      toast.success(`${t('strategy_updated')}: ${newState ? t('active_status') : t('paused_status')}`, {
-        duration: 6000,
-        action: {
-          label: t('undo'),
-          onClick: async () => {
-            const revertStatus: OptimizationStrategy['status'] = newState ? 'paused' : 'active';
-            setStrategies((current) => current.map((s) => (s.id === id ? { ...s, status: revertStatus } : s)));
-          },
-        },
-      });
-      return;
-    }
-
     void (async () => {
       try {
         const res = await fetch(`${baseUrl}/api/optimizations/strategies/${id}`, {
@@ -172,10 +147,6 @@ export default function OptimizationsPage() {
   const fetchSuggestionDetail = async (id: string) => {
     setIsReviewLoading(true);
 
-    if (useMockData) {
-      setIsReviewLoading(false);
-      return;
-    }
     try {
       const data = await api<any>(`/suggestions/${id}`);
       const suggestion = (data as { suggestion?: unknown })?.suggestion as Partial<Suggestion> | undefined;
@@ -205,8 +176,6 @@ export default function OptimizationsPage() {
 
   // Dismiss via POST /suggestions/:id/dismiss, snooze/approve via POST /suggestions/:id/decision
   const postDecision = async (id: string, decision: 'approve' | 'dismiss' | 'snooze', snoozeUntil?: string) => {
-    if (useMockData) return;
-
     if (decision === 'dismiss') {
       await api(`/suggestions/${id}/dismiss`, { method: 'POST' });
     } else {
@@ -219,8 +188,6 @@ export default function OptimizationsPage() {
 
   // Apply suggestion via POST /suggestions/:id/apply
   const applySuggestion = async (id: string) => {
-    if (useMockData) return;
-
     const current = suggestions.find((s) => s.id === id);
     const title = (current?.title ?? '').toLowerCase();
     const isPauseType = title.includes('pause');
@@ -287,12 +254,6 @@ export default function OptimizationsPage() {
       setIsLoading(true);
       setError(null);
 
-      if (useMockData) {
-        setStrategies(defaultStrategies);
-        setIsLoading(false);
-        return;
-      }
-
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
         const res = await fetch(
@@ -334,28 +295,21 @@ export default function OptimizationsPage() {
         setStrategies(mapped);
       } catch (err) {
         console.error('Failed to fetch optimization strategies', err);
-        setStrategies(defaultStrategies);
-        setError('Could not fetch live data. Showing sample data for now.');
+        setStrategies([]);
+        setError('Could not fetch optimization strategies.');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchStrategies();
-  }, [useMockData, account, range, from, to]);
+  }, [account, range, from, to]);
 
   // Fetch suggestions via GET /suggestions?accountId=...&status=PENDING
   useEffect(() => {
     const fetchSuggestions = async () => {
       setIsSuggestionsLoading(true);
       setSuggestionsError(null);
-
-      if (useMockData) {
-        const mapped = mockSuggestions.map((s) => ({ ...s, state: 'pending' as const }));
-        setSuggestions(mapped);
-        setIsSuggestionsLoading(false);
-        return;
-      }
 
       try {
         const data = await api<any>(`/suggestions?accountId=${encodeURIComponent(account)}&status=PENDING`);
@@ -369,25 +323,19 @@ export default function OptimizationsPage() {
         setSuggestions(mapped);
       } catch (err) {
         console.error('Failed to fetch suggestions', err);
-        const mapped = mockSuggestions.map((s) => ({ ...s, state: 'pending' as const }));
-        setSuggestions(mapped);
-        setSuggestionsError('Could not fetch live data. Showing sample suggestions for now.');
+        setSuggestions([]);
+        setSuggestionsError('Could not fetch suggestions.');
       } finally {
         setIsSuggestionsLoading(false);
       }
     };
 
     fetchSuggestions();
-  }, [useMockData, account, range, from, to]);
+  }, [account, range, from, to]);
 
   // Fetch autopilot config via GET /autopilot/config/:accountId
   useEffect(() => {
     const fetchAutopilotConfig = async () => {
-      if (useMockData) {
-        setAutopilotConfig({ enabled: false, mode: 'suggest', maxActionsPerDay: 10, requireApproval: true });
-        return;
-      }
-
       setIsAutopilotConfigLoading(true);
       try {
         const data = await api<AutopilotConfig>(`/autopilot/config/${encodeURIComponent(account)}`);
@@ -401,16 +349,11 @@ export default function OptimizationsPage() {
     };
 
     fetchAutopilotConfig();
-  }, [useMockData, account]);
+  }, [account]);
 
   // Fetch recent autopilot actions via GET /autopilot/actions?accountId=...&limit=10
   useEffect(() => {
     const fetchRecentActions = async () => {
-      if (useMockData) {
-        setRecentActions([]);
-        return;
-      }
-
       setIsActionsLoading(true);
       try {
         const data = await api<any>(`/autopilot/actions?accountId=${encodeURIComponent(account)}&limit=10`);
@@ -429,7 +372,7 @@ export default function OptimizationsPage() {
     };
 
     fetchRecentActions();
-  }, [useMockData, account]);
+  }, [account]);
 
   return (
     <div className="space-y-8">
@@ -903,9 +846,9 @@ export default function OptimizationsPage() {
           setTimeout(() => setSettingsStrategy(null), 150);
         }}
         strategy={settingsStrategy}
-        campaigns={mockMetaCampaigns.map((c) => ({ id: c.id, name: c.name }))}
-        adSets={mockMetaAdSets.map((a) => ({ id: a.id, name: a.name }))}
-        ads={mockMetaAds.map((a) => ({ id: a.id, name: a.name }))}
+        campaigns={[]}
+        adSets={[]}
+        ads={[]}
         initialSettings={
           (settingsStrategy && strategySettings[settingsStrategy.id]) ?? {
             targetLevel: 'campaign',
@@ -923,14 +866,9 @@ export default function OptimizationsPage() {
           setStrategySettings((prev) => ({ ...prev, [strategyId]: settings }));
 
           const strat = strategies.find((s) => s.id === strategyId);
-          const allEntities = settings.targetLevel === 'campaign'
-            ? mockMetaCampaigns
-            : settings.targetLevel === 'adset'
-              ? mockMetaAdSets
-              : mockMetaAds;
           const targetNames = settings.targetMode === 'all'
             ? []
-            : settings.targetIds.map((id) => allEntities.find((e) => e.id === id)?.name ?? id);
+            : settings.targetIds;
 
           const entry: ExecutionHistoryEntry = {
             id: String(Date.now()),

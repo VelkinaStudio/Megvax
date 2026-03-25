@@ -22,13 +22,17 @@ import { CsrfMiddleware } from './common/middleware/csrf.middleware';
     ConfigModule.forRoot({ isGlobal: true }),
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 100 }]),
     BullModule.forRootAsync({
-      useFactory: (config: ConfigService) => ({
-        connection: {
-          url: config.getOrThrow('REDIS_URL'),
-          maxRetriesPerRequest: null,
-          tls: {},
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        const url = config.getOrThrow('REDIS_URL');
+        const useTls = url.startsWith('rediss://');
+        return {
+          connection: {
+            url,
+            maxRetriesPerRequest: null,
+            ...(useTls ? { tls: {} } : {}),
+          },
+        };
+      },
       inject: [ConfigService],
     }),
     PrismaModule,

@@ -12,8 +12,6 @@ export default function AiCreativePage() {
   const toast = useToast();
   const t = useTranslations('ai_creative');
 
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
-
   const handleGenerate = () => {
     const value = prompt.trim();
     if (!value) return;
@@ -33,14 +31,6 @@ export default function AiCreativePage() {
         title={t('title')}
         description={t('description')}
       />
-
-      {useMockData && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-sm text-blue-800">
-            <span className="font-semibold">{t('info_label')}:</span> {t('mock_data_info')}
-          </p>
-        </div>
-      )}
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
         

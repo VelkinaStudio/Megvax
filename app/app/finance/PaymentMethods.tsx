@@ -14,10 +14,7 @@ interface PaymentMethod {
   isDefault: boolean;
 }
 
-const mockPaymentMethods: PaymentMethod[] = [
-  { id: 'pm_1', type: 'card', last4: '4242', brand: 'Visa', expiryMonth: '12', expiryYear: '2027', isDefault: true },
-  { id: 'pm_2', type: 'card', last4: '8888', brand: 'Mastercard', expiryMonth: '08', expiryYear: '2026', isDefault: false },
-];
+const paymentMethods: PaymentMethod[] = [];
 
 export function PaymentMethodsView() {
   const t = useTranslations('finance');
@@ -34,7 +31,7 @@ export function PaymentMethodsView() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {mockPaymentMethods.map((method) => (
+        {paymentMethods.map((method) => (
           <Card key={method.id} className={`p-6 ${method.isDefault ? 'ring-2 ring-blue-500' : ''}`}>
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">

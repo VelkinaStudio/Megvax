@@ -11,12 +11,6 @@ type PlacementMode = 'advantage' | 'manual';
 type OptimizationGoal = 'CONVERSIONS' | 'LINK_CLICKS' | 'LANDING_PAGE_VIEWS' | 'LEADS' | 'REACH';
 type BidStrategy = 'LOWEST_COST' | 'COST_CAP' | 'BID_CAP';
 
-const DEMO_CAMPAIGNS = [
-  { id: 'mc1', name: 'Retargeting - Sales' },
-  { id: 'mc2', name: 'Prospecting - Lead' },
-  { id: 'mc3', name: 'Catalog - Conversions' },
-];
-
 interface CreateAdSetModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -56,7 +50,6 @@ function extractCreatedId(created: unknown): string | undefined {
 
 export function CreateAdSetModal({ isOpen, onClose, initialCampaignId }: CreateAdSetModalProps) {
   const toast = useToast();
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !process.env.NEXT_PUBLIC_API_URL;
 
   const [campaigns, setCampaigns] = useState<{ id: string; name: string }[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>('');
@@ -89,11 +82,6 @@ export function CreateAdSetModal({ isOpen, onClose, initialCampaignId }: CreateA
     const fetchCampaigns = async () => {
       if (!isOpen) return;
 
-      if (useMockData) {
-        setCampaigns(DEMO_CAMPAIGNS);
-        return;
-      }
-
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
         const res = await fetch(`${baseUrl}/api/meta/campaigns`);
@@ -108,7 +96,7 @@ export function CreateAdSetModal({ isOpen, onClose, initialCampaignId }: CreateA
     };
 
     fetchCampaigns();
-  }, [isOpen, toast, useMockData]);
+  }, [isOpen, toast]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -123,23 +111,6 @@ export function CreateAdSetModal({ isOpen, onClose, initialCampaignId }: CreateA
 
     try {
       setIsSubmitting(true);
-
-      if (useMockData) {
-        toast.success('New ad set created.');
-        onClose();
-        setSelectedCampaignId('');
-        setName('');
-        setDailyBudget('');
-        setStartAt('');
-        setHasEnd(false);
-        setEndAt('');
-        setPlacementMode('advantage');
-        setPlacements(['facebook_feed', 'instagram_feed', 'instagram_story', 'instagram_reels']);
-        setOptimizationGoal('CONVERSIONS');
-        setBidStrategy('LOWEST_COST');
-        setBidAmount('');
-        return;
-      }
 
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 

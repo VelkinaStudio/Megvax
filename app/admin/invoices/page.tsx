@@ -15,17 +15,12 @@ interface Invoice {
   dueDate: string;
 }
 
-const mockInvoices: Invoice[] = [
-  { id: '1', invoiceNumber: 'INV-2024-001', userName: 'Ahmet Yilmaz', userEmail: 'ahmet@firma.com', amount: '₺1.999', status: 'active', date: '2024-03-15', dueDate: '2024-03-22' },
-  { id: '2', invoiceNumber: 'INV-2024-002', userName: 'Mehmet Kaya', userEmail: 'mehmet@tekno.com', amount: '₺4.999', status: 'active', date: '2024-03-20', dueDate: '2024-03-27' },
-  { id: '3', invoiceNumber: 'INV-2024-003', userName: 'Ayse Demir', userEmail: 'ayse@dijital.com', amount: '₺499', status: 'pending', date: '2024-03-10', dueDate: '2024-03-17' },
-  { id: '4', invoiceNumber: 'INV-2024-004', userName: 'Fatma Sahin', userEmail: 'fatma@reklam.com', amount: '₺1.999', status: 'error', date: '2024-02-05', dueDate: '2024-02-12' },
-];
+const adminInvoices: Invoice[] = [];
 
 export default function AdminInvoicesPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredInvoices = mockInvoices.filter(inv =>
+  const filteredInvoices = adminInvoices.filter(inv =>
     inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
     inv.userName.toLowerCase().includes(searchQuery.toLowerCase())
   );

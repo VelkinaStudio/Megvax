@@ -13,7 +13,7 @@ function normalizeRange(input: string | null): DashboardRange {
 export function useDashboardQuery() {
   const searchParams = useSearchParams();
 
-  const account = searchParams.get('account') ?? 'act_1234567890';
+  const account = searchParams.get('account') ?? '';
   const range = normalizeRange(searchParams.get('range'));
   const from = searchParams.get('from');
   const to = searchParams.get('to');
