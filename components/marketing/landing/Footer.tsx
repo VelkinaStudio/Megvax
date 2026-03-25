@@ -7,112 +7,44 @@ import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 export function Footer() {
   const t = useTranslations('landing');
 
-  const productLinks = [
-    { href: '/#features', label: t('footer_features') },
-    { href: '/pricing', label: t('footer_pricing') },
-    { href: '/book', label: t('footer_demo') },
-  ];
-
-  const companyLinks = [
-    { href: '/about', label: t('footer_about') },
-    { href: '/contact', label: t('footer_contact') },
-    { href: '/status', label: t('footer_status') },
-  ];
-
-  const legalLinks = [
-    { href: '/privacy', label: t('footer_privacy') },
-    { href: '/terms', label: t('footer_terms') },
+  const links = [
+    { href: '/about', label: 'About' },
+    { href: '/privacy', label: 'Privacy' },
+    { href: '/terms', label: 'Terms' },
+    { href: '/contact', label: 'Contact' },
   ];
 
   return (
-    <footer className="border-t border-white/[0.05]">
-      <div className="max-w-6xl mx-auto px-6 py-12 md:py-16">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
-          {/* Brand */}
-          <div className="col-span-2">
-            <span
-              className="text-base font-bold text-white/70"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              MEGVAX
-            </span>
-            <p className="mt-3 text-xs text-white/30 max-w-xs leading-relaxed">
-              {t('footer_tagline')}
-            </p>
-            <div className="mt-4">
-              <LanguageSwitcher variant="inline" />
-            </div>
-          </div>
+    <footer className="py-12 border-t border-black/[0.06]">
+      <div className="max-w-5xl mx-auto px-6">
+        {/* Top row */}
+        <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+          <span
+            className="text-xl font-bold text-[#1A1A1A]"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            MegVax
+          </span>
 
-          {/* Product */}
-          <div>
-            <h4 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">
-              {t('footer_product_heading')}
-            </h4>
-            <ul className="space-y-2">
-              {productLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-xs text-white/35 hover:text-white/60 transition-colors duration-200"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h4 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">
-              {t('footer_company_heading')}
-            </h4>
-            <ul className="space-y-2">
-              {companyLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-xs text-white/35 hover:text-white/60 transition-colors duration-200"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h4 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">
-              {t('footer_legal_heading')}
-            </h4>
-            <ul className="space-y-2">
-              {legalLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-xs text-white/35 hover:text-white/60 transition-colors duration-200"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          <div className="flex flex-wrap items-center gap-6">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-[14px] text-[#6B7280] hover:text-[#1A1A1A] transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-12 pt-6 border-t border-white/[0.04] flex flex-col md:flex-row items-center justify-between gap-3">
-          <span className="text-[11px] text-white/15">
+        {/* Bottom row */}
+        <div className="flex flex-col md:flex-row items-center justify-between mt-8 pt-8 border-t border-black/[0.04] gap-4">
+          <span className="text-[13px] text-[#9CA3AF]">
             {t('footer_copyright')}
           </span>
-          <a
-            href="mailto:hello@megvax.com"
-            className="text-[11px] text-white/15 hover:text-white/30 transition-colors"
-          >
-            hello@megvax.com
-          </a>
+          <LanguageSwitcher />
         </div>
       </div>
     </footer>
