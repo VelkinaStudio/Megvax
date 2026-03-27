@@ -150,7 +150,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col w-full md:ml-64 mesh-gradient">
+        <div className="flex-1 flex flex-col w-full md:ml-64">
           {/* Top Bar */}
           <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-6 py-4">
             <div className="flex items-center justify-between">
