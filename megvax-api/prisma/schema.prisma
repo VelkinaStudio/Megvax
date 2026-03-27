@@ -32,6 +32,7 @@ model User {
   auditLogs        AuditLog[]
   notifications    Notification[]
   cancelledActions AutopilotAction[]
+  meetings         Meeting[]
 
   @@index([email])
 }
@@ -129,6 +130,23 @@ model ApiKey {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([hashedKey])
+}
+
+// ─── Meetings ─────────────────────────────────────────
+
+model Meeting {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  company   String?
+  date      String
+  time      String
+  notes     String?
+  status    String   @default("pending")
+  userId    String?  @db.Uuid
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ─── Meta Integration ──────────────────────────────────

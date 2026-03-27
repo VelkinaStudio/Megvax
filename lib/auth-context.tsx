@@ -111,23 +111,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // On mount, try to restore session via refresh token cookie or mock session
   useEffect(() => {
     const tryRestore = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/auth/refresh`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-            credentials: 'include',
+      // In demo mode, skip API refresh entirely — only restore from mock session
+      if (process.env.NEXT_PUBLIC_DEMO_MODE !== 'true') {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/auth/refresh`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+              credentials: 'include',
+            }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            setAccessToken(data.accessToken);
+            setState({ user: data.user, isLoading: false, isAuthenticated: true });
+            return;
           }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setAccessToken(data.accessToken);
-          setState({ user: data.user, isLoading: false, isAuthenticated: true });
-          return;
+        } catch {
+          // API unreachable — check for persisted mock session
         }
-      } catch {
-        // API unreachable — check for persisted mock session
       }
       // Try to restore a mock session from sessionStorage
       try {
@@ -163,6 +166,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setState({ user: mockResult.user, isLoading: false, isAuthenticated: true });
       try { sessionStorage.setItem('megvax_mock_session', JSON.stringify(mockResult)); } catch {}
       return;
+    }
+
+    // In demo mode, only mock accounts are allowed — skip API entirely
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+      throw new Error('Demo modunda sadece demo hesapları kullanılabilir');
     }
 
     // Not a demo account — proceed with real API call
