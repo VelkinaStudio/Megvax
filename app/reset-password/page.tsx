@@ -3,10 +3,13 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { ArrowLeft, Lock, Loader2, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
 import { api, ApiError } from '@/lib/api';
+
+const spring = { type: 'spring' as const, stiffness: 100, damping: 20 };
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
@@ -60,44 +63,67 @@ function ResetPasswordContent() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={spring}
+          className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-black/[0.06] p-8 text-center"
+        >
+          <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-emerald-100">
             <CheckCircle className="w-8 h-8 text-emerald-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('password_changed_title')}</h1>
-          <p className="text-gray-600 mb-6">{t('password_changed_desc')}</p>
+          <h1 className="text-2xl font-bold text-[#1A1A1A] mb-4" style={{ fontFamily: 'var(--font-display)' }}>
+            {t('password_changed_title')}
+          </h1>
+          <p className="text-[#6B7280] mb-6">{t('password_changed_desc')}</p>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center w-full py-3 px-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all"
+            className="inline-flex items-center justify-center w-full py-3 px-4 bg-[#2563EB] text-white rounded-xl font-semibold hover:bg-[#1D4ED8] transition-all hover:shadow-lg hover:shadow-[#2563EB]/25"
           >
             {t('back_to_login_btn')}
           </Link>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center p-6">
       <div className="max-w-md w-full">
-        <Link href="/login" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8 transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          {t('back_to_login')}
-        </Link>
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...spring, delay: 0.05 }}
+        >
+          <Link href="/login" className="inline-flex items-center gap-2 text-[#6B7280] hover:text-[#1A1A1A] mb-8 transition-colors text-sm font-medium">
+            <ArrowLeft className="w-4 h-4" />
+            {t('back_to_login')}
+          </Link>
+        </motion.div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
-            <Lock className="w-6 h-6 text-blue-600" />
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...spring, delay: 0.1 }}
+          className="bg-white rounded-2xl shadow-lg border border-black/[0.06] p-8"
+        >
+          <div className="w-12 h-12 bg-[#EFF6FF] rounded-xl flex items-center justify-center mb-6 border border-[#2563EB]/10">
+            <Lock className="w-6 h-6 text-[#2563EB]" />
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('new_password_set')}</h1>
-          <p className="text-gray-600 mb-6">{t('new_password_set_desc')}</p>
+          <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+            {t('new_password_set')}
+          </h1>
+          <p className="text-[#6B7280] mb-6 text-sm">{t('new_password_set_desc')}</p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">{t('new_password_label')}</label>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium text-[#374151]">
+                {t('new_password_label')}
+              </label>
               <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -105,41 +131,46 @@ function ResetPasswordContent() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all pr-12"
+                  className="w-full pl-11 pr-12 py-3 bg-[#F3F2EF] border border-black/[0.08] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">{t('confirm_password_label')}</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                placeholder="••••••••"
-              />
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-[#374151]">
+                {t('confirm_password_label')}
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="w-full pl-11 pr-4 py-3 bg-[#F3F2EF] border border-black/[0.08] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all"
+                  placeholder="••••••••"
+                />
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={isLoading || !token}
-              className="w-full py-3 px-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-[#2563EB]/25 active:scale-[0.98]"
             >
               {isLoading ? <><Loader2 className="w-5 h-5 animate-spin" /> {t('updating')}</> : t('change_password_btn')}
             </button>
           </form>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
@@ -147,7 +178,11 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#2563EB]" />
+      </div>
+    }>
       <ResetPasswordContent />
     </Suspense>
   );

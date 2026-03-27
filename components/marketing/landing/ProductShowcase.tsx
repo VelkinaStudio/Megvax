@@ -25,31 +25,32 @@ const CARD_BORDER = 'rgba(255,255,255,0.07)';
 
 // ─── Tab definitions ────────────────────────────────────────────────────────
 const TABS = [
-  { id: 'insights', label: 'Derinlemesine Analiz', icon: BarChart3 },
-  { id: 'creative', label: 'AI Kreatif', icon: Sparkles },
-  { id: 'tree', label: 'Kampanya Ağacı', icon: GitBranch },
-  { id: 'benchmark', label: 'Sektör Kıyaslama', icon: TrendingUp },
+  { id: 'insights', labelKey: 'showcase_tab_insights', icon: BarChart3 },
+  { id: 'creative', labelKey: 'showcase_tab_creative', icon: Sparkles },
+  { id: 'tree', labelKey: 'showcase_tab_tree', icon: GitBranch },
+  { id: 'benchmark', labelKey: 'showcase_tab_benchmark', icon: TrendingUp },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
 
 // ─── 1. Deep Insights Tab ───────────────────────────────────────────────────
 function DeepInsightsContent() {
+  const t = useTranslations('landing');
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: false, amount: 0.3 });
 
   const levels = [
-    { label: 'Hesap', active: false },
-    { label: 'Kampanya', active: true },
-    { label: 'Reklam Seti', active: false },
-    { label: 'Reklam', active: false },
+    { label: t('insights_level_account'), active: false },
+    { label: t('insights_level_campaign'), active: true },
+    { label: t('insights_level_adset'), active: false },
+    { label: t('insights_level_ad'), active: false },
   ];
 
   const breakdowns = [
-    { label: 'Yaş', widths: [45, 30, 25] },
-    { label: 'Cinsiyet', widths: [55, 45] },
-    { label: 'Cihaz', widths: [60, 25, 15] },
-    { label: 'Yerleşim', widths: [40, 35, 25] },
+    { label: t('insights_breakdown_age'), widths: [45, 30, 25] },
+    { label: t('insights_breakdown_gender'), widths: [55, 45] },
+    { label: t('insights_breakdown_device'), widths: [60, 25, 15] },
+    { label: t('insights_breakdown_placement'), widths: [40, 35, 25] },
   ];
 
   // Spend trend path
@@ -93,7 +94,7 @@ function DeepInsightsContent() {
           className="rounded-lg p-3"
           style={{ backgroundColor: CARD_BG, border: `1px solid ${CARD_BORDER}` }}
         >
-          <div className="text-[10px] text-white/35 mb-2">Harcama Trendi</div>
+          <div className="text-[10px] text-white/35 mb-2">{t('insights_spend_trend')}</div>
           <svg viewBox="0 0 130 48" className="w-full h-10" fill="none">
             <motion.path
               d={spendPath}
@@ -127,7 +128,7 @@ function DeepInsightsContent() {
           className="rounded-lg p-3"
           style={{ backgroundColor: CARD_BG, border: `1px solid ${CARD_BORDER}` }}
         >
-          <div className="text-[10px] text-white/35 mb-2">ROAS Trendi</div>
+          <div className="text-[10px] text-white/35 mb-2">{t('insights_roas_trend')}</div>
           <svg viewBox="0 0 130 48" className="w-full h-10" fill="none">
             <motion.path
               d={roasPath}
@@ -198,6 +199,7 @@ function DeepInsightsContent() {
 
 // ─── 2. AI Creative Tab ─────────────────────────────────────────────────────
 function AICreativeContent() {
+  const t = useTranslations('landing');
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: false, amount: 0.3 });
   const [showPreview, setShowPreview] = useState(false);
@@ -212,9 +214,9 @@ function AICreativeContent() {
   }, [isInView]);
 
   const styles = [
-    { label: 'Minimal', active: false },
-    { label: 'Canlı', active: true },
-    { label: 'Profesyonel', active: false },
+    { label: t('creative_style_minimal'), active: false },
+    { label: t('creative_style_vibrant'), active: true },
+    { label: t('creative_style_professional'), active: false },
   ];
 
   return (
@@ -227,9 +229,9 @@ function AICreativeContent() {
         animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
         transition={{ duration: 0.5, ease: EXPO_OUT }}
       >
-        <div className="text-[10px] text-white/25 mb-2">Prompt</div>
+        <div className="text-[10px] text-white/25 mb-2">{t('creative_prompt_label')}</div>
         <div className="text-[12px] text-white/20 leading-relaxed">
-          Ürün açıklaması girin...
+          {t('creative_prompt_placeholder')}
         </div>
       </motion.div>
 
@@ -266,7 +268,7 @@ function AICreativeContent() {
           className="relative overflow-hidden rounded-lg px-4 py-2.5 text-center text-[12px] font-semibold text-white cursor-default"
           style={{ backgroundColor: BLUE }}
         >
-          <span className="relative z-10">Oluştur</span>
+          <span className="relative z-10">{t('creative_generate')}</span>
           {/* Shimmer overlay */}
           <div
             className="absolute inset-0"
@@ -316,7 +318,7 @@ function AICreativeContent() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.3, ease: EXPO_OUT }}
               >
-                AI Üretimi
+                {t('creative_ai_generated')}
               </motion.div>
             </div>
             <div className="p-3 space-y-1.5">
@@ -332,18 +334,19 @@ function AICreativeContent() {
 
 // ─── 3. Campaign Tree Tab ───────────────────────────────────────────────────
 function CampaignTreeContent() {
+  const t = useTranslations('landing');
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: false, amount: 0.3 });
 
   const treeData = {
-    campaign: { name: 'Yaz Kampanyası', status: 'Aktif' },
+    campaign: { name: t('tree_campaign_name'), status: t('tree_campaign_status') },
     adSets: [
       {
-        name: 'Geniş Kitle',
-        ads: ['Görsel Reklam A', 'Video Reklam B'],
+        name: t('tree_adset_1'),
+        ads: [t('tree_ad_1'), t('tree_ad_2')],
       },
       {
-        name: 'Retargeting',
+        name: t('tree_adset_2'),
         ads: [],
       },
     ],
@@ -463,18 +466,18 @@ function CampaignTreeContent() {
         transition={{ duration: 0.5, delay: 0.85, ease: EXPO_OUT }}
       >
         <span className="text-[10px] text-white/40">
-          2 öğe seçili
+          {t('tree_items_selected')}
         </span>
         <span className="text-[10px] text-white/30 mx-2">|</span>
         <span className="text-[10px] font-medium" style={{ color: BLUE }}>
-          Toplu İşlem
+          {t('tree_bulk_action')}
         </span>
         <div className="flex-1" />
         <div
           className="px-2.5 py-1 rounded text-[10px] font-medium cursor-default"
           style={{ backgroundColor: `${AMBER}20`, color: AMBER }}
         >
-          Duraklat
+          {t('tree_pause')}
         </div>
       </motion.div>
     </div>
@@ -483,6 +486,7 @@ function CampaignTreeContent() {
 
 // ─── 4. Sector Benchmarking Tab ─────────────────────────────────────────────
 function BenchmarkContent() {
+  const t = useTranslations('landing');
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: false, amount: 0.3 });
 
@@ -508,7 +512,7 @@ function BenchmarkContent() {
 
           {/* Your bar */}
           <div className="flex items-center gap-2.5">
-            <span className="text-[10px] text-white/35 w-16 text-right shrink-0">Sizinki</span>
+            <span className="text-[10px] text-white/35 w-16 text-right shrink-0">{t('benchmark_yours')}</span>
             <div className="flex-1 h-[14px] rounded-[3px] overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}>
               <motion.div
                 className="h-full rounded-[3px] flex items-center justify-end pr-2"
@@ -524,7 +528,7 @@ function BenchmarkContent() {
 
           {/* Sector bar */}
           <div className="flex items-center gap-2.5">
-            <span className="text-[10px] text-white/25 w-16 text-right shrink-0">Sektör Ort.</span>
+            <span className="text-[10px] text-white/25 w-16 text-right shrink-0">{t('benchmark_sector_avg')}</span>
             <div className="flex-1 h-[14px] rounded-[3px] overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}>
               <motion.div
                 className="h-full rounded-[3px] flex items-center justify-end pr-2"
@@ -556,7 +560,7 @@ function BenchmarkContent() {
             <path d="M6 2L10 7H2L6 2Z" fill={GREEN} />
           </svg>
           <span className="text-[11px] font-medium" style={{ color: GREEN }}>
-            Sektörün %62 üstündesiniz
+            {t('benchmark_above_sector')}
           </span>
         </div>
       </motion.div>
@@ -620,7 +624,7 @@ export function ProductShowcase() {
                     }}
                   >
                     <Icon size={14} strokeWidth={isActive ? 2 : 1.5} />
-                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span className="hidden sm:inline">{t(tab.labelKey)}</span>
                   </button>
                 );
               })}

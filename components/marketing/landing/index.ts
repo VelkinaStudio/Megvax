@@ -1,9 +1,7 @@
 export { Hero } from './Hero';
 export { WhatItDoes } from './WhatItDoes';
 export { HowItWorks } from './HowItWorks';
-export { ProductShowcase } from './ProductShowcase';
 export { MetricsStrip } from './MetricsStrip';
-export { SocialProof } from './SocialProof';
 export { Testimonials } from './Testimonials';
 export { FinalCTA } from './FinalCTA';
 export { Footer } from './Footer';

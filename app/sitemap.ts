@@ -42,6 +42,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
     {
+      url: `${baseUrl}/contact`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/status`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.4,
+    },
+    {
       url: `${baseUrl}/privacy`,
       lastModified: now,
       changeFrequency: 'yearly',
@@ -52,6 +64,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: 'yearly',
       priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/cookies`,
+      lastModified: now,
+      changeFrequency: 'yearly',
+      priority: 0.2,
     },
   ];
 }
