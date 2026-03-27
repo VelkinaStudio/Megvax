@@ -9,6 +9,7 @@ import {
   AnimatePresence,
 } from 'framer-motion';
 import { useTranslations } from '@/lib/i18n';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 
 export function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -58,6 +59,7 @@ export function Nav() {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
+            <LanguageSwitcher variant="inline" />
             <Link href="/login" className="text-sm font-medium text-[#1A1A1A] hover:text-[#2563EB] transition-colors duration-200">
               {t('login')}
             </Link>
@@ -90,6 +92,7 @@ export function Nav() {
                 ),
               )}
               <motion.div className="flex flex-col items-center gap-4 mt-4" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.3 }}>
+                <LanguageSwitcher variant="inline" />
                 <Link href="/login" className="text-sm font-medium text-[#1A1A1A]" onClick={() => setMobileOpen(false)}>{t('login')}</Link>
                 <Link href="/signup" className="inline-flex items-center px-6 py-3 rounded-full bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] transition-colors" onClick={() => setMobileOpen(false)}>{t('signup')}</Link>
               </motion.div>

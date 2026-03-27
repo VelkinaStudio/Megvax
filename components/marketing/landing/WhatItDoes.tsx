@@ -335,7 +335,7 @@ export function WhatItDoes() {
         <ScrollReveal>
           <div className="text-center mb-20">
             <span className="inline-block px-3 py-1 rounded-full bg-accent-primary/8 text-accent-primary text-xs font-medium mb-4">
-              Özellikler
+              {t('features_badge')}
             </span>
             <h2
               className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold text-landing-text tracking-[-0.03em] mb-4"

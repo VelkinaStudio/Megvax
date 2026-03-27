@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MegVax — Original Brand Direction</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#111; color:#eee; font-family:'DM Sans',sans-serif; }
+
+  .container { max-width:1100px; margin:0 auto; padding:40px 32px; }
+
+  h1 { font-family:'DM Sans',sans-serif; font-size:28px; font-weight:600; color:#fff; margin-bottom:8px; }
+  .subtitle { font-size:15px; color:#888; margin-bottom:40px; line-height:1.5; }
+
+  .direction-grid { display:grid; grid-template-columns:1fr; gap:48px; }
+
+  .direction { border:1px solid #222; border-radius:12px; overflow:hidden; cursor:pointer; transition: border-color 0.2s; }
+  .direction:hover { border-color:#444; }
+  .direction.selected { border-color:#C8956C; }
+
+  .direction-label { display:flex; align-items:center; gap:12px; padding:16px 20px; background:#1a1a1a; border-bottom:1px solid #222; }
+  .direction-label .letter { width:28px; height:28px; border-radius:50%; background:#C8956C; color:#111; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; }
+  .direction-label h3 { font-size:16px; font-weight:500; color:#fff; }
+
+  .mockup-area { position:relative; }
+
+  /* === DIRECTION A: Warm Editorial === */
+  .mockup-a {
+    background:#F6F2ED;
+    padding:0;
+    min-height:480px;
+    display:flex;
+    flex-direction:column;
+  }
+  .mockup-a .nav {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 48px;
+    border-bottom:1px solid #E0D8CE;
+  }
+  .mockup-a .nav .logo {
+    font-family:'Instrument Serif',serif;
+    font-size:22px; font-weight:400; color:#1A1611; font-style:italic;
+  }
+  .mockup-a .nav .links {
+    display:flex; gap:28px; font-size:13px; color:#8A7D6D; font-weight:400;
+  }
+  .mockup-a .nav .cta-nav {
+    background:#1A1611; color:#F6F2ED; padding:8px 20px; border-radius:6px; font-size:13px; font-weight:500;
+  }
+  .mockup-a .hero {
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:64px 48px 48px;
+    text-align:center;
+  }
+  .mockup-a .hero .mono-badge {
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:2.5px; text-transform:uppercase;
+    color:#8A7D6D; margin-bottom:24px; border:1px solid #D4C9BA; padding:6px 16px; border-radius:4px;
+  }
+  .mockup-a .hero h2 {
+    font-family:'Instrument Serif',serif; font-size:52px; font-weight:400; color:#1A1611;
+    line-height:1.08; margin-bottom:20px; max-width:600px; font-style:normal;
+  }
+  .mockup-a .hero h2 em { font-style:italic; color:#C8956C; }
+  .mockup-a .hero .sub {
+    font-size:16px; color:#6B5F50; line-height:1.6; max-width:460px; margin-bottom:32px; font-weight:300;
+  }
+  .mockup-a .hero .ctas { display:flex; gap:12px; align-items:center; }
+  .mockup-a .hero .cta-primary {
+    background:#1A1611; color:#F6F2ED; padding:14px 32px; border-radius:6px;
+    font-size:14px; font-weight:500; letter-spacing:0.3px;
+  }
+  .mockup-a .hero .cta-secondary {
+    color:#8A7D6D; font-size:14px; font-weight:400; padding:14px 20px;
+    text-decoration:underline; text-underline-offset:3px;
+  }
+  .mockup-a .hero .trust {
+    margin-top:24px; font-family:'IBM Plex Mono',monospace;
+    font-size:11px; color:#B0A594; letter-spacing:1px;
+  }
+
+  /* === DIRECTION B: Tinted Minimal === */
+  .mockup-b {
+    background:#F0F4F1;
+    padding:0;
+    min-height:480px;
+    display:flex;
+    flex-direction:column;
+  }
+  .mockup-b .nav {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 48px;
+  }
+  .mockup-b .nav .logo {
+    font-family:'DM Sans',sans-serif;
+    font-size:18px; font-weight:600; color:#1B2B22; letter-spacing:-0.5px;
+  }
+  .mockup-b .nav .logo span { color:#3D7B5F; }
+  .mockup-b .nav .links {
+    display:flex; gap:28px; font-size:13px; color:#5E7A6A; font-weight:400;
+  }
+  .mockup-b .nav .cta-nav {
+    background:#1B2B22; color:#F0F4F1; padding:8px 20px; border-radius:999px; font-size:13px; font-weight:500;
+  }
+  .mockup-b .hero {
+    flex:1; display:flex; flex-direction:column; align-items:flex-start;
+    padding:56px 48px 48px;
+  }
+  .mockup-b .hero .mono-badge {
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase;
+    color:#3D7B5F; margin-bottom:28px; background:#D4E8DB; padding:6px 14px; border-radius:999px;
+  }
+  .mockup-b .hero h2 {
+    font-family:'DM Sans',sans-serif; font-size:46px; font-weight:600; color:#1B2B22;
+    line-height:1.1; margin-bottom:20px; max-width:520px; letter-spacing:-1.5px;
+  }
+  .mockup-b .hero .sub {
+    font-size:16px; color:#5E7A6A; line-height:1.6; max-width:420px; margin-bottom:32px; font-weight:300;
+  }
+  .mockup-b .hero .ctas { display:flex; gap:12px; align-items:center; }
+  .mockup-b .hero .cta-primary {
+    background:#1B2B22; color:#E8F0EB; padding:14px 28px; border-radius:999px;
+    font-size:14px; font-weight:500;
+  }
+  .mockup-b .hero .cta-secondary {
+    border:1px solid #B0CCBA; color:#3D7B5F; padding:14px 28px; border-radius:999px;
+    font-size:14px; font-weight:400;
+  }
+  .mockup-b .hero .metrics {
+    display:flex; gap:40px; margin-top:40px; padding-top:32px; border-top:1px solid #D4E0D8;
+    width:100%;
+  }
+  .mockup-b .hero .metric-item .num {
+    font-family:'DM Sans',sans-serif; font-size:28px; font-weight:600; color:#1B2B22; letter-spacing:-1px;
+  }
+  .mockup-b .hero .metric-item .label {
+    font-size:12px; color:#7A9585; margin-top:4px;
+  }
+
+  /* === DIRECTION C: Warm Contrast === */
+  .mockup-c {
+    background:#FFFBF5;
+    padding:0;
+    min-height:480px;
+    display:flex;
+    flex-direction:column;
+  }
+  .mockup-c .nav {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 48px;
+    border-bottom:1px solid #F0E6D6;
+  }
+  .mockup-c .nav .logo {
+    font-family:'Instrument Serif',serif;
+    font-size:20px; font-weight:400; color:#2C1810;
+  }
+  .mockup-c .nav .links {
+    display:flex; gap:28px; font-size:13px; color:#9C8B78; font-weight:400;
+  }
+  .mockup-c .nav .cta-nav {
+    background:#C8522E; color:#FFF; padding:8px 20px; border-radius:6px; font-size:13px; font-weight:500;
+  }
+  .mockup-c .hero {
+    flex:1; display:flex; padding:48px;
+    gap:48px; align-items:center;
+  }
+  .mockup-c .hero-left { flex:1; }
+  .mockup-c .hero-right {
+    flex:1; background:#2C1810; border-radius:12px; min-height:320px;
+    display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+  }
+  .mockup-c .hero-right::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(135deg, #3D2418 0%, #2C1810 50%, #1A0F0A 100%);
+  }
+  .mockup-c .hero-right .dash-placeholder {
+    position:relative; z-index:1; color:#C8956C; font-family:'IBM Plex Mono',monospace;
+    font-size:11px; letter-spacing:1px; text-transform:uppercase;
+  }
+  .mockup-c .hero-left .mono-badge {
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:2.5px; text-transform:uppercase;
+    color:#C8522E; margin-bottom:24px; display:inline-block;
+  }
+  .mockup-c .hero-left h2 {
+    font-family:'Instrument Serif',serif; font-size:44px; font-weight:400; color:#2C1810;
+    line-height:1.1; margin-bottom:18px;
+  }
+  .mockup-c .hero-left h2 strong {
+    font-weight:400; color:#C8522E;
+  }
+  .mockup-c .hero-left .sub {
+    font-size:15px; color:#7A6B5B; line-height:1.6; max-width:400px; margin-bottom:28px; font-weight:300;
+  }
+  .mockup-c .hero-left .ctas { display:flex; gap:12px; align-items:center; }
+  .mockup-c .hero-left .cta-primary {
+    background:#C8522E; color:#FFF; padding:14px 28px; border-radius:8px;
+    font-size:14px; font-weight:500;
+  }
+  .mockup-c .hero-left .cta-secondary {
+    color:#9C8B78; font-size:14px; font-weight:400; padding:14px 20px;
+    border:1px solid #E0D4C4; border-radius:8px;
+  }
+
+  .description { padding:20px; background:#151515; font-size:14px; color:#999; line-height:1.6; }
+  .description strong { color:#ddd; }
+
+  .note {
+    margin-top:32px; padding:20px; background:#1a1a1a; border:1px solid #222; border-radius:8px;
+    font-size:13px; color:#888; line-height:1.6;
+  }
+  .note strong { color:#C8956C; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>MegVax — Original Brand Directions</h1>
+  <p class="subtitle">No generic fonts, no default palettes, no SaaS cliches. Three distinctive identities — each ownable and unique. Click to select.</p>
+
+  <div class="direction-grid">
+
+    <div class="direction" data-choice="a" onclick="this.classList.toggle('selected'); document.querySelectorAll('.direction').forEach(d => { if(d!==this) d.classList.remove('selected') })">
+      <div class="direction-label">
+        <div class="letter">A</div>
+        <h3>Warm Editorial</h3>
+      </div>
+      <div class="mockup-area mockup-a">
+        <div class="nav">
+          <div class="logo">MegVax</div>
+          <div class="links"><span>Urun</span><span>Fiyatlar</span><span>Iletisim</span></div>
+          <div class="cta-nav">Giris Yap</div>
+        </div>
+        <div class="hero">
+          <div class="mono-badge">Otonom Reklam Yonetimi</div>
+          <h2>Reklamlarinizi <em>zekaya</em> birakin.</h2>
+          <div class="sub">Meta reklam hesaplarinizi baglayın, yapay zeka butcenizi optimize etsin. Siz isinize odaklanin.</div>
+          <div class="ctas">
+            <div class="cta-primary">Ucretsiz Basla</div>
+            <div class="cta-secondary">Nasil calisir?</div>
+          </div>
+          <div class="trust">14 gun ucretsiz · Kredi karti gerekmez</div>
+        </div>
+      </div>
+      <div class="description">
+        <strong>Instrument Serif</strong> (display) + <strong>DM Sans</strong> (body) + <strong>IBM Plex Mono</strong> (data/labels). Warm parchment background <strong>#F6F2ED</strong>, deep brown text <strong>#1A1611</strong>, caramel accent <strong>#C8956C</strong>. Feels like a premium financial product — trustworthy, warm, intellectual. The serif italic adds personality without being decorative.
+      </div>
+    </div>
+
+    <div class="direction" data-choice="b" onclick="this.classList.toggle('selected'); document.querySelectorAll('.direction').forEach(d => { if(d!==this) d.classList.remove('selected') })">
+      <div class="direction-label">
+        <div class="letter">B</div>
+        <h3>Sage Fintech</h3>
+      </div>
+      <div class="mockup-area mockup-b">
+        <div class="nav">
+          <div class="logo">Meg<span>Vax</span></div>
+          <div class="links"><span>Urun</span><span>Fiyatlar</span><span>Iletisim</span></div>
+          <div class="cta-nav">Basla</div>
+        </div>
+        <div class="hero">
+          <div class="mono-badge">Otonom Reklam Sistemi</div>
+          <h2>Butcenizi koruyun, ROAS'inizi buyutun.</h2>
+          <div class="sub">Yapay zeka dusuk performansli reklamlari durdurur, kazananlari olcekler. Otomatik.</div>
+          <div class="ctas">
+            <div class="cta-primary">Ucretsiz Dene</div>
+            <div class="cta-secondary">Demo Izle</div>
+          </div>
+          <div class="metrics">
+            <div class="metric-item"><div class="num">₺2M+</div><div class="label">Optimize edilen butce</div></div>
+            <div class="metric-item"><div class="num">3.2x</div><div class="label">Ortalama ROAS</div></div>
+            <div class="metric-item"><div class="num">150+</div><div class="label">Aktif hesap</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="description">
+        <strong>DM Sans</strong> (all text, tight tracking) + <strong>IBM Plex Mono</strong> (data/badges). Sage green tint <strong>#F0F4F1</strong>, forest text <strong>#1B2B22</strong>, natural green accent <strong>#3D7B5F</strong>. Feels like a fintech product — money, growth, trust. Pill shapes for CTAs. Metrics in hero. No serif, all precision.
+      </div>
+    </div>
+
+    <div class="direction" data-choice="c" onclick="this.classList.toggle('selected'); document.querySelectorAll('.direction').forEach(d => { if(d!==this) d.classList.remove('selected') })">
+      <div class="direction-label">
+        <div class="letter">C</div>
+        <h3>Terracotta Authority</h3>
+      </div>
+      <div class="mockup-area mockup-c">
+        <div class="nav">
+          <div class="logo">MegVax</div>
+          <div class="links"><span>Urun</span><span>Fiyatlar</span><span>Iletisim</span></div>
+          <div class="cta-nav">Giris Yap</div>
+        </div>
+        <div class="hero">
+          <div class="hero-left">
+            <div class="mono-badge">Meta Ads Autopilot</div>
+            <h2>Reklam butceniz <strong>guvende.</strong></h2>
+            <div class="sub">AI otopilot dusuk performansli reklamlari durdurur, kazananlari olcekler. 7/24 gozetim.</div>
+            <div class="ctas">
+              <div class="cta-primary">Hemen Basla</div>
+              <div class="cta-secondary">Nasil Calisir?</div>
+            </div>
+          </div>
+          <div class="hero-right">
+            <div class="dash-placeholder">[ Dashboard Preview ]</div>
+          </div>
+        </div>
+      </div>
+      <div class="description">
+        <strong>Instrument Serif</strong> (headlines) + <strong>DM Sans</strong> (body) + <strong>IBM Plex Mono</strong> (data). Cream canvas <strong>#FFFBF5</strong>, deep espresso text <strong>#2C1810</strong>, terracotta accent <strong>#C8522E</strong>. Two-column hero with dark dashboard preview. Feels authoritative yet warm — like a premium agency tool. Split layout gives space for product visual.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <strong>What makes these original:</strong> No blue (#2563EB). No Space Grotesk. No Inter as primary. No Tailwind default palette. No pill badges with green dots. Each direction has a distinctive color that no Turkish ad-tech competitor uses — caramel, sage green, terracotta. Typography choices (Instrument Serif, DM Sans, IBM Plex Mono) are uncommon in SaaS but proven in premium product design.
+  </div>
+</div>
+</body>
+</html>

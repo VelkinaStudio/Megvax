@@ -10,8 +10,8 @@ const columns = [
     title: 'Product',
     links: [
       { href: '/about', key: 'footer_about' },
-      { href: '/pricing', label: 'Fiyatlar' },
-      { href: '/#ozellikler', label: 'Ürün' },
+      { href: '/pricing', key: 'footer_pricing' },
+      { href: '/#ozellikler', key: 'footer_product' },
     ],
   },
   {
@@ -19,16 +19,16 @@ const columns = [
     title: 'Support',
     links: [
       { href: '/contact', key: 'footer_contact' },
-      { href: '/status', label: 'Durum' },
+      { href: '/status', key: 'footer_status' },
     ],
   },
   {
     titleKey: null,
     title: 'Legal',
     links: [
-      { href: '/privacy', label: 'Gizlilik' },
-      { href: '/terms', label: 'Kullanım Şartları' },
-      { href: '/cookies', label: 'Çerezler' },
+      { href: '/privacy', key: 'footer_privacy' },
+      { href: '/terms', key: 'footer_terms' },
+      { href: '/cookies', key: 'footer_cookies' },
     ],
   },
 ] as const;
@@ -47,7 +47,7 @@ export function Footer() {
           {/* Product */}
           <div className="flex flex-col gap-3">
             <span className="text-sm font-semibold text-landing-text mb-1">
-              Ürün
+              {t('footer_product')}
             </span>
             {columns[0].links.map((link) => (
               <Link
@@ -55,7 +55,7 @@ export function Footer() {
                 href={link.href}
                 className="text-[14px] text-landing-text-muted hover:text-landing-text transition-colors"
               >
-                {'key' in link ? t(link.key as string) : link.label}
+                {t(link.key)}
               </Link>
             ))}
           </div>
@@ -63,7 +63,7 @@ export function Footer() {
           {/* Support */}
           <div className="flex flex-col gap-3">
             <span className="text-sm font-semibold text-landing-text mb-1">
-              Destek
+              {t('footer_support')}
             </span>
             {columns[1].links.map((link) => (
               <Link
@@ -71,7 +71,7 @@ export function Footer() {
                 href={link.href}
                 className="text-[14px] text-landing-text-muted hover:text-landing-text transition-colors"
               >
-                {'key' in link ? t(link.key as string) : link.label}
+                {t(link.key)}
               </Link>
             ))}
           </div>
@@ -79,7 +79,7 @@ export function Footer() {
           {/* Legal */}
           <div className="flex flex-col gap-3">
             <span className="text-sm font-semibold text-landing-text mb-1">
-              Yasal
+              {t('footer_legal')}
             </span>
             {columns[2].links.map((link) => (
               <Link
@@ -87,7 +87,7 @@ export function Footer() {
                 href={link.href}
                 className="text-[14px] text-landing-text-muted hover:text-landing-text transition-colors"
               >
-                {'key' in link ? t(link.key as string) : link.label}
+                {t(link.key)}
               </Link>
             ))}
           </div>
@@ -104,7 +104,7 @@ export function Footer() {
               hello@megvax.com
             </a>
             <span className="text-[14px] text-landing-text-muted">
-              İstanbul, Türkiye
+              {t('footer_location')}
             </span>
           </div>
         </div>

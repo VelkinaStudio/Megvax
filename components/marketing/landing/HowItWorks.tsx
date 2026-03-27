@@ -196,7 +196,7 @@ export function HowItWorks() {
         <ScrollReveal>
           <div className="text-center mb-16">
             <span className="inline-block px-3 py-1 rounded-full bg-accent-primary/8 text-accent-primary text-xs font-medium mb-4">
-              {t('how_it_works_heading').includes('adım') ? 'Nasıl çalışır?' : 'How it works'}
+              {t('how_it_works_badge')}
             </span>
             <h2
               className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold text-landing-text tracking-[-0.03em] mb-4"

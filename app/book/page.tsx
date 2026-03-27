@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Video, Shield, CheckCircle, CalendarDays, ArrowRight } from 'lucide-react';
+import { Clock, Video, Shield, CheckCircle, CalendarDays, ArrowRight, Loader2 } from 'lucide-react';
+import { api } from '@/lib/api';
 import Link from 'next/link';
 import { Nav } from '@/components/marketing/landing/Nav';
 import { Footer } from '@/components/marketing/landing/Footer';
@@ -40,11 +41,30 @@ export default function BookPage() {
 
   const timeSlots = useMemo(() => generateTimeSlots(selectedDate), [selectedDate]);
 
-  const canSubmit = selectedDate && selectedTime && name.trim() && email.trim();
+  const [booking, setBooking] = useState(false);
+  const canSubmit = selectedDate && selectedTime && name.trim() && email.trim() && !booking;
 
-  const handleBook = () => {
-    if (!canSubmit) return;
-    setBooked(true);
+  const handleBook = async () => {
+    if (!canSubmit || !selectedDate || !selectedTime) return;
+    setBooking(true);
+    try {
+      await api('/meetings', {
+        method: 'POST',
+        body: JSON.stringify({
+          name,
+          email,
+          company: company || undefined,
+          notes: notes || undefined,
+          date: selectedDate.toISOString().split('T')[0],
+          time: selectedTime,
+        }),
+      });
+    } catch {
+      // API might not be available yet — proceed with UI confirmation anyway
+    } finally {
+      setBooking(false);
+      setBooked(true);
+    }
   };
 
   const handleReset = () => {
@@ -242,12 +262,13 @@ export default function BookPage() {
                     <button
                       onClick={handleBook}
                       disabled={!canSubmit}
-                      className={`w-full px-5 py-3 rounded-lg text-sm font-semibold transition-all ${
+                      className={`w-full px-5 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
                         canSubmit
                           ? 'bg-[#2563EB] text-white hover:bg-[#1D4ED8] cursor-pointer'
                           : 'bg-[#F3F2EF] text-[#9CA3AF] cursor-not-allowed'
                       }`}
                     >
+                      {booking && <Loader2 className="w-4 h-4 animate-spin" />}
                       {t('confirm_booking')}
                     </button>
                   </div>

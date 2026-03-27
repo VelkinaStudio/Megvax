@@ -14,7 +14,25 @@ const spring = {
   mass: 0.8,
 };
 
-function DashboardMockup() {
+interface DashboardTranslations {
+  overview: string;
+  accountName: string;
+  dateRange: string;
+  spend: string;
+  conversions: string;
+  spendVsRevenue: string;
+  revenue: string;
+  campaign: string;
+  status: string;
+  campaign1: string;
+  campaign2: string;
+  campaign3: string;
+  statusActive: string;
+  statusScaled: string;
+  statusPaused: string;
+}
+
+function DashboardMockup({ translations: tr }: { translations: DashboardTranslations }) {
   const ref = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -96,21 +114,21 @@ function DashboardMockup() {
             <div className="relative flex-1 p-4 sm:p-5 bg-[#0f1117] min-h-0">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-[11px] text-white/30">Genel Bakış</p>
-                  <p className="text-sm font-semibold text-white/80" style={{ fontFamily: 'var(--font-display)' }}>Moda Store</p>
+                  <p className="text-[11px] text-white/30">{tr.overview}</p>
+                  <p className="text-sm font-semibold text-white/80" style={{ fontFamily: 'var(--font-display)' }}>{tr.accountName}</p>
                 </div>
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.04] text-[9px] text-white/30">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  Son 7 gün
+                  {tr.dateRange}
                 </div>
               </div>
 
               {/* KPI cards with sparklines */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4">
                 {[
-                  { label: 'Harcama', value: '₺142.8K', change: '+12%', spark: [30, 45, 38, 52, 48, 60, 65] },
+                  { label: tr.spend, value: '₺142.8K', change: '+12%', spark: [30, 45, 38, 52, 48, 60, 65] },
                   { label: 'ROAS', value: '3.42x', change: '+0.8x', spark: [20, 28, 25, 35, 32, 40, 42] },
-                  { label: 'Dönüşüm', value: '1.284', change: '+18%', spark: [25, 30, 28, 38, 35, 45, 50] },
+                  { label: tr.conversions, value: '1.284', change: '+18%', spark: [25, 30, 28, 38, 35, 45, 50] },
                   { label: 'CPA', value: '₺28.40', change: '-15%', spark: [50, 45, 48, 38, 40, 32, 28] },
                 ].map((kpi) => (
                   <div key={kpi.label} className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-3">
@@ -139,10 +157,10 @@ function DashboardMockup() {
               {/* SVG area chart */}
               <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-3 mb-3">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] text-white/35">Harcama vs Gelir</p>
+                  <p className="text-[10px] text-white/35">{tr.spendVsRevenue}</p>
                   <div className="flex gap-3 text-[9px] text-white/25">
-                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" />Harcama</span>
-                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />Gelir</span>
+                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" />{tr.spend}</span>
+                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />{tr.revenue}</span>
                   </div>
                 </div>
                 <svg className="w-full h-24 sm:h-28" viewBox="0 0 300 100" fill="none" preserveAspectRatio="none">
@@ -169,16 +187,16 @@ function DashboardMockup() {
               {/* Campaign table */}
               <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] overflow-hidden">
                 <div className="grid grid-cols-[1fr_70px_50px] sm:grid-cols-[1fr_72px_52px_52px_80px] gap-1.5 px-3 py-1.5 text-[8px] text-white/25 border-b border-white/[0.04] uppercase tracking-wider">
-                  <span>Kampanya</span>
-                  <span className="text-right">Harcama</span>
+                  <span>{tr.campaign}</span>
+                  <span className="text-right">{tr.spend}</span>
                   <span className="text-right">ROAS</span>
                   <span className="text-right hidden sm:block">CPA</span>
-                  <span className="text-right hidden sm:block">Durum</span>
+                  <span className="text-right hidden sm:block">{tr.status}</span>
                 </div>
                 {[
-                  { name: 'Yaz Koleksiyonu', spend: '₺24.5K', roas: '4.2x', cpa: '₺22', status: 'Aktif', sColor: 'text-emerald-400', sBg: 'bg-emerald-400/10' },
-                  { name: 'Retargeting - Sepet', spend: '₺18.2K', roas: '5.1x', cpa: '₺18', status: 'AI Ölçeklendi', sColor: 'text-blue-400', sBg: 'bg-blue-400/10' },
-                  { name: 'Lookalike %1', spend: '₺12.8K', roas: '1.1x', cpa: '₺45', status: 'AI Durdurdu', sColor: 'text-amber-400', sBg: 'bg-amber-400/10' },
+                  { name: tr.campaign1, spend: '₺24.5K', roas: '4.2x', cpa: '₺22', status: tr.statusActive, sColor: 'text-emerald-400', sBg: 'bg-emerald-400/10' },
+                  { name: tr.campaign2, spend: '₺18.2K', roas: '5.1x', cpa: '₺18', status: tr.statusScaled, sColor: 'text-blue-400', sBg: 'bg-blue-400/10' },
+                  { name: tr.campaign3, spend: '₺12.8K', roas: '1.1x', cpa: '₺45', status: tr.statusPaused, sColor: 'text-amber-400', sBg: 'bg-amber-400/10' },
                 ].map((row) => (
                   <div key={row.name} className="grid grid-cols-[1fr_70px_50px] sm:grid-cols-[1fr_72px_52px_52px_80px] gap-1.5 px-3 py-2 text-[10px] text-white/60 border-b border-white/[0.02] last:border-0">
                     <span className="font-medium text-white/80 truncate">{row.name}</span>
@@ -298,7 +316,23 @@ export function Hero() {
         </motion.div>
 
         {/* Product Dashboard */}
-        <DashboardMockup />
+        <DashboardMockup translations={{
+          overview: t('dashboard_overview'),
+          accountName: t('dashboard_account_name'),
+          dateRange: t('dashboard_date_range'),
+          spend: t('dashboard_spend'),
+          conversions: t('dashboard_conversions'),
+          spendVsRevenue: t('dashboard_spend_vs_revenue'),
+          revenue: t('dashboard_revenue'),
+          campaign: t('dashboard_campaign'),
+          status: t('dashboard_status'),
+          campaign1: t('dashboard_campaign_1'),
+          campaign2: t('dashboard_campaign_2'),
+          campaign3: t('dashboard_campaign_3'),
+          statusActive: t('dashboard_status_active'),
+          statusScaled: t('dashboard_status_scaled'),
+          statusPaused: t('dashboard_status_paused'),
+        }} />
       </div>
     </section>
   );

@@ -2,25 +2,44 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, MessageSquare, MapPin, Send } from 'lucide-react';
+import { Mail, MessageSquare, MapPin, Send, Loader2 } from 'lucide-react';
 import { Nav } from '@/components/marketing/landing/Nav';
 import { Footer } from '@/components/marketing/landing/Footer';
 import { useTranslations } from '@/lib/i18n';
 import { useToast } from '@/components/ui/Toast';
+import { api } from '@/lib/api';
 
 export default function ContactPage() {
   const t = useTranslations('contact');
   const toast = useToast();
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { name, email, subject, message } = formData;
-    const body = `${message}\n\n---\nFrom: ${name}\nEmail: ${email}`;
-    const mailto = `mailto:hello@megvax.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailto;
-    toast.success(t('success'));
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    setSending(true);
+    try {
+      await api('/meetings', { method: 'POST', body: JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        date: new Date().toISOString().split('T')[0],
+        time: '00:00',
+        notes: `[Contact Form]\nSubject: ${formData.subject}\n\n${formData.message}`,
+        company: '',
+      }) });
+      toast.success(t('success'));
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch {
+      // Fallback to mailto if API is unavailable
+      const { name, email, subject, message } = formData;
+      const body = `${message}\n\n---\nFrom: ${name}\nEmail: ${email}`;
+      const mailto = `mailto:hello@megvax.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.location.href = mailto;
+      toast.success(t('success'));
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } finally {
+      setSending(false);
+    }
   };
 
   const contactInfo = [
@@ -122,10 +141,11 @@ export default function ContactPage() {
                 </div>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#2563EB] text-white rounded-xl font-semibold text-sm hover:bg-[#1D4ED8] transition-all shadow-lg shadow-[#2563EB]/20"
+                  disabled={sending}
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#2563EB] text-white rounded-xl font-semibold text-sm hover:bg-[#1D4ED8] transition-all shadow-lg shadow-[#2563EB]/20 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  <Send className="w-4 h-4" />
-                  {t('send')}
+                  {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  {sending ? t('sending') : t('send')}
                 </button>
               </motion.form>
             </div>
