@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail,
   Send,
@@ -13,6 +13,7 @@ import {
   ChevronRight,
   HelpCircle,
   Activity,
+  Check,
 } from 'lucide-react';
 import { Nav } from '@/components/marketing/landing/Nav';
 import { Footer } from '@/components/marketing/landing/Footer';
@@ -35,6 +36,7 @@ export default function ContactPage() {
     message: '',
   });
   const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +55,8 @@ export default function ContactPage() {
       });
       toast.success(t('success'));
       setFormData({ name: '', email: '', company: '', subject: 'general', message: '' });
+      setSent(true);
+      setTimeout(() => setSent(false), 3000);
     } catch {
       const { name, email, subject, message, company } = formData;
       const body = `${message}\n\n---\nFrom: ${name}\nEmail: ${email}\nCompany: ${company}`;
@@ -60,6 +64,8 @@ export default function ContactPage() {
       window.location.href = mailto;
       toast.success(t('success'));
       setFormData({ name: '', email: '', company: '', subject: 'general', message: '' });
+      setSent(true);
+      setTimeout(() => setSent(false), 3000);
     } finally {
       setSending(false);
     }
@@ -84,6 +90,22 @@ export default function ContactPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
+            {/* Animated floating envelope icon */}
+            <motion.div
+              className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#2563EB]/[0.08] mb-5"
+              animate={{
+                y: [0, -6, 0],
+                scale: [1, 1.04, 1],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            >
+              <Mail className="w-7 h-7 text-[#2563EB]" />
+            </motion.div>
+
             <h1
               className="text-4xl md:text-5xl font-extrabold text-[#1A1A1A] mb-4 tracking-tight"
               style={{ fontFamily: 'var(--font-display)' }}
@@ -269,18 +291,55 @@ export default function ContactPage() {
                     />
                   </div>
 
-                  <button
+                  <motion.button
                     type="submit"
-                    disabled={sending}
-                    className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#2563EB] text-white rounded-xl font-semibold text-sm hover:bg-[#1D4ED8] active:scale-[0.98] transition-all shadow-lg shadow-[#2563EB]/20 disabled:opacity-60 disabled:cursor-not-allowed"
+                    disabled={sending || sent}
+                    className={`inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl font-semibold text-sm transition-all shadow-lg disabled:cursor-not-allowed ${
+                      sent
+                        ? 'bg-emerald-500 text-white shadow-emerald-500/20'
+                        : 'bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-[#2563EB]/20 active:scale-[0.98] disabled:opacity-60'
+                    }`}
+                    animate={sent ? { scale: [1, 1.05, 1] } : {}}
+                    transition={{ duration: 0.3 }}
                   >
-                    {sending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
-                    {sending ? t('sending') : t('send')}
-                  </button>
+                    <AnimatePresence mode="wait">
+                      {sent ? (
+                        <motion.span
+                          key="check"
+                          className="inline-flex items-center gap-2"
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.5 }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                        >
+                          <Check className="w-4 h-4" />
+                          {t('success')}
+                        </motion.span>
+                      ) : sending ? (
+                        <motion.span
+                          key="loading"
+                          className="inline-flex items-center gap-2"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          {t('sending')}
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="default"
+                          className="inline-flex items-center gap-2"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          <Send className="w-4 h-4" />
+                          {t('send')}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
                 </form>
               </div>
             </ScrollReveal>
