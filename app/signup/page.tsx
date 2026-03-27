@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Mail, Lock, User, Building, ArrowRight, Eye, EyeOff, Check, Shield, Clock, CreditCard } from 'lucide-react';
+import { Mail, Lock, User, Building, ArrowRight, Eye, EyeOff, Clock, Zap, LayoutGrid } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,34 +41,44 @@ const strengthTextColors = {
   3: 'text-emerald-500',
 };
 
-/* ───── Animated glow orb ───── */
-function GlowOrb({ className }: { className?: string }) {
+/* ───── Animated gradient background with shifting position ───── */
+function AnimatedGradientBg() {
   return (
-    <motion.div
-      animate={{
-        scale: [1, 1.15, 1],
-        opacity: [0.3, 0.5, 0.3],
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        background: 'linear-gradient(135deg, #0C0D14, #111827, #0C0D14, #111827)',
+        backgroundSize: '400% 400%',
+        animation: 'gradientShift 20s ease infinite',
       }}
-      transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-      className={`absolute rounded-full blur-[80px] pointer-events-none ${className}`}
-    />
+    >
+      <style>{`
+        @keyframes gradientShift {
+          0% { background-position: 0% 0%; }
+          25% { background-position: 100% 50%; }
+          50% { background-position: 50% 100%; }
+          75% { background-position: 0% 50%; }
+          100% { background-position: 0% 0%; }
+        }
+      `}</style>
+    </div>
   );
 }
 
-/* ───── Ambient particle field for dark panel ───── */
-function ParticleField() {
+/* ───── Subtle ambient particles (reduced count, very low opacity) ───── */
+function SubtleParticles() {
   const particles = useMemo(
     () =>
-      Array.from({ length: 25 }, (_, i) => ({
+      Array.from({ length: 15 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        size: 2 + Math.random() * 3,
-        opacity: 0.05 + Math.random() * 0.1,
-        duration: 12 + Math.random() * 18,
-        delay: Math.random() * 8,
-        driftX: (Math.random() - 0.5) * 60,
-        driftY: (Math.random() - 0.5) * 40,
+        size: 1.5 + Math.random() * 2,
+        opacity: 0.03 + Math.random() * 0.02,
+        duration: 14 + Math.random() * 16,
+        delay: Math.random() * 6,
+        driftX: (Math.random() - 0.5) * 50,
+        driftY: (Math.random() - 0.5) * 35,
       })),
     []
   );
@@ -89,7 +99,7 @@ function ParticleField() {
           animate={{
             x: [0, p.driftX, -p.driftX * 0.5, 0],
             y: [0, p.driftY, -p.driftY * 0.7, 0],
-            opacity: [p.opacity, p.opacity * 1.5, p.opacity * 0.6, p.opacity],
+            opacity: [p.opacity, p.opacity * 1.4, p.opacity * 0.7, p.opacity],
           }}
           transition={{
             duration: p.duration,
@@ -100,6 +110,80 @@ function ParticleField() {
         />
       ))}
     </div>
+  );
+}
+
+/* ───── Benefit card with glass-morphism ───── */
+function BenefitCard({
+  icon: Icon,
+  title,
+  delay,
+}: {
+  icon: typeof Clock;
+  title: string;
+  delay: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{
+        delay,
+        type: 'spring',
+        stiffness: 120,
+        damping: 18,
+      }}
+      className="backdrop-blur-sm bg-white/[0.04] border border-white/[0.08] rounded-xl px-5 py-4 flex items-center gap-4"
+    >
+      <div className="w-10 h-10 rounded-lg bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-5 h-5 text-[#60A5FA]" />
+      </div>
+      <span className="text-white/80 text-[15px] font-medium">{title}</span>
+    </motion.div>
+  );
+}
+
+/* ───── Social proof avatar circles ───── */
+function SocialProofAvatars({ text }: { text: string }) {
+  const avatars = useMemo(
+    () => [
+      { initials: 'AK', bg: '#2563EB' },
+      { initials: 'SE', bg: '#7C3AED' },
+      { initials: 'MO', bg: '#0891B2' },
+      { initials: 'FY', bg: '#059669' },
+      { initials: 'BT', bg: '#D97706' },
+    ],
+    []
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1.2, duration: 0.6 }}
+      className="flex items-center gap-3"
+    >
+      <div className="flex -space-x-2">
+        {avatars.map((a, i) => (
+          <motion.div
+            key={a.initials}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              delay: 1.4 + i * 0.1,
+              type: 'spring',
+              stiffness: 260,
+              damping: 20,
+            }}
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white border-2 border-[#0C0D14]"
+            style={{ backgroundColor: a.bg }}
+          >
+            {a.initials}
+          </motion.div>
+        ))}
+      </div>
+      <span className="text-white/40 text-sm">{text}</span>
+    </motion.div>
   );
 }
 
@@ -128,31 +212,6 @@ function FocusInput({
         transition={{ duration: 0.25 }}
       />
       <div className="relative">{children}</div>
-    </motion.div>
-  );
-}
-
-/* ───── Trust badge ───── */
-function TrustBadge({
-  icon: Icon,
-  text,
-  delay,
-}: {
-  icon: typeof Check;
-  text: string;
-  delay: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="flex items-center gap-3"
-    >
-      <div className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
-        <Icon className="w-4 h-4 text-emerald-400" />
-      </div>
-      <span className="text-white/60 text-sm">{text}</span>
     </motion.div>
   );
 }
@@ -212,19 +271,29 @@ export default function SignupPage() {
 
   return (
     <main className="min-h-screen flex bg-[#FAFAF8]">
-      {/* ─── Left: Brand Panel (hidden on mobile) ─── */}
+      {/* ─── Left: Premium Brand Panel (hidden on mobile) ─── */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
-        className="hidden lg:flex lg:w-[60%] relative overflow-hidden bg-[#0C0D14] flex-col justify-between p-12"
+        className="hidden lg:flex lg:w-[60%] relative overflow-hidden flex-col justify-between p-12"
       >
-        {/* Background glow effects */}
-        <GlowOrb className="w-[400px] h-[400px] bg-[#2563EB]/30 -top-20 -left-20" />
-        <GlowOrb className="w-[300px] h-[300px] bg-[#7c3aed]/20 bottom-20 right-10" />
+        {/* Animated gradient background */}
+        <AnimatedGradientBg />
 
-        {/* Ambient particle field */}
-        <ParticleField />
+        {/* Subtle ambient particles */}
+        <SubtleParticles />
+
+        {/* Soft glow accent — top left */}
+        <div
+          className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%)' }}
+        />
+        {/* Soft glow accent — bottom right */}
+        <div
+          className="absolute -bottom-24 -right-24 w-[400px] h-[400px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)' }}
+        />
 
         {/* Top: Logo */}
         <div className="relative z-10">
@@ -236,43 +305,49 @@ export default function SignupPage() {
           </Link>
         </div>
 
-        {/* Center: Headline + Trust elements */}
-        <div className="relative z-10 flex-1 flex flex-col justify-center -mt-8">
+        {/* Center: Hero text + Benefit cards */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center -mt-4">
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-4"
+            transition={{ delay: 0.2, type: 'spring', stiffness: 100, damping: 20 }}
+            className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-3"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            {t('brand_signup_headline')}
+            {t('brand_signup_prefix')}{' '}
+            <span className="bg-gradient-to-r from-[#2563EB] via-[#60A5FA] to-[#2563EB] bg-clip-text text-transparent">
+              {t('brand_signup_accent')}
+            </span>
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="text-white/50 text-lg max-w-md mb-12"
+            transition={{ delay: 0.35, type: 'spring', stiffness: 100, damping: 20 }}
+            className="text-white/45 text-lg max-w-md mb-10"
           >
             {t('brand_signup_desc')}
           </motion.p>
 
-          {/* Trust badges */}
-          <div className="flex flex-col gap-4">
-            <TrustBadge icon={Clock} text={t('trust_free_trial')} delay={0.5} />
-            <TrustBadge icon={CreditCard} text={t('trust_no_card')} delay={0.65} />
-            <TrustBadge icon={Shield} text={t('trust_cancel_anytime')} delay={0.8} />
+          {/* 3 benefit cards */}
+          <div className="flex flex-col gap-3 max-w-[380px]">
+            <BenefitCard icon={Clock} title={t('benefit_free_trial')} delay={0.5} />
+            <BenefitCard icon={Zap} title={t('benefit_quick_setup')} delay={0.65} />
+            <BenefitCard icon={LayoutGrid} title={t('benefit_all_platforms')} delay={0.8} />
           </div>
         </div>
 
-        {/* Bottom: Social proof */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.8 }}
-          className="relative z-10"
-        >
-          <p className="text-white/30 text-sm">{t('brand_trusted')}</p>
-        </motion.div>
+        {/* Bottom: Social proof + Trust badges */}
+        <div className="relative z-10 space-y-4">
+          <SocialProofAvatars text={t('social_proof_signup')} />
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2, duration: 0.8 }}
+            className="text-white/25 text-xs"
+          >
+            {t('trust_badge_free')} &middot; {t('trust_no_card')} &middot; {t('trust_cancel_anytime')}
+          </motion.p>
+        </div>
       </motion.div>
 
       {/* ─── Right: Signup Form ─── */}

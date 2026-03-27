@@ -16,6 +16,66 @@ interface User {
   createdAt: string;
 }
 
+/* ── Mock/demo accounts — fallback when API is unreachable ── */
+const MOCK_ACCOUNTS = [
+  {
+    email: 'demo@megvax.com',
+    password: 'demo123',
+    user: {
+      id: 'demo-user-001',
+      email: 'demo@megvax.com',
+      fullName: 'Demo Kullanıcı',
+      avatar: null,
+      locale: 'tr',
+      emailVerified: true,
+      isAdmin: false,
+      lastLoginAt: new Date().toISOString(),
+      createdAt: '2025-01-01T00:00:00.000Z',
+    } satisfies User,
+  },
+  {
+    email: 'admin@megvax.com',
+    password: 'admin123',
+    user: {
+      id: 'demo-admin-001',
+      email: 'admin@megvax.com',
+      fullName: 'Admin',
+      avatar: null,
+      locale: 'tr',
+      emailVerified: true,
+      isAdmin: true,
+      lastLoginAt: new Date().toISOString(),
+      createdAt: '2025-01-01T00:00:00.000Z',
+    } satisfies User,
+  },
+] as const;
+
+/** Build a realistic-looking JWT so downstream code that inspects token structure won't crash. */
+function createMockToken(user: User): string {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = btoa(
+    JSON.stringify({
+      sub: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      isAdmin: user.isAdmin,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 86400, // 24h
+    })
+  );
+  const signature = btoa('mock-signature');
+  return `${header}.${payload}.${signature}`;
+}
+
+function tryMockLogin(email: string, password: string): { accessToken: string; user: User } | null {
+  const account = MOCK_ACCOUNTS.find(
+    (a) => a.email === email.toLowerCase().trim() && a.password === password
+  );
+  if (!account) return null;
+  const user = { ...account.user, lastLoginAt: new Date().toISOString() };
+  return { accessToken: createMockToken(user), user };
+}
+
 interface AuthState {
   user: User | null;
   isLoading: boolean;
@@ -48,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // On mount, try to restore session via refresh token cookie
+  // On mount, try to restore session via refresh token cookie or mock session
   useEffect(() => {
     const tryRestore = async () => {
       try {
@@ -64,12 +124,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const data = await res.json();
           setAccessToken(data.accessToken);
           setState({ user: data.user, isLoading: false, isAuthenticated: true });
-        } else {
-          setState(s => ({ ...s, isLoading: false }));
+          return;
         }
       } catch {
-        setState(s => ({ ...s, isLoading: false }));
+        // API unreachable — check for persisted mock session
       }
+      // Try to restore a mock session from sessionStorage
+      try {
+        const stored = sessionStorage.getItem('megvax_mock_session');
+        if (stored) {
+          const { user, accessToken: token } = JSON.parse(stored) as { user: User; accessToken: string };
+          setAccessToken(token);
+          setState({ user, isLoading: false, isAuthenticated: true });
+          return;
+        }
+      } catch {
+        // sessionStorage unavailable or corrupt — ignore
+      }
+      setState(s => ({ ...s, isLoading: false }));
     };
     tryRestore();
   }, []);
@@ -84,13 +156,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const data = await api<{ accessToken: string; user: User }>('/auth/login', {
-      method: 'POST',
-      body: { email, password },
-      skipAuth: true,
-    });
-    setAccessToken(data.accessToken);
-    setState({ user: data.user, isLoading: false, isAuthenticated: true });
+    try {
+      const data = await api<{ accessToken: string; user: User }>('/auth/login', {
+        method: 'POST',
+        body: { email, password },
+        skipAuth: true,
+      });
+      setAccessToken(data.accessToken);
+      setState({ user: data.user, isLoading: false, isAuthenticated: true });
+    } catch (apiError) {
+      // If it's a clear auth rejection from the API (401/403), don't fall back to mock
+      if (apiError instanceof ApiError && (apiError.status === 401 || apiError.status === 403)) {
+        throw apiError;
+      }
+      // API unreachable or server error — try mock credentials as fallback
+      const mockResult = tryMockLogin(email, password);
+      if (mockResult) {
+        setAccessToken(mockResult.accessToken);
+        setState({ user: mockResult.user, isLoading: false, isAuthenticated: true });
+        try { sessionStorage.setItem('megvax_mock_session', JSON.stringify(mockResult)); } catch {}
+        return;
+      }
+      // Mock didn't match either — throw the original API error
+      throw apiError;
+    }
   }, []);
 
   const register = useCallback(async (email: string, password: string, fullName: string) => {
@@ -110,6 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Logout should always succeed client-side
     }
     setAccessToken(null);
+    try { sessionStorage.removeItem('megvax_mock_session'); } catch {}
     setState({ user: null, isLoading: false, isAuthenticated: false });
   }, []);
 

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff, Copy, Check, UserCircle, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -10,71 +10,44 @@ import { useTranslations } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
 import { ApiError } from '@/lib/api';
 
-/* ───── Floating KPI card for brand panel — gentle bob animation ───── */
-function KpiCard({
-  label,
-  value,
-  delta,
-  delay,
-}: {
-  label: string;
-  value: string;
-  delta: string;
-  delay: number;
-}) {
+/* ───── Animated gradient background with shifting position ───── */
+function AnimatedGradientBg() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{
-        opacity: 1,
-        y: [0, -6, 0],
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        background: 'linear-gradient(135deg, #0C0D14, #111827, #0C0D14, #111827)',
+        backgroundSize: '400% 400%',
+        animation: 'gradientShift 20s ease infinite',
       }}
-      transition={{
-        opacity: { delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
-        y: {
-          delay: delay + 0.6,
-          duration: 3 + delay * 2,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        },
-      }}
-      className="bg-white/[0.06] backdrop-blur-md border border-white/[0.08] rounded-xl px-5 py-4 min-w-[160px]"
     >
-      <p className="text-[11px] uppercase tracking-wider text-white/40 mb-1">{label}</p>
-      <p className="text-2xl font-bold text-white">{value}</p>
-      <p className="text-xs text-emerald-400 mt-1">{delta}</p>
-    </motion.div>
+      <style>{`
+        @keyframes gradientShift {
+          0% { background-position: 0% 0%; }
+          25% { background-position: 100% 50%; }
+          50% { background-position: 50% 100%; }
+          75% { background-position: 0% 50%; }
+          100% { background-position: 0% 0%; }
+        }
+      `}</style>
+    </div>
   );
 }
 
-/* ───── Animated glow orb ───── */
-function GlowOrb({ className }: { className?: string }) {
-  return (
-    <motion.div
-      animate={{
-        scale: [1, 1.15, 1],
-        opacity: [0.3, 0.5, 0.3],
-      }}
-      transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-      className={`absolute rounded-full blur-[80px] pointer-events-none ${className}`}
-    />
-  );
-}
-
-/* ───── Ambient particle field for dark panel ───── */
-function ParticleField() {
+/* ───── Subtle ambient particles (reduced count, very low opacity) ───── */
+function SubtleParticles() {
   const particles = useMemo(
     () =>
-      Array.from({ length: 25 }, (_, i) => ({
+      Array.from({ length: 15 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        size: 2 + Math.random() * 3,
-        opacity: 0.05 + Math.random() * 0.1,
-        duration: 12 + Math.random() * 18,
-        delay: Math.random() * 8,
-        driftX: (Math.random() - 0.5) * 60,
-        driftY: (Math.random() - 0.5) * 40,
+        size: 1.5 + Math.random() * 2,
+        opacity: 0.03 + Math.random() * 0.02,
+        duration: 14 + Math.random() * 16,
+        delay: Math.random() * 6,
+        driftX: (Math.random() - 0.5) * 50,
+        driftY: (Math.random() - 0.5) * 35,
       })),
     []
   );
@@ -95,7 +68,7 @@ function ParticleField() {
           animate={{
             x: [0, p.driftX, -p.driftX * 0.5, 0],
             y: [0, p.driftY, -p.driftY * 0.7, 0],
-            opacity: [p.opacity, p.opacity * 1.5, p.opacity * 0.6, p.opacity],
+            opacity: [p.opacity, p.opacity * 1.4, p.opacity * 0.7, p.opacity],
           }}
           transition={{
             duration: p.duration,
@@ -106,6 +79,173 @@ function ParticleField() {
         />
       ))}
     </div>
+  );
+}
+
+/* ───── Mini area chart SVG with animated pathLength draw-in ───── */
+function MiniAreaChart() {
+  const chartPath = 'M0,80 C30,75 50,60 80,55 C110,50 130,35 160,40 C190,45 210,25 240,20 C270,15 290,30 320,18 C350,6 370,12 400,8';
+  const areaPath = `${chartPath} L400,100 L0,100 Z`;
+
+  return (
+    <svg viewBox="0 0 400 100" className="w-full h-[100px]" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#2563EB" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {/* Area fill */}
+      <motion.path
+        d={areaPath}
+        fill="url(#chartGradient)"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2, duration: 1 }}
+      />
+      {/* Line stroke with draw-in animation */}
+      <motion.path
+        d={chartPath}
+        fill="none"
+        stroke="#2563EB"
+        strokeWidth="2"
+        strokeLinecap="round"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ delay: 0.8, duration: 2, ease: [0.22, 1, 0.36, 1] }}
+      />
+      {/* Endpoint dot */}
+      <motion.circle
+        cx="400"
+        cy="8"
+        r="4"
+        fill="#2563EB"
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 2.8, duration: 0.4, type: 'spring', stiffness: 200, damping: 15 }}
+      />
+      <motion.circle
+        cx="400"
+        cy="8"
+        r="8"
+        fill="#2563EB"
+        opacity="0.2"
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 0.2, scale: [1, 1.5, 1] }}
+        transition={{
+          delay: 2.8,
+          opacity: { duration: 0.3 },
+          scale: { delay: 3.2, duration: 2, repeat: Infinity, ease: 'easeInOut' },
+        }}
+      />
+    </svg>
+  );
+}
+
+/* ───── Login Dashboard Preview — miniature dashboard mockup ───── */
+function LoginDashboardPreview({ t }: { t: (key: string) => string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{
+        opacity: 1,
+        y: [0, -6, 0],
+      }}
+      transition={{
+        opacity: { delay: 0.6, duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+        y: { delay: 1.4, duration: 4, repeat: Infinity, ease: 'easeInOut' },
+      }}
+      className="w-full max-w-[420px] backdrop-blur-sm bg-white/[0.04] border border-white/[0.08] rounded-2xl p-5 overflow-hidden"
+    >
+      {/* Chart header */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[11px] uppercase tracking-wider text-white/40 font-medium">
+          {t('dashboard_preview_title')}
+        </span>
+        <span className="text-[10px] text-white/25 font-mono">
+          {t('dashboard_preview_period')}
+        </span>
+      </div>
+
+      {/* Mini area chart */}
+      <div className="mb-4">
+        <MiniAreaChart />
+      </div>
+
+      {/* KPI pills */}
+      <div className="flex gap-3 mb-4">
+        <div className="flex-1 bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2.5">
+          <p className="text-[10px] uppercase tracking-wider text-white/35 mb-0.5">ROAS</p>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg font-bold text-white">4.2x</span>
+            <span className="text-[11px] font-medium text-emerald-400">↑18%</span>
+          </div>
+        </div>
+        <div className="flex-1 bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2.5">
+          <p className="text-[10px] uppercase tracking-wider text-white/35 mb-0.5">CPA</p>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg font-bold text-white">&#8378;28</span>
+            <span className="text-[11px] font-medium text-emerald-400">↓15%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Mini campaign row */}
+      <div className="bg-white/[0.03] border border-white/[0.05] rounded-lg px-3 py-2.5 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+          <span className="text-[12px] text-white/70 font-medium">{t('dashboard_preview_campaign')}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] text-emerald-400/80 uppercase tracking-wide font-medium">{t('dashboard_preview_active')}</span>
+          <span className="text-[12px] text-white/50 font-mono">&#8378;24.5K</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ───── Social proof avatar circles ───── */
+function SocialProofAvatars({ t }: { t: (key: string) => string }) {
+  const avatars = useMemo(
+    () => [
+      { initials: 'AK', bg: '#2563EB' },
+      { initials: 'SE', bg: '#7C3AED' },
+      { initials: 'MO', bg: '#0891B2' },
+      { initials: 'FY', bg: '#059669' },
+      { initials: 'BT', bg: '#D97706' },
+    ],
+    []
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1.2, duration: 0.6 }}
+      className="flex items-center gap-3"
+    >
+      <div className="flex -space-x-2">
+        {avatars.map((a, i) => (
+          <motion.div
+            key={a.initials}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              delay: 1.4 + i * 0.1,
+              type: 'spring',
+              stiffness: 260,
+              damping: 20,
+            }}
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white border-2 border-[#0C0D14]"
+            style={{ backgroundColor: a.bg }}
+          >
+            {a.initials}
+          </motion.div>
+        ))}
+      </div>
+      <span className="text-white/40 text-sm">{t('social_proof_trusted')}</span>
+    </motion.div>
   );
 }
 
@@ -136,6 +276,70 @@ function FocusInput({
       />
       <div className="relative">{children}</div>
     </motion.div>
+  );
+}
+
+/* ───── Demo accounts card — auto-fill on click ───── */
+function DemoCredentialRow({
+  icon: Icon,
+  label,
+  email,
+  password,
+  hint,
+  onFill,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  email: string;
+  password: string;
+  hint: string;
+  onFill: (email: string, password: string) => void;
+}) {
+  const [copied, setCopied] = useState<'email' | 'password' | null>(null);
+
+  const handleCopy = useCallback((text: string, field: 'email' | 'password') => {
+    navigator.clipboard.writeText(text);
+    setCopied(field);
+    setTimeout(() => setCopied(null), 1500);
+  }, []);
+
+  return (
+    <div className="group flex items-start gap-3 p-2.5 rounded-lg hover:bg-[#F3F4F6] transition-colors">
+      <div className="w-8 h-8 rounded-full bg-[#F3F4F6] group-hover:bg-white flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors">
+        <Icon className="w-4 h-4 text-[#6B7280]" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-semibold text-[#374151] mb-1">{label}</p>
+        <div className="flex items-center gap-1.5 text-xs text-[#6B7280] font-mono">
+          <span className="truncate">{email}</span>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); handleCopy(email, 'email'); }}
+            className="flex-shrink-0 p-0.5 rounded hover:bg-[#E5E7EB] transition-colors"
+            title="Copy email"
+          >
+            {copied === 'email' ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3 text-[#9CA3AF]" />}
+          </button>
+          <span className="text-[#D1D5DB]">/</span>
+          <span>{password}</span>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); handleCopy(password, 'password'); }}
+            className="flex-shrink-0 p-0.5 rounded hover:bg-[#E5E7EB] transition-colors"
+            title="Copy password"
+          >
+            {copied === 'password' ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3 text-[#9CA3AF]" />}
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={() => onFill(email, password)}
+          className="mt-1 text-[10px] text-[#2563EB] hover:text-[#1D4ED8] font-medium transition-colors"
+        >
+          {hint}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -184,19 +388,29 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen flex bg-[#FAFAF8]">
-      {/* ─── Left: Brand Panel (hidden on mobile) ─── */}
+      {/* ─── Left: Premium Brand Panel (hidden on mobile) ─── */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
-        className="hidden lg:flex lg:w-[60%] relative overflow-hidden bg-[#0C0D14] flex-col justify-between p-12"
+        className="hidden lg:flex lg:w-[60%] relative overflow-hidden flex-col justify-between p-12"
       >
-        {/* Background glow effects */}
-        <GlowOrb className="w-[400px] h-[400px] bg-[#2563EB]/30 -top-20 -left-20" />
-        <GlowOrb className="w-[300px] h-[300px] bg-[#7c3aed]/20 bottom-20 right-10" />
+        {/* Animated gradient background */}
+        <AnimatedGradientBg />
 
-        {/* Ambient particle field */}
-        <ParticleField />
+        {/* Subtle ambient particles */}
+        <SubtleParticles />
+
+        {/* Soft glow accent — top left */}
+        <div
+          className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%)' }}
+        />
+        {/* Soft glow accent — bottom right */}
+        <div
+          className="absolute -bottom-24 -right-24 w-[400px] h-[400px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)' }}
+        />
 
         {/* Top: Logo */}
         <div className="relative z-10">
@@ -208,43 +422,45 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Center: Headline + Dashboard preview */}
-        <div className="relative z-10 flex-1 flex flex-col justify-center -mt-8">
+        {/* Center: Hero text + Dashboard preview */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center -mt-4">
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-4"
+            transition={{ delay: 0.2, type: 'spring', stiffness: 100, damping: 20 }}
+            className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-3"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            {t('brand_welcome_back')}
+            {t('brand_welcome_prefix')}{' '}
+            <span className="bg-gradient-to-r from-[#2563EB] via-[#60A5FA] to-[#2563EB] bg-clip-text text-transparent">
+              {t('brand_welcome_accent')}
+            </span>
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="text-white/50 text-lg max-w-md mb-12"
+            transition={{ delay: 0.35, type: 'spring', stiffness: 100, damping: 20 }}
+            className="text-white/45 text-lg max-w-md mb-10"
           >
             {t('brand_login_desc')}
           </motion.p>
 
-          {/* Floating KPI cards — mini dashboard mockup */}
-          <div className="flex flex-wrap gap-4">
-            <KpiCard label="ROAS" value="4.2x" delta="+18%" delay={0.5} />
-            <KpiCard label="CTR" value="3.8%" delta="+0.6%" delay={0.65} />
-            <KpiCard label={t('kpi_spend')} value="₺142.8K" delta="-12%" delay={0.8} />
-          </div>
+          {/* Mini dashboard preview */}
+          <LoginDashboardPreview t={t} />
         </div>
 
-        {/* Bottom: Trust text */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.8 }}
-          className="relative z-10"
-        >
-          <p className="text-white/30 text-sm">{t('brand_trusted')}</p>
-        </motion.div>
+        {/* Bottom: Social proof + Trust badges */}
+        <div className="relative z-10 space-y-4">
+          <SocialProofAvatars t={t} />
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2, duration: 0.8 }}
+            className="text-white/25 text-xs"
+          >
+            {t('trust_badge_free')} &middot; {t('trust_no_card')} &middot; {t('trust_cancel_anytime')}
+          </motion.p>
+        </div>
       </motion.div>
 
       {/* ─── Right: Login Form ─── */}
@@ -413,6 +629,31 @@ export default function LoginPage() {
               {t('create_account')}
             </Link>
           </p>
+
+          {/* Demo Accounts */}
+          <div className="mt-6 border border-[#E5E7EB] bg-[#F9FAFB] rounded-xl p-4">
+            <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wider mb-3">
+              {t('demo_accounts_title')}
+            </p>
+            <div className="space-y-1">
+              <DemoCredentialRow
+                icon={UserCircle}
+                label={t('demo_user_label')}
+                email="demo@megvax.com"
+                password="demo123"
+                hint={t('click_to_fill')}
+                onFill={(email, password) => setFormData({ ...formData, email, password })}
+              />
+              <DemoCredentialRow
+                icon={ShieldCheck}
+                label={t('demo_admin_label')}
+                email="admin@megvax.com"
+                password="admin123"
+                hint={t('click_to_fill')}
+                onFill={(email, password) => setFormData({ ...formData, email, password })}
+              />
+            </div>
+          </div>
         </div>
       </motion.div>
     </main>

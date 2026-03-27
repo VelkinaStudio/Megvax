@@ -1,11 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useMotionValue, useSpring, useTransform, useInView } from 'framer-motion';
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useInView,
+  useScroll,
+} from 'framer-motion';
 import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { Shield } from 'lucide-react';
+import { Shield, Play } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 import { GradientMesh } from './GradientMesh';
+import { InteractiveGrid } from './InteractiveGrid';
 
 const spring = {
   type: 'spring' as const,
@@ -13,113 +21,6 @@ const spring = {
   damping: 20,
   mass: 0.8,
 };
-
-// ─── Floating Particles ────────────────────────────────────────────────────
-// Subtle ambient dots that drift slowly in the hero background.
-// Uses Framer Motion for GPU-accelerated transform/opacity animations.
-
-interface Particle {
-  id: number;
-  x: number;   // % from left
-  y: number;   // % from top
-  size: number; // px
-  duration: number;
-  delay: number;
-  dx: number;  // drift x range
-  dy: number;  // drift y range
-}
-
-function useParticles(count: number): Particle[] {
-  return useMemo(() => {
-    // Seeded pseudo-random for SSR/client consistency
-    const particles: Particle[] = [];
-    for (let i = 0; i < count; i++) {
-      // Distribute across the section with some entropy
-      const seed = (i * 137.508) % 1; // golden angle fraction
-      particles.push({
-        id: i,
-        x: ((i * 23.7 + 10) % 90) + 5,
-        y: ((i * 31.3 + 15) % 80) + 10,
-        size: 2 + (seed * 3),
-        duration: 8 + (i % 5) * 2,
-        delay: (i * 0.4) % 3,
-        dx: 15 + (i % 4) * 8,
-        dy: 10 + (i % 3) * 6,
-      });
-    }
-    return particles;
-  }, [count]);
-}
-
-function FloatingParticles() {
-  const particles = useParticles(10);
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          className="hero-particle absolute rounded-full bg-[#2563EB]"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: p.size,
-            height: p.size,
-            opacity: 0,
-            willChange: 'transform, opacity',
-          }}
-          animate={{
-            x: [0, p.dx, -p.dx * 0.6, 0],
-            y: [0, -p.dy, p.dy * 0.5, 0],
-            opacity: [0, 0.12, 0.08, 0],
-          }}
-          transition={{
-            duration: p.duration,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-// ─── Mouse-tracking Spotlight ──────────────────────────────────────────────
-// A radial gradient glow that follows the cursor across the hero section.
-
-function MouseSpotlight() {
-  const [pos, setPos] = useState({ x: 50, y: 50 });
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current?.parentElement;
-    if (!el) return;
-
-    function handleMove(e: MouseEvent) {
-      const rect = el!.getBoundingClientRect();
-      setPos({
-        x: ((e.clientX - rect.left) / rect.width) * 100,
-        y: ((e.clientY - rect.top) / rect.height) * 100,
-      });
-    }
-
-    el.addEventListener('mousemove', handleMove);
-    return () => el.removeEventListener('mousemove', handleMove);
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      className="absolute inset-0 pointer-events-none transition-opacity duration-700"
-      aria-hidden="true"
-      style={{
-        background: `radial-gradient(600px circle at ${pos.x}% ${pos.y}%, rgba(37, 99, 235, 0.06), transparent 60%)`,
-        willChange: 'background',
-      }}
-    />
-  );
-}
 
 // ─── Stat Counter (hero-specific) ──────────────────────────────────────────
 // Counts up from 0 on scroll-in using requestAnimationFrame.
@@ -392,8 +293,59 @@ function DashboardMockup({ translations: tr }: { translations: DashboardTranslat
   );
 }
 
+// ─── Staggered Word Animation ──────────────────────────────────────────────
+
+function AnimatedHeadline({
+  firstPart,
+  lastWord,
+}: {
+  firstPart: string;
+  lastWord: string | undefined;
+}) {
+  const allWords = firstPart.split(' ').filter(Boolean);
+
+  return (
+    <h1
+      className="text-center text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] max-w-4xl mx-auto"
+      style={{ fontFamily: 'var(--font-display)' }}
+    >
+      {allWords.map((word, i) => (
+        <motion.span
+          key={i}
+          className="inline-block mr-[0.3em]"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            ...spring,
+            delay: 0.15 + i * 0.06,
+          }}
+        >
+          {word}
+        </motion.span>
+      ))}
+      {lastWord && (
+        <motion.span
+          className="shimmer-text inline-block bg-gradient-to-r from-[#2563EB] via-[#60A5FA] via-[#7C3AED] to-[#2563EB] bg-clip-text text-transparent"
+          style={{ backgroundSize: '200% auto' }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            ...spring,
+            delay: 0.15 + allWords.length * 0.06,
+          }}
+        >
+          {lastWord}
+        </motion.span>
+      )}
+    </h1>
+  );
+}
+
+// ─── Hero ──────────────────────────────────────────────────────────────────
+
 export function Hero() {
   const t = useTranslations('landing');
+  const sectionRef = useRef<HTMLElement>(null);
 
   // Split headline for gradient effect on last part
   const title = t('hero_title');
@@ -407,114 +359,131 @@ export function Hero() {
     { value: t('hero_stat_accounts'), label: t('hero_stat_accounts_label') },
   ];
 
+  // Scroll parallax: headline moves slightly faster than mockup
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end start'],
+  });
+  const headlineY = useTransform(scrollYProgress, [0, 1], [0, -60]);
+  const mockupY = useTransform(scrollYProgress, [0, 1], [0, -20]);
+
   return (
-    <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+    <section ref={sectionRef} className="relative pt-32 pb-24 px-6 overflow-hidden">
+      {/* Layer 1: Interactive dot grid canvas (background) */}
+      <InteractiveGrid />
+
+      {/* Layer 2: Gradient aurora mesh (above grid, pointer-events-none) */}
       <GradientMesh />
 
-      {/* Floating ambient particles */}
-      <FloatingParticles />
-
-      {/* Mouse-tracking radial spotlight */}
-      <MouseSpotlight />
-
+      {/* Layer 3: Content */}
       <div className="relative z-10 mx-auto max-w-6xl">
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: 0.1 }}
-          className="flex justify-center mb-8"
-        >
-          <span className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-[#2563EB]/10 text-[#2563EB] text-xs font-medium tracking-wide shadow-sm shadow-[#2563EB]/5">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-60" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]" />
-            </span>
-            {t('hero_badge')}
-          </span>
-        </motion.div>
-
-        {/* Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: 0.2 }}
-          className="text-center text-4xl sm:text-5xl lg:text-[3.5rem] xl:text-6xl font-bold tracking-tight leading-[1.08] max-w-3xl mx-auto"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          {firstPart}{' '}
-          <span
-            className="shimmer-text bg-gradient-to-r from-[#2563EB] via-[#60A5FA] via-[#7C3AED] to-[#2563EB] bg-clip-text text-transparent"
-            style={{ backgroundSize: '200% auto' }}
+        <motion.div style={{ y: headlineY }}>
+          {/* Badge — gently floating */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring, delay: 0.1 }}
+            className="flex justify-center mb-8"
           >
-            {lastWord}
-          </span>
-        </motion.h1>
-
-        {/* Subheadline */}
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: 0.35 }}
-          className="text-center text-lg text-[#6B7280] max-w-xl mx-auto mt-6 leading-relaxed"
-        >
-          {t('hero_subtitle')}
-        </motion.p>
-
-        {/* CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: 0.5 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10"
-        >
-          <Link
-            href="/signup"
-            className="glow-button inline-flex items-center justify-center px-7 py-3.5 rounded-xl bg-[#2563EB] text-white font-medium text-sm hover:bg-[#1D4ED8] transition-all duration-300 shadow-lg shadow-[#2563EB]/25 hover:shadow-xl hover:shadow-[#2563EB]/30 hover:-translate-y-0.5 w-full sm:w-auto"
-          >
-            {t('hero_cta')}
-          </Link>
-          <span className="text-xs text-[#71717A] flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5" />
-            {t('hero_trust')}
-          </span>
-        </motion.div>
-
-        {/* Stats strip — numbers count up on scroll */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: 0.65 }}
-          className="flex items-center justify-center gap-8 sm:gap-14 mt-12 text-center"
-        >
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center">
-              <span className="text-xl sm:text-2xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
-                <HeroStatCounter text={stat.value} />
+            <motion.span
+              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-[#2563EB]/10 text-[#2563EB] text-xs font-medium tracking-wide shadow-sm shadow-[#2563EB]/5"
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-60" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]" />
               </span>
-              <span className="text-[11px] text-[#71717A] mt-1">{stat.label}</span>
-            </div>
-          ))}
+              {t('hero_badge')}
+            </motion.span>
+          </motion.div>
+
+          {/* Headline — staggered word animation */}
+          <AnimatedHeadline firstPart={firstPart} lastWord={lastWord} />
+
+          {/* Subheadline */}
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring, delay: 0.4 }}
+            className="text-center text-lg sm:text-xl text-[#6B7280] max-w-xl mx-auto mt-6 leading-relaxed"
+          >
+            {t('hero_subtitle')}
+          </motion.p>
+
+          {/* CTAs — Primary + Secondary */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring, delay: 0.55 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10"
+          >
+            <Link
+              href="/signup"
+              className="glow-button inline-flex items-center justify-center px-7 py-3.5 rounded-xl bg-[#2563EB] text-white font-medium text-sm hover:bg-[#1D4ED8] transition-all duration-300 shadow-lg shadow-[#2563EB]/25 hover:shadow-xl hover:shadow-[#2563EB]/30 hover:-translate-y-0.5 w-full sm:w-auto"
+            >
+              {t('hero_cta')}
+            </Link>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-[#E5E7EB] bg-white/60 backdrop-blur-sm text-[#374151] font-medium text-sm hover:bg-white hover:border-[#D1D5DB] transition-all duration-300 w-full sm:w-auto"
+            >
+              <Play className="w-4 h-4 fill-current" />
+              Demo İzle
+            </button>
+          </motion.div>
+
+          {/* Trust text */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="flex justify-center mt-4"
+          >
+            <span className="text-xs text-[#71717A] flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5" />
+              {t('hero_trust')}
+            </span>
+          </motion.div>
+
+          {/* Stats strip — numbers count up on scroll */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring, delay: 0.7 }}
+            className="flex items-center justify-center gap-8 sm:gap-14 mt-12 text-center"
+          >
+            {stats.map((stat) => (
+              <div key={stat.label} className="flex flex-col items-center">
+                <span className="text-xl sm:text-2xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
+                  <HeroStatCounter text={stat.value} />
+                </span>
+                <span className="text-[11px] text-[#71717A] mt-1">{stat.label}</span>
+              </div>
+            ))}
+          </motion.div>
         </motion.div>
 
-        {/* Product Dashboard */}
-        <DashboardMockup translations={{
-          overview: t('dashboard_overview'),
-          accountName: t('dashboard_account_name'),
-          dateRange: t('dashboard_date_range'),
-          spend: t('dashboard_spend'),
-          conversions: t('dashboard_conversions'),
-          spendVsRevenue: t('dashboard_spend_vs_revenue'),
-          revenue: t('dashboard_revenue'),
-          campaign: t('dashboard_campaign'),
-          status: t('dashboard_status'),
-          campaign1: t('dashboard_campaign_1'),
-          campaign2: t('dashboard_campaign_2'),
-          campaign3: t('dashboard_campaign_3'),
-          statusActive: t('dashboard_status_active'),
-          statusScaled: t('dashboard_status_scaled'),
-          statusPaused: t('dashboard_status_paused'),
-        }} />
+        {/* Product Dashboard — slower parallax than headline */}
+        <motion.div style={{ y: mockupY }}>
+          <DashboardMockup translations={{
+            overview: t('dashboard_overview'),
+            accountName: t('dashboard_account_name'),
+            dateRange: t('dashboard_date_range'),
+            spend: t('dashboard_spend'),
+            conversions: t('dashboard_conversions'),
+            spendVsRevenue: t('dashboard_spend_vs_revenue'),
+            revenue: t('dashboard_revenue'),
+            campaign: t('dashboard_campaign'),
+            status: t('dashboard_status'),
+            campaign1: t('dashboard_campaign_1'),
+            campaign2: t('dashboard_campaign_2'),
+            campaign3: t('dashboard_campaign_3'),
+            statusActive: t('dashboard_status_active'),
+            statusScaled: t('dashboard_status_scaled'),
+            statusPaused: t('dashboard_status_paused'),
+          }} />
+        </motion.div>
       </div>
     </section>
   );
