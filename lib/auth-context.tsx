@@ -2,7 +2,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { api, setAccessToken, getAccessToken, ApiError } from './api';
+import { api, setAccessToken, getAccessToken } from './api';
 
 interface User {
   id: string;
@@ -156,6 +156,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
+    // Try mock/demo credentials first — these always work regardless of API state
+    const mockResult = tryMockLogin(email, password);
+    if (mockResult) {
+      setAccessToken(mockResult.accessToken);
+      setState({ user: mockResult.user, isLoading: false, isAuthenticated: true });
+      try { sessionStorage.setItem('megvax_mock_session', JSON.stringify(mockResult)); } catch {}
+      return;
+    }
+
+    // Not a demo account — proceed with real API call
     try {
       const data = await api<{ accessToken: string; user: User }>('/auth/login', {
         method: 'POST',
@@ -164,21 +174,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setAccessToken(data.accessToken);
       setState({ user: data.user, isLoading: false, isAuthenticated: true });
-    } catch (apiError) {
-      // If it's a clear auth rejection from the API (401/403), don't fall back to mock
-      if (apiError instanceof ApiError && (apiError.status === 401 || apiError.status === 403)) {
-        throw apiError;
-      }
-      // API unreachable or server error — try mock credentials as fallback
-      const mockResult = tryMockLogin(email, password);
-      if (mockResult) {
-        setAccessToken(mockResult.accessToken);
-        setState({ user: mockResult.user, isLoading: false, isAuthenticated: true });
-        try { sessionStorage.setItem('megvax_mock_session', JSON.stringify(mockResult)); } catch {}
+    } catch (err) {
+      // Re-try mock as last resort (covers edge cases like network race conditions)
+      const fallback = tryMockLogin(email, password);
+      if (fallback) {
+        setAccessToken(fallback.accessToken);
+        setState({ user: fallback.user, isLoading: false, isAuthenticated: true });
+        try { sessionStorage.setItem('megvax_mock_session', JSON.stringify(fallback)); } catch {}
         return;
       }
-      // Mock didn't match either — throw the original API error
-      throw apiError;
+      throw err;
     }
   }, []);
 
