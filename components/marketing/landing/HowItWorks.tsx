@@ -1,510 +1,270 @@
 'use client';
 
-import { motion, useInView, useAnimation } from 'framer-motion';
-import { useEffect, useRef, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { type ReactNode } from 'react';
 import { useTranslations } from '@/lib/i18n';
-import { ScrollReveal } from './ScrollReveal';
-import { Link2, SlidersHorizontal, Zap } from 'lucide-react';
+import { ScrollReveal, StaggerContainer, StaggerItem } from './ScrollReveal';
 
-// ─── Shared constants ───────────────────────────────────────────────────────
-const EXPO_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
-const BLUE = '#2563EB';
-const BLUE_LIGHT = '#EFF6FF';
-
-// ─── Timing ─────────────────────────────────────────────────────────────────
-const CIRCLE_DRAW_MS = 600;
-const NUMBER_FADE_MS = 300;
-const LINE_DRAW_MS = 500;
-const CONTENT_FADE_MS = 400;
-const STAGGER_MS = 200;
-
-// Total time per step: circle draw + number fade overlap = ~700ms
-// Between steps: line draw = 500ms
-// Full sequence: step1(700) + line(500) + step2(700) + line(500) + step3(700) ≈ 3100ms
-
-// ─── Animated Step Circle (SVG border draw + number fade) ───────────────────
-function AnimatedCircle({
-  num,
-  icon: Icon,
-  delay,
-  onComplete,
-}: {
-  num: string;
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
-  delay: number;
-  onComplete?: () => void;
-}) {
-  const controls = useAnimation();
-  const numberControls = useAnimation();
-  const iconControls = useAnimation();
-
-  const animate = useCallback(async () => {
-    // Draw the circle border
-    await controls.start({
-      strokeDashoffset: 0,
-      transition: {
-        duration: CIRCLE_DRAW_MS / 1000,
-        ease: EXPO_OUT,
-        delay: delay / 1000,
-      },
-    });
-
-    // Fade in the number and icon together
-    await Promise.all([
-      numberControls.start({
-        opacity: 1,
-        scale: 1,
-        transition: {
-          duration: NUMBER_FADE_MS / 1000,
-          ease: EXPO_OUT,
-        },
-      }),
-      iconControls.start({
-        opacity: 1,
-        y: 0,
-        transition: {
-          duration: NUMBER_FADE_MS / 1000,
-          ease: EXPO_OUT,
-        },
-      }),
-    ]);
-
-    onComplete?.();
-  }, [controls, numberControls, iconControls, delay, onComplete]);
-
-  useEffect(() => {
-    animate();
-  }, [animate]);
-
-  const circumference = 2 * Math.PI * 18; // radius=18 for a 44px circle
-
+// ─── Mini-mockup frame (dark product preview) ────────────────────────────────
+function MiniMockup({ children }: { children: ReactNode }) {
   return (
-    <div className="relative flex flex-col items-center">
-      {/* Icon above circle */}
-      <motion.div
-        initial={{ opacity: 0, y: 6 }}
-        animate={iconControls}
-        className="mb-2"
-      >
-        <Icon size={18} strokeWidth={1.8} className="text-[#2563EB]" />
-      </motion.div>
-
-      {/* Circle with SVG border animation */}
-      <div className="relative w-11 h-11 flex items-center justify-center">
-        {/* Background fill */}
-        <motion.div
-          className="absolute inset-0 rounded-full"
-          style={{ backgroundColor: BLUE_LIGHT }}
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{
-            duration: CIRCLE_DRAW_MS / 1000,
-            ease: EXPO_OUT,
-            delay: delay / 1000,
-          }}
-        />
-
-        {/* SVG stroke animation */}
-        <svg
-          className="absolute inset-0"
-          width="44"
-          height="44"
-          viewBox="0 0 44 44"
-          fill="none"
-        >
-          <motion.circle
-            cx="22"
-            cy="22"
-            r="18"
-            stroke={BLUE}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            fill="none"
-            strokeDasharray={circumference}
-            initial={{ strokeDashoffset: circumference }}
-            animate={controls}
-            style={{
-              transformOrigin: '50% 50%',
-              rotate: '-90deg',
-            }}
-          />
-        </svg>
-
-        {/* Number */}
-        <motion.span
-          className="relative z-10 font-mono text-sm font-semibold select-none"
-          style={{ color: BLUE }}
-          initial={{ opacity: 0, scale: 0.6 }}
-          animate={numberControls}
-        >
-          {num}
-        </motion.span>
-      </div>
+    <div className="rounded-xl bg-landing-frame-bg p-3 shadow-lg shadow-black/10 border border-white/[0.06] text-left">
+      {children}
     </div>
   );
 }
 
-// ─── Step Content (title + description) ─────────────────────────────────────
-function StepContent({
-  title,
-  desc,
-  delay,
-}: {
-  title: string;
-  desc: string;
-  delay: number;
-}) {
-  const transition = {
-    duration: CONTENT_FADE_MS / 1000,
-    ease: EXPO_OUT,
-    delay: delay / 1000,
-  };
-
-  return (
-    <>
-      <motion.h3
-        className="mt-3 text-[18px] font-semibold text-[#1A1A1A]"
-        style={{ fontFamily: 'var(--font-display)' }}
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={transition}
-      >
-        {title}
-      </motion.h3>
-      <motion.p
-        className="mt-1 text-[14px] text-[#6B7280] max-w-[200px] mx-auto"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ...transition, delay: (delay + 100) / 1000 }}
-      >
-        {desc}
-      </motion.p>
-    </>
-  );
-}
-
-// ─── Desktop Layout (Horizontal) ───────────────────────────────────────────
-function DesktopSteps({
-  steps,
-  isInView,
-}: {
-  steps: Array<{ num: string; title: string; desc: string; icon: typeof Link2 }>;
-  isInView: boolean;
-}) {
-  if (!isInView) return null;
-
-  // Calculate timing for sequential animation
-  const stepDuration = CIRCLE_DRAW_MS + NUMBER_FADE_MS;
-  const step1Start = 0;
-  const line1Start = step1Start + stepDuration + STAGGER_MS;
-  const step2Start = line1Start + LINE_DRAW_MS + STAGGER_MS;
-  const line2Start = step2Start + stepDuration + STAGGER_MS;
-  const step3Start = line2Start + LINE_DRAW_MS + STAGGER_MS;
-  const dotStart = step3Start + stepDuration + 400;
-
-  // Content appears slightly after circle completes
-  const content1Start = step1Start + CIRCLE_DRAW_MS;
-  const content2Start = step2Start + CIRCLE_DRAW_MS;
-  const content3Start = step3Start + CIRCLE_DRAW_MS;
-
-  return (
-    <div className="hidden md:block relative">
-      <div className="grid grid-cols-3 gap-0">
-        {/* Step 1 */}
-        <div className="text-center relative">
-          <AnimatedCircle num="1" icon={steps[0].icon} delay={step1Start} />
-          <StepContent title={steps[0].title} desc={steps[0].desc} delay={content1Start} />
-        </div>
-
-        {/* Step 2 */}
-        <div className="text-center relative">
-          <AnimatedCircle num="2" icon={steps[1].icon} delay={step2Start} />
-          <StepContent title={steps[1].title} desc={steps[1].desc} delay={content2Start} />
-        </div>
-
-        {/* Step 3 */}
-        <div className="text-center relative">
-          <AnimatedCircle num="3" icon={steps[2].icon} delay={step3Start} />
-          <StepContent title={steps[2].title} desc={steps[2].desc} delay={content3Start} />
-        </div>
-      </div>
-
-      {/* Connector Lines — positioned between step columns */}
-      {/* Line 1: from step 1 to step 2 */}
-      <div
-        className="absolute"
-        style={{
-          top: 0,
-          left: 'calc(33.33% - 2px)',
-          width: 'calc(33.33% + 4px)',
-          height: '100%',
-          pointerEvents: 'none',
-        }}
-      >
-        <svg
-          className="absolute"
-          style={{
-            top: 72,
-            left: '10%',
-            width: '80%',
-            height: 4,
-            overflow: 'visible',
-          }}
-        >
-          <motion.line
-            x1="0"
-            y1="2"
-            x2="100%"
-            y2="2"
-            stroke={BLUE}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeOpacity={0.3}
-            vectorEffect="non-scaling-stroke"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{
-              duration: LINE_DRAW_MS / 1000,
-              ease: EXPO_OUT,
-              delay: line1Start / 1000,
-            }}
-          />
-        </svg>
-      </div>
-
-      {/* Line 2: from step 2 to step 3 */}
-      <div
-        className="absolute"
-        style={{
-          top: 0,
-          left: 'calc(66.66% - 2px)',
-          width: 'calc(33.33% + 4px)',
-          height: '100%',
-          pointerEvents: 'none',
-        }}
-      >
-        <svg
-          className="absolute"
-          style={{
-            top: 72,
-            left: '10%',
-            width: '80%',
-            height: 4,
-            overflow: 'visible',
-          }}
-        >
-          <motion.line
-            x1="0"
-            y1="2"
-            x2="100%"
-            y2="2"
-            stroke={BLUE}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeOpacity={0.3}
-            vectorEffect="non-scaling-stroke"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{
-              duration: LINE_DRAW_MS / 1000,
-              ease: EXPO_OUT,
-              delay: line2Start / 1000,
-            }}
-          />
-        </svg>
-      </div>
-
-      {/* Flowing dot across the full path */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: 0,
-          left: 'calc(16.66%)',
-          width: 'calc(66.66%)',
-          height: '100%',
-        }}
-      >
-        <motion.div
-          style={{
-            position: 'absolute',
-            width: 6,
-            height: 6,
-            borderRadius: '50%',
-            backgroundColor: BLUE,
-            boxShadow: `0 0 10px 3px ${BLUE}40, 0 0 20px 6px ${BLUE}15`,
-            top: 69,
-          }}
-          initial={{ left: '0%', opacity: 0 }}
-          animate={{
-            left: ['0%', '50%', '100%'],
-            opacity: [0, 1, 1, 1, 0],
-          }}
-          transition={{
-            duration: 2.8,
-            ease: 'easeInOut',
-            repeat: Infinity,
-            repeatDelay: 1,
-            delay: dotStart / 1000,
-            times: [0, 0.45, 1],
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ─── Mobile Layout (Vertical) ───────────────────────────────────────────────
-function MobileSteps({
-  steps,
-  isInView,
-}: {
-  steps: Array<{ num: string; title: string; desc: string; icon: typeof Link2 }>;
-  isInView: boolean;
-}) {
-  if (!isInView) return null;
-
-  const stepDuration = CIRCLE_DRAW_MS + NUMBER_FADE_MS;
-  const step1Start = 0;
-  const line1Start = step1Start + stepDuration + STAGGER_MS;
-  const step2Start = line1Start + LINE_DRAW_MS + STAGGER_MS;
-  const line2Start = step2Start + stepDuration + STAGGER_MS;
-  const step3Start = line2Start + LINE_DRAW_MS + STAGGER_MS;
-  const dotStart = step3Start + stepDuration + 400;
-
-  const content1Start = step1Start + CIRCLE_DRAW_MS;
-  const content2Start = step2Start + CIRCLE_DRAW_MS;
-  const content3Start = step3Start + CIRCLE_DRAW_MS;
-
-  const lineDelay1 = line1Start;
-  const lineDelay2 = line2Start;
-
-  return (
-    <div className="md:hidden relative flex flex-col items-center gap-0">
-      {/* Step 1 */}
-      <div className="text-center">
-        <AnimatedCircle num="1" icon={steps[0].icon} delay={step1Start} />
-        <StepContent title={steps[0].title} desc={steps[0].desc} delay={content1Start} />
-      </div>
-
-      {/* Vertical connector 1 */}
-      <div className="my-3">
-        <svg width="4" height="40" style={{ overflow: 'visible' }}>
-          <motion.line
-            x1="2"
-            y1="0"
-            x2="2"
-            y2="40"
-            stroke={BLUE}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeOpacity={0.3}
-            vectorEffect="non-scaling-stroke"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{
-              duration: LINE_DRAW_MS / 1000,
-              ease: EXPO_OUT,
-              delay: lineDelay1 / 1000,
-            }}
-          />
-        </svg>
-      </div>
-
-      {/* Step 2 */}
-      <div className="text-center">
-        <AnimatedCircle num="2" icon={steps[1].icon} delay={step2Start} />
-        <StepContent title={steps[1].title} desc={steps[1].desc} delay={content2Start} />
-      </div>
-
-      {/* Vertical connector 2 */}
-      <div className="my-3">
-        <svg width="4" height="40" style={{ overflow: 'visible' }}>
-          <motion.line
-            x1="2"
-            y1="0"
-            x2="2"
-            y2="40"
-            stroke={BLUE}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeOpacity={0.3}
-            vectorEffect="non-scaling-stroke"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{
-              duration: LINE_DRAW_MS / 1000,
-              ease: EXPO_OUT,
-              delay: lineDelay2 / 1000,
-            }}
-          />
-        </svg>
-      </div>
-
-      {/* Step 3 */}
-      <div className="text-center">
-        <AnimatedCircle num="3" icon={steps[2].icon} delay={step3Start} />
-        <StepContent title={steps[2].title} desc={steps[2].desc} delay={content3Start} />
-      </div>
-
-      {/* Flowing dot (vertical) */}
-      <motion.div
-        className="absolute pointer-events-none"
-        style={{
-          width: 6,
-          height: 6,
-          borderRadius: '50%',
-          backgroundColor: BLUE,
-          boxShadow: `0 0 10px 3px ${BLUE}40, 0 0 20px 6px ${BLUE}15`,
-          left: '50%',
-          marginLeft: -3,
-          zIndex: 20,
-        }}
-        initial={{ top: '5%', opacity: 0 }}
-        animate={{
-          top: ['5%', '48%', '92%'],
-          opacity: [0, 1, 1, 1, 0],
-        }}
-        transition={{
-          duration: 2.8,
-          ease: 'easeInOut',
-          repeat: Infinity,
-          repeatDelay: 1,
-          delay: dotStart / 1000,
-          times: [0, 0.45, 1],
-        }}
-      />
-    </div>
-  );
-}
-
-// ─── Main Component ─────────────────────────────────────────────────────────
-export function HowItWorks() {
-  const t = useTranslations('landing');
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.3 });
-
-  const steps = [
-    { num: '1', title: t('step1_title'), desc: t('step1_desc'), icon: Link2 },
-    { num: '2', title: t('step2_title'), desc: t('step2_desc'), icon: SlidersHorizontal },
-    { num: '3', title: t('step3_title'), desc: t('step3_desc'), icon: Zap },
+// ─── Step 1: OAuth Connect Mockup ────────────────────────────────────────────
+function OAuthMockup({ t }: { t: (key: string) => string }) {
+  const accounts = [
+    { name: 'Moda Store', connected: true },
+    { name: 'Tech Shop', connected: true },
+    { name: 'Beauty Brand', connected: false },
   ];
 
   return (
-    <section id="how-it-works" className="py-24 md:py-32 scroll-mt-20">
-      <div className="max-w-4xl mx-auto px-6">
-        <ScrollReveal>
-          <h2
-            className="text-[clamp(2rem,4vw,2.75rem)] font-bold text-[#1A1A1A] text-center mb-16 md:mb-20 tracking-[-0.03em]"
-            style={{ fontFamily: 'var(--font-display)' }}
+    <MiniMockup>
+      <div className="flex items-center gap-2.5 mb-2.5">
+        <div className="w-7 h-7 rounded-lg bg-[#1877F2] flex items-center justify-center shrink-0">
+          <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-[10px] text-white/70 font-medium">Meta Business Suite</p>
+          <p className="text-[8px] text-white/35">3 {t('how_step1_account_found')}</p>
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        {accounts.map((account) => (
+          <div
+            key={account.name}
+            className="flex items-center gap-2 rounded-md bg-white/[0.04] px-2 py-1.5"
           >
-            {t('how_it_works_heading')}
-          </h2>
+            <div
+              className={`w-1.5 h-1.5 rounded-full ${
+                account.connected ? 'bg-emerald-400' : 'bg-white/20'
+              }`}
+            />
+            <span className="text-[9px] text-white/60 flex-1">{account.name}</span>
+            <span
+              className={`text-[8px] ${
+                account.connected ? 'text-emerald-400' : 'text-white/30'
+              }`}
+            >
+              {account.connected ? t('how_step1_connected') : t('how_step1_connect')}
+            </span>
+          </div>
+        ))}
+      </div>
+    </MiniMockup>
+  );
+}
+
+// ─── Step 2: Rules Configuration Mockup ──────────────────────────────────────
+function RulesMockup({ t }: { t: (key: string) => string }) {
+  return (
+    <MiniMockup>
+      <p className="text-[9px] text-white/40 mb-2 font-medium">
+        {t('how_step2_rules_title')}
+      </p>
+      <div className="space-y-2">
+        {/* ROAS slider */}
+        <div className="rounded-md bg-white/[0.04] px-2.5 py-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[9px] text-white/60">{t('how_step2_min_roas')}</span>
+            <span className="text-[10px] text-white/80 font-mono font-semibold">2.0x</span>
+          </div>
+          <div className="h-1 rounded-full bg-white/[0.08] overflow-hidden">
+            <div className="h-full w-[40%] rounded-full bg-accent-primary" />
+          </div>
+        </div>
+        {/* Budget slider */}
+        <div className="rounded-md bg-white/[0.04] px-2.5 py-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[9px] text-white/60">{t('how_step2_budget_limit')}</span>
+            <span className="text-[10px] text-white/80 font-mono font-semibold">
+              ₺5.000
+            </span>
+          </div>
+          <div className="h-1 rounded-full bg-white/[0.08] overflow-hidden">
+            <div className="h-full w-[65%] rounded-full bg-violet-400" />
+          </div>
+        </div>
+        {/* CPA toggle */}
+        <div className="flex items-center gap-2 rounded-md bg-white/[0.04] px-2.5 py-2">
+          <div className="w-3 h-3 rounded bg-emerald-400/20 flex items-center justify-center">
+            <div className="w-1.5 h-1.5 rounded-sm bg-emerald-400" />
+          </div>
+          <span className="text-[9px] text-white/60 flex-1">{t('how_step2_cpa_rule')}</span>
+          <span className="text-[8px] text-emerald-400">{t('how_step2_active')}</span>
+        </div>
+      </div>
+    </MiniMockup>
+  );
+}
+
+// ─── Step 3: Live Activity Mockup ────────────────────────────────────────────
+function ActivityMockup({ t }: { t: (key: string) => string }) {
+  const activities = [
+    {
+      action: t('how_step3_paused'),
+      campaign: 'Lookalike %1',
+      color: 'text-amber-400',
+      bg: 'bg-amber-400/10',
+      time: '03:42',
+    },
+    {
+      action: t('how_step3_scaled'),
+      campaign: 'Retargeting',
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-400/10',
+      time: '05:18',
+    },
+    {
+      action: t('how_step3_report'),
+      campaign: t('how_step3_daily_summary'),
+      color: 'text-blue-400',
+      bg: 'bg-blue-400/10',
+      time: '06:00',
+    },
+  ];
+
+  return (
+    <MiniMockup>
+      <div className="flex items-center gap-1.5 mb-2">
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <p className="text-[9px] text-white/40 font-medium">{t('how_step3_live')}</p>
+      </div>
+      <div className="space-y-1.5">
+        {activities.map((item, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-2 rounded-md bg-white/[0.04] px-2 py-1.5"
+          >
+            <span
+              className={`text-[7px] font-medium px-1.5 py-0.5 rounded ${item.bg} ${item.color}`}
+            >
+              {item.action}
+            </span>
+            <span className="text-[9px] text-white/60 flex-1 truncate">{item.campaign}</span>
+            <span className="text-[7px] text-white/25">{item.time}</span>
+          </div>
+        ))}
+      </div>
+    </MiniMockup>
+  );
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
+export function HowItWorks() {
+  const t = useTranslations('landing');
+
+  const steps: Array<{
+    number: string;
+    title: string;
+    description: string;
+    mockup: ReactNode;
+  }> = [
+    {
+      number: '01',
+      title: t('step1_title'),
+      description: t('step1_desc'),
+      mockup: <OAuthMockup t={t} />,
+    },
+    {
+      number: '02',
+      title: t('step2_title'),
+      description: t('step2_desc'),
+      mockup: <RulesMockup t={t} />,
+    },
+    {
+      number: '03',
+      title: t('step3_title'),
+      description: t('step3_desc'),
+      mockup: <ActivityMockup t={t} />,
+    },
+  ];
+
+  return (
+    <section
+      id="how-it-works"
+      className="py-24 md:py-32 bg-landing-bg-alt relative overflow-hidden noise-bg scroll-mt-20"
+    >
+      <div className="relative z-10 mx-auto max-w-5xl px-6">
+        {/* Section header */}
+        <ScrollReveal>
+          <div className="text-center mb-16">
+            <span className="inline-block px-3 py-1 rounded-full bg-accent-primary/8 text-accent-primary text-xs font-medium mb-4">
+              {t('how_it_works_heading').includes('adım') ? 'Nasıl çalışır?' : 'How it works'}
+            </span>
+            <h2
+              className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold text-landing-text tracking-[-0.03em] mb-4"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              {t('how_it_works_heading')}
+            </h2>
+          </div>
         </ScrollReveal>
 
-        <div ref={ref}>
-          <DesktopSteps steps={steps} isInView={isInView} />
-          <MobileSteps steps={steps} isInView={isInView} />
-        </div>
+        {/* Step cards */}
+        <StaggerContainer className="relative">
+          {/* Connecting line between cards — desktop only */}
+          <div className="hidden md:block absolute top-[42px] left-[16.67%] right-[16.67%] z-0">
+            <motion.div
+              className="h-[2px] bg-gradient-to-r from-accent-primary/5 via-accent-primary/25 to-accent-primary/5"
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.2, delay: 0.5, ease: 'easeOut' }}
+              style={{ transformOrigin: 'left' }}
+            />
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 relative z-10">
+            {steps.map((step, i) => (
+              <StaggerItem key={step.number}>
+                <motion.div
+                  className="group relative bg-landing-card-bg rounded-2xl border border-landing-card-border p-5 hover:border-accent-primary/20 hover:shadow-lg hover:shadow-accent-primary/5 transition-all duration-500"
+                  whileHover={{ y: -4 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                >
+                  {/* Step number + title header */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <motion.div
+                      className="w-8 h-8 rounded-full bg-accent-primary text-white text-xs font-bold flex items-center justify-center shadow-md shadow-accent-primary/30 shrink-0"
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{
+                        delay: 0.4 + i * 0.15,
+                        type: 'spring',
+                        stiffness: 400,
+                        damping: 15,
+                      }}
+                    >
+                      {step.number}
+                    </motion.div>
+                    <div>
+                      <h3
+                        className="text-base font-semibold text-landing-text"
+                        style={{ fontFamily: 'var(--font-display)' }}
+                      >
+                        {step.title}
+                      </h3>
+                      <p className="text-[11px] text-landing-text-muted leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Product mini-mockup */}
+                  {step.mockup}
+                </motion.div>
+              </StaggerItem>
+            ))}
+          </div>
+        </StaggerContainer>
       </div>
     </section>
   );

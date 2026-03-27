@@ -1,84 +1,214 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useRef } from 'react';
+import { Shield } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
+import { GradientMesh } from './GradientMesh';
 
-const ease = [0.22, 1, 0.36, 1] as const;
+const spring = {
+  type: 'spring' as const,
+  stiffness: 100,
+  damping: 20,
+  mass: 0.8,
+};
 
-/* ─── CSS keyframes ─── */
-const cssAnimations = `
-@keyframes kpi-shimmer {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
-}
-@keyframes row-highlight {
-  0%, 100% { background: rgba(255,255,255,0.03); }
-  50% { background: rgba(255,255,255,0.06); }
-}
-@keyframes amber-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-`;
+function DashboardMockup() {
+  const ref = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
-/* ─── Split word animation component ─── */
-function SplitHeadline({ text, className, style }: { text: string; className?: string; style?: React.CSSProperties }) {
-  const words = text.replace(/\n/g, ' ').split(' ');
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [3, -3]), {
+    stiffness: 150,
+    damping: 20,
+  });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-3, 3]), {
+    stiffness: 150,
+    damping: 20,
+  });
+
+  function handleMouseMove(e: React.MouseEvent) {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
+  }
+
+  function handleMouseLeave() {
+    mouseX.set(0);
+    mouseY.set(0);
+  }
 
   return (
-    <h1 className={className} style={style}>
-      {words.map((word, i) => (
-        <span key={i} className="inline-block overflow-hidden mr-[0.28em] last:mr-0">
-          <motion.span
-            className="inline-block"
-            initial={{ y: '100%', opacity: 0 }}
-            animate={{ y: '0%', opacity: 1 }}
-            transition={{
-              duration: 0.7,
-              delay: 0.15 + i * 0.06,
-              ease,
-            }}
-          >
-            {word}
-          </motion.span>
-        </span>
-      ))}
-    </h1>
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 40, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: 'spring', stiffness: 60, damping: 20, mass: 1, delay: 0.8 }}
+      style={{ rotateX, rotateY, transformPerspective: 1200 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="mt-16 mx-auto max-w-4xl"
+    >
+      <div className="relative group">
+        <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-[#2563EB]/20 via-[#2563EB]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-sm" />
+
+        <div className="relative rounded-2xl overflow-hidden bg-[#0a0b10] shadow-2xl shadow-black/30 border border-white/[0.06]">
+          {/* Browser chrome */}
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-[#0e0f15] border-b border-white/[0.04]">
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+              <div className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
+              <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
+            </div>
+            <div className="flex-1 flex justify-center">
+              <div className="px-3 py-0.5 rounded bg-white/[0.04] text-white/25 text-[10px] font-mono flex items-center gap-1.5">
+                <svg className="w-2.5 h-2.5 text-emerald-500/60" viewBox="0 0 12 12" fill="currentColor">
+                  <path d="M6 0a6 6 0 100 12A6 6 0 006 0zm2.8 4.85L5.6 8.05a.5.5 0 01-.7 0L3.2 6.37a.5.5 0 11.7-.7l1.35 1.34L8.1 4.15a.5.5 0 01.7.7z" />
+                </svg>
+                app.megvax.com/dashboard
+              </div>
+            </div>
+          </div>
+
+          <div className="flex">
+            {/* Sidebar */}
+            <div className="hidden sm:flex flex-col w-[52px] bg-[#0a0b10] border-r border-white/[0.04] py-3 items-center gap-1 shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-[#2563EB] flex items-center justify-center mb-3">
+                <span className="text-white font-bold text-[10px]">M</span>
+              </div>
+              {[
+                'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+                'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z',
+                'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z',
+                'M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z',
+              ].map((d, i) => (
+                <div key={i} className={`w-8 h-8 rounded-lg flex items-center justify-center ${i === 0 ? 'bg-white/[0.06]' : 'hover:bg-white/[0.04]'} transition-colors`}>
+                  <svg className={`w-3.5 h-3.5 ${i === 0 ? 'text-white/60' : 'text-white/20'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d={d} />
+                  </svg>
+                </div>
+              ))}
+            </div>
+
+            {/* Main content */}
+            <div className="relative flex-1 p-4 sm:p-5 bg-[#0f1117] min-h-0">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-[11px] text-white/30">Genel Bakış</p>
+                  <p className="text-sm font-semibold text-white/80" style={{ fontFamily: 'var(--font-display)' }}>Moda Store</p>
+                </div>
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.04] text-[9px] text-white/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  Son 7 gün
+                </div>
+              </div>
+
+              {/* KPI cards with sparklines */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4">
+                {[
+                  { label: 'Harcama', value: '₺142.8K', change: '+12%', spark: [30, 45, 38, 52, 48, 60, 65] },
+                  { label: 'ROAS', value: '3.42x', change: '+0.8x', spark: [20, 28, 25, 35, 32, 40, 42] },
+                  { label: 'Dönüşüm', value: '1.284', change: '+18%', spark: [25, 30, 28, 38, 35, 45, 50] },
+                  { label: 'CPA', value: '₺28.40', change: '-15%', spark: [50, 45, 48, 38, 40, 32, 28] },
+                ].map((kpi) => (
+                  <div key={kpi.label} className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-[9px] text-white/35">{kpi.label}</p>
+                      <p className="text-[9px] text-emerald-400 font-medium">{kpi.change}</p>
+                    </div>
+                    <p className="text-base font-semibold text-white mb-1.5" style={{ fontFamily: 'var(--font-display)' }}>{kpi.value}</p>
+                    <svg className="w-full h-5" viewBox="0 0 70 20" fill="none" preserveAspectRatio="none">
+                      <motion.polyline
+                        points={kpi.spark.map((v, idx) => `${idx * (70 / 6)},${20 - v * 0.35}`).join(' ')}
+                        stroke="rgba(16,185,129,0.4)"
+                        strokeWidth="1.5"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ delay: 1.2, duration: 0.8 }}
+                      />
+                    </svg>
+                  </div>
+                ))}
+              </div>
+
+              {/* SVG area chart */}
+              <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-3 mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] text-white/35">Harcama vs Gelir</p>
+                  <div className="flex gap-3 text-[9px] text-white/25">
+                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" />Harcama</span>
+                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />Gelir</span>
+                  </div>
+                </div>
+                <svg className="w-full h-24 sm:h-28" viewBox="0 0 300 100" fill="none" preserveAspectRatio="none">
+                  {[25, 50, 75].map((y) => (
+                    <line key={y} x1="0" y1={y} x2="300" y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
+                  ))}
+                  <motion.path d="M0 70 Q25 62 50 58 T100 48 T150 40 T200 30 T250 22 T300 15 L300 100 L0 100 Z" fill="url(#revFill)" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 0.8 }} />
+                  <motion.path d="M0 70 Q25 62 50 58 T100 48 T150 40 T200 30 T250 22 T300 15" stroke="#10B981" strokeWidth="1.5" fill="none" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 1.2, duration: 1 }} />
+                  <motion.path d="M0 80 Q25 75 50 72 T100 65 T150 60 T200 52 T250 48 T300 42 L300 100 L0 100 Z" fill="url(#spendFill)" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4, duration: 0.8 }} />
+                  <motion.path d="M0 80 Q25 75 50 72 T100 65 T150 60 T200 52 T250 48 T300 42" stroke="#3B82F6" strokeWidth="1.5" fill="none" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 1.4, duration: 1 }} />
+                  <defs>
+                    <linearGradient id="revFill" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stopColor="#10B981" stopOpacity="0.15" />
+                      <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+                    </linearGradient>
+                    <linearGradient id="spendFill" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.1" />
+                      <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+
+              {/* Campaign table */}
+              <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] overflow-hidden">
+                <div className="grid grid-cols-[1fr_70px_50px] sm:grid-cols-[1fr_72px_52px_52px_80px] gap-1.5 px-3 py-1.5 text-[8px] text-white/25 border-b border-white/[0.04] uppercase tracking-wider">
+                  <span>Kampanya</span>
+                  <span className="text-right">Harcama</span>
+                  <span className="text-right">ROAS</span>
+                  <span className="text-right hidden sm:block">CPA</span>
+                  <span className="text-right hidden sm:block">Durum</span>
+                </div>
+                {[
+                  { name: 'Yaz Koleksiyonu', spend: '₺24.5K', roas: '4.2x', cpa: '₺22', status: 'Aktif', sColor: 'text-emerald-400', sBg: 'bg-emerald-400/10' },
+                  { name: 'Retargeting - Sepet', spend: '₺18.2K', roas: '5.1x', cpa: '₺18', status: 'AI Ölçeklendi', sColor: 'text-blue-400', sBg: 'bg-blue-400/10' },
+                  { name: 'Lookalike %1', spend: '₺12.8K', roas: '1.1x', cpa: '₺45', status: 'AI Durdurdu', sColor: 'text-amber-400', sBg: 'bg-amber-400/10' },
+                ].map((row) => (
+                  <div key={row.name} className="grid grid-cols-[1fr_70px_50px] sm:grid-cols-[1fr_72px_52px_52px_80px] gap-1.5 px-3 py-2 text-[10px] text-white/60 border-b border-white/[0.02] last:border-0">
+                    <span className="font-medium text-white/80 truncate">{row.name}</span>
+                    <span className="text-right font-mono text-[10px]">{row.spend}</span>
+                    <span className="text-right font-mono text-[10px]">{row.roas}</span>
+                    <span className="text-right font-mono text-[10px] hidden sm:block">{row.cpa}</span>
+                    <span className="text-right hidden sm:flex items-center justify-end">
+                      <span className={`text-[8px] px-1.5 py-0.5 rounded ${row.sBg} ${row.sColor}`}>{row.status}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-[80%] h-[100px] bg-[#2563EB]/6 rounded-full blur-3xl pointer-events-none" />
+      </div>
+    </motion.div>
   );
 }
 
-/* ─── Data ─── */
-const kpis = [
-  { label: 'Reklam Harcaması', value: '₺48.2K', change: '+12%', up: true, accent: '#3B82F6' },
-  { label: 'ROAS', value: '3.4x', change: '+0.6x', up: true, accent: '#10B981' },
-  { label: 'Dönüşüm', value: '1,247', change: '+18%', up: true, accent: '#8B5CF6' },
-  { label: 'CPA', value: '₺38.6', change: '-14%', up: false, accent: '#F59E0B' },
-] as const;
-
-const sparklineHeights = [30, 45, 35, 55, 50, 65, 60, 75, 68, 80, 72, 85];
-
-const chartBars = [
-  { s: 35, r: 50 }, { s: 40, r: 55 }, { s: 30, r: 45 },
-  { s: 55, r: 70 }, { s: 45, r: 62 }, { s: 60, r: 78 },
-  { s: 50, r: 72 }, { s: 65, r: 85 }, { s: 55, r: 75 },
-  { s: 70, r: 90 }, { s: 60, r: 82 }, { s: 75, r: 95 },
-  { s: 68, r: 88 }, { s: 80, r: 98 },
-];
-
-const campaigns = [
-  { name: 'Yaz İndirimi — Geniş Kitle', status: 'Aktif', spend: '₺12.4K', roas: '4.1x', active: true, highlight: true },
-  { name: 'Sepet Terk — Retargeting', status: 'Aktif', spend: '₺8.7K', roas: '5.8x', active: true, highlight: false },
-  { name: 'Benzer Kitle — Top %5', status: 'AI Durdurdu', spend: '₺4.2K', roas: '1.2x', active: false, highlight: false },
-] as const;
-
 export function Hero() {
   const t = useTranslations('landing');
+
+  // Split headline for gradient effect on last part
+  const title = t('hero_title');
+  const titleWords = title.split(' ');
+  const lastWord = titleWords.pop();
+  const firstPart = titleWords.join(' ');
 
   const stats = [
     { value: t('hero_stat_roas'), label: t('hero_stat_roas_label') },
@@ -87,258 +217,88 @@ export function Hero() {
   ];
 
   return (
-    <section className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden pt-28 md:pt-36 pb-8">
-      <style dangerouslySetInnerHTML={{ __html: cssAnimations }} />
+    <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+      <GradientMesh />
 
-      {/* Gradient orb */}
-      <div
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse at center, rgba(37,99,235,0.06) 0%, rgba(37,99,235,0.02) 40%, transparent 70%)',
-          filter: 'blur(60px)',
-        }}
-      />
-
-      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+      <div className="relative z-10 mx-auto max-w-6xl">
         {/* Badge */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0, ease }}
-          className="mb-6"
+          transition={{ ...spring, delay: 0.1 }}
+          className="flex justify-center mb-8"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-black/[0.06] bg-white/80 backdrop-blur-sm text-[13px] font-medium text-[#6B7280]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-[#2563EB]/10 text-[#2563EB] text-xs font-medium tracking-wide shadow-sm shadow-[#2563EB]/5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-60" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2563EB]" />
+            </span>
             {t('hero_badge')}
           </span>
         </motion.div>
 
-        {/* Headline — split word reveal */}
-        <SplitHeadline
-          text={t('hero_title')}
-          className="text-[clamp(2.5rem,5.5vw,4.5rem)] font-extrabold leading-[1.05] tracking-[-0.04em] text-[#1A1A1A]"
+        {/* Headline */}
+        <motion.h1
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...spring, delay: 0.2 }}
+          className="text-center text-4xl sm:text-5xl lg:text-[3.5rem] xl:text-6xl font-bold tracking-tight leading-[1.08] max-w-3xl mx-auto"
           style={{ fontFamily: 'var(--font-display)' }}
-        />
+        >
+          {firstPart}{' '}
+          <span className="bg-gradient-to-r from-[#2563EB] via-blue-500 to-violet-500 bg-clip-text text-transparent">
+            {lastWord}
+          </span>
+        </motion.h1>
 
-        {/* Subtitle */}
+        {/* Subheadline */}
         <motion.p
-          className="mt-5 text-[clamp(1.05rem,1.4vw,1.2rem)] text-[#6B7280] max-w-xl mx-auto leading-relaxed"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6, ease }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...spring, delay: 0.35 }}
+          className="text-center text-lg text-[#6B7280] max-w-xl mx-auto mt-6 leading-relaxed"
         >
           {t('hero_subtitle')}
         </motion.p>
 
         {/* CTAs */}
         <motion.div
-          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3"
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.7, ease }}
+          transition={{ ...spring, delay: 0.5 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10"
         >
           <Link
             href="/signup"
-            className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-[#2563EB] text-white text-[15px] font-semibold rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.08),0_0_0_1px_rgba(37,99,235,0.4)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.25)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+            className="glow-button inline-flex items-center justify-center px-7 py-3.5 rounded-xl bg-[#2563EB] text-white font-medium text-sm hover:bg-[#1D4ED8] transition-all duration-300 shadow-lg shadow-[#2563EB]/25 hover:shadow-xl hover:shadow-[#2563EB]/30 hover:-translate-y-0.5 w-full sm:w-auto"
           >
             {t('hero_cta')}
-            <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
-          <Link
-            href="#how-it-works"
-            className="inline-flex items-center gap-2 px-7 py-3.5 text-[#6B7280] text-[15px] font-medium hover:text-[#1A1A1A] transition-colors"
-          >
-            {t('hero_cta_secondary')}
-          </Link>
+          <span className="text-xs text-[#71717A] flex items-center gap-1.5">
+            <Shield className="w-3.5 h-3.5" />
+            {t('hero_trust')}
+          </span>
         </motion.div>
-
-        {/* Trust line */}
-        <motion.p
-          className="mt-3 text-[13px] text-[#9CA3AF]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.8, ease }}
-        >
-          {t('hero_trust')}
-        </motion.p>
 
         {/* Stats strip */}
         <motion.div
-          className="mt-10 inline-flex items-center gap-8 md:gap-10"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.9, ease }}
+          transition={{ ...spring, delay: 0.65 }}
+          className="flex items-center justify-center gap-8 sm:gap-14 mt-12 text-center"
         >
-          {stats.map((stat, i) => (
-            <div key={i} className="flex flex-col items-center relative">
-              {i > 0 && (
-                <div className="absolute -left-4 md:-left-5 top-1/2 -translate-y-1/2 w-px h-8 bg-black/[0.06]" />
-              )}
-              <span
-                className="text-[clamp(1.5rem,2.5vw,2rem)] font-bold text-[#1A1A1A] tracking-[-0.02em]"
-                style={{ fontFamily: 'var(--font-display)' }}
-              >
+          {stats.map((stat) => (
+            <div key={stat.label} className="flex flex-col items-center">
+              <span className="text-xl sm:text-2xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
                 {stat.value}
               </span>
-              <span className="text-[12px] text-[#9CA3AF] mt-0.5">{stat.label}</span>
+              <span className="text-[11px] text-[#71717A] mt-1">{stat.label}</span>
             </div>
           ))}
         </motion.div>
 
-        {/* ──── Dashboard frame ──── */}
-        <motion.div
-          className="mt-16 md:mt-20 relative"
-          initial={{ opacity: 0, y: 50, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.9, delay: 1.0, ease }}
-        >
-          {/* Subtle glow */}
-          <div
-            className="absolute -inset-10 rounded-3xl opacity-30"
-            style={{
-              background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(37,99,235,0.08) 0%, transparent 70%)',
-            }}
-          />
-
-          {/* Frame container */}
-          <div
-            className="relative rounded-2xl border border-black/[0.08] ring-1 ring-black/[0.04] bg-[#0C0D14] overflow-hidden"
-            style={{
-              transform: 'perspective(2000px) rotateX(2deg)',
-              transformOrigin: 'bottom center',
-              boxShadow: '0 25px 80px -12px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.04)',
-            }}
-          >
-            {/* Browser chrome */}
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.05] bg-[#08090E]">
-              <div className="flex gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-[#FF5F57]" />
-                <div className="w-2 h-2 rounded-full bg-[#FEBC2E]" />
-                <div className="w-2 h-2 rounded-full bg-[#28C840]" />
-              </div>
-              <div className="flex-1 mx-12">
-                <div className="h-5 bg-white/[0.04] rounded-md max-w-xs mx-auto flex items-center justify-center">
-                  <span className="text-[10px] text-white/15">app.megvax.com/dashboard</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" style={{ animation: 'pulse-dot 2s ease-in-out infinite' }} />
-                <span className="text-[10px] text-white/25 whitespace-nowrap hidden sm:inline">AI çalışıyor...</span>
-              </div>
-            </div>
-
-            {/* Dashboard content — staggered reveal */}
-            <div className="relative p-4 md:p-6 space-y-4">
-              {/* Dot-grid */}
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)',
-                  backgroundSize: '16px 16px',
-                }}
-              />
-
-              {/* KPI cards — stagger in */}
-              <div className="relative grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                {kpis.map((kpi, kpiIndex) => (
-                  <motion.div
-                    key={kpi.label}
-                    className="rounded-lg bg-white/[0.05] border border-white/[0.07] p-3"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 1.3 + kpiIndex * 0.1, ease }}
-                  >
-                    <div className="text-[10px] text-white/35 mb-1.5">{kpi.label}</div>
-                    <div className="flex items-end justify-between">
-                      <span className="text-sm md:text-base font-bold text-white">{kpi.value}</span>
-                      <span className="text-[10px] font-medium" style={{ color: kpi.up ? '#10B981' : '#EF4444' }}>{kpi.change}</span>
-                    </div>
-                    <div className="mt-2 flex items-end gap-[2px] h-4" style={{ animation: 'kpi-shimmer 4s ease-in-out infinite' }}>
-                      {sparklineHeights.map((h, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 rounded-[1px]"
-                          style={{ height: `${h}%`, backgroundColor: kpi.accent, opacity: 0.15 + (i / 12) * 0.35 }}
-                        />
-                      ))}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Chart area */}
-              <motion.div
-                className="relative rounded-lg bg-white/[0.03] border border-white/[0.06] p-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.7, ease }}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-medium text-white/35">Performans Özeti</span>
-                  <div className="flex gap-3">
-                    <span className="text-[10px] text-white/20 flex items-center gap-1.5">
-                      <span className="w-2 h-[3px] rounded-full bg-[#3B82F6]" /> Harcama
-                    </span>
-                    <span className="text-[10px] text-white/20 flex items-center gap-1.5">
-                      <span className="w-2 h-[3px] rounded-full bg-[#10B981]" /> Gelir
-                    </span>
-                  </div>
-                </div>
-                <div className="h-28 md:h-36 flex items-end gap-[3px]">
-                  {chartBars.map((bar, i) => (
-                    <div key={i} className="flex-1 flex gap-[1px]">
-                      <motion.div
-                        className="flex-1 rounded-t-[2px] bg-[#3B82F6]/25"
-                        initial={{ height: 0 }}
-                        animate={{ height: `${bar.s}%` }}
-                        transition={{ duration: 0.6, delay: 1.9 + i * 0.04, ease }}
-                      />
-                      <motion.div
-                        className="flex-1 rounded-t-[2px] bg-[#10B981]/25"
-                        initial={{ height: 0 }}
-                        animate={{ height: `${bar.r}%` }}
-                        transition={{ duration: 0.6, delay: 1.95 + i * 0.04, ease }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Campaign rows — slide in one by one */}
-              <div className="relative space-y-1.5">
-                {campaigns.map((row, rowIndex) => (
-                  <motion.div
-                    key={row.name}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg border border-white/[0.05] text-[11px] md:text-xs"
-                    style={{
-                      background: 'rgba(255,255,255,0.03)',
-                      borderLeft: !row.active ? '2px solid rgba(245, 158, 11, 0.5)' : undefined,
-                      animation: row.highlight ? 'row-highlight 3s ease-in-out 3.5s 1 forwards' : undefined,
-                    }}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: 2.5 + rowIndex * 0.12, ease }}
-                  >
-                    <span className="text-white/50 truncate max-w-[35%]">{row.name}</span>
-                    {row.active ? (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400">{row.status}</span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20">
-                        <span className="w-2 h-2 rounded-full bg-[#F59E0B]" style={{ animation: 'amber-pulse 1.5s ease-in-out infinite' }} />
-                        {row.status}
-                      </span>
-                    )}
-                    <span className="text-white/30 hidden sm:block">{row.spend}</span>
-                    <span className="text-white/50 font-medium">{row.roas}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bottom fade */}
-            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#FAFAF8] to-transparent pointer-events-none" />
-          </div>
-        </motion.div>
+        {/* Product Dashboard */}
+        <DashboardMockup />
       </div>
     </section>
   );

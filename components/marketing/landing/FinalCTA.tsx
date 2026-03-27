@@ -1,46 +1,91 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowRight, Shield, CreditCard, Clock } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 import { ScrollReveal } from './ScrollReveal';
+
+const trustBadges = [
+  { icon: Shield, key: 'cta_trust_free' },
+  { icon: CreditCard, key: 'cta_trust_no_card' },
+  { icon: Clock, key: 'cta_trust_setup' },
+] as const;
 
 export function FinalCTA() {
   const t = useTranslations('landing');
 
   return (
-    <section
-      className="py-28 md:py-40"
-      style={{
-        background:
-          'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(37,99,235,0.04), transparent)',
-      }}
-    >
-      <div className="max-w-2xl mx-auto px-6 text-center">
+    <section className="py-28 px-6">
+      <div className="mx-auto max-w-4xl">
         <ScrollReveal>
-          <div className="h-px bg-gradient-to-r from-transparent via-black/[0.06] to-transparent max-w-lg mx-auto mb-20" />
-          <h2
-            className="text-[clamp(2rem,4vw,2.75rem)] font-bold text-[#1A1A1A] tracking-[-0.03em]"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            {t('cta_heading')}
-          </h2>
+          <div className="relative overflow-hidden rounded-3xl bg-landing-frame-bg p-10 sm:p-14 text-center">
+            {/* Gradient orbs */}
+            <div className="absolute top-0 left-0 w-[400px] h-[400px] rounded-full bg-[#2563EB]/15 blur-[100px] -translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute bottom-0 right-0 w-[300px] h-[300px] rounded-full bg-violet-500/10 blur-[80px] translate-x-1/3 translate-y-1/3" />
 
-          <p className="mt-4 text-[15px] text-[#6B7280] max-w-md mx-auto">
-            {t('cta_subtitle')}
-          </p>
+            {/* Dot grid overlay */}
+            <div
+              className="absolute inset-0 opacity-100"
+              style={{
+                backgroundImage:
+                  'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)',
+                backgroundSize: '24px 24px',
+              }}
+            />
 
-          <Link
-            href="/signup"
-            className="mt-8 inline-flex items-center gap-2.5 px-9 py-4 bg-[#2563EB] text-white text-[16px] font-semibold rounded-xl shadow-[0_4px_24px_rgba(37,99,235,0.25)] hover:bg-[#1D4ED8] hover:shadow-[0_8px_32px_rgba(37,99,235,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
-          >
-            {t('cta_button')}
-            <ArrowRight className="w-4.5 h-4.5" />
-          </Link>
+            {/* Content */}
+            <div className="relative z-10">
+              {/* Live badge */}
+              <motion.div
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.06] text-white/60 text-xs font-medium mb-6"
+                initial={{ opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1, duration: 0.5 }}
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                </span>
+                {t('cta_social_proof')}
+              </motion.div>
 
-          <p className="mt-4 text-[13px] text-[#9CA3AF]">
-            {t('cta_trust')}
-          </p>
+              <h2
+                className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white mb-5 leading-tight"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                {t('cta_heading')}
+              </h2>
+
+              <p className="text-white/50 max-w-md mx-auto mb-8 text-sm sm:text-base leading-relaxed">
+                {t('cta_subtitle')}
+              </p>
+
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-block"
+              >
+                <Link
+                  href="/signup"
+                  className="group inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white text-landing-frame-bg font-semibold text-sm hover:bg-white/90 transition-all duration-300 shadow-xl shadow-black/20"
+                >
+                  {t('cta_button')}
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </motion.div>
+
+              <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-6 text-xs text-white/35">
+                {trustBadges.map(({ icon: Icon, key }) => (
+                  <span key={key} className="flex items-center gap-1.5">
+                    <Icon className="w-3.5 h-3.5" />
+                    {t(key)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
         </ScrollReveal>
       </div>
     </section>
