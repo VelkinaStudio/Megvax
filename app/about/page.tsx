@@ -1,7 +1,8 @@
 'use client';
 
+import { useRef, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import {
   Target,
   Zap,
@@ -56,16 +57,115 @@ const statsData = [
   { value: 2, prefix: '<', suffix: 'min', labelKey: 'stats_setup', decimals: 0 },
 ];
 
+/* ─── Timeline with progressive draw animation ─── */
+function AnimatedTimelineLine() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start end', 'end start'],
+  });
+  const scaleY = useTransform(scrollYProgress, [0, 0.8], [0, 1]);
+
+  return (
+    <div ref={ref} className="absolute left-6 md:left-1/2 top-0 bottom-0 md:-translate-x-px">
+      {/* Static faint track */}
+      <div className="absolute inset-0 w-px bg-[#2563EB]/10" />
+      {/* Animated drawn line */}
+      <motion.div
+        className="absolute top-0 left-0 w-px bg-gradient-to-b from-[#2563EB] via-[#2563EB]/60 to-transparent origin-top"
+        style={{ scaleY, height: '100%' }}
+      />
+    </div>
+  );
+}
+
+/* ─── Team card with flip on hover ─── */
+function TeamCard({
+  member,
+  t,
+}: {
+  member: (typeof teamMembers)[number];
+  t: (key: string) => string;
+}) {
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  return (
+    <div
+      className="relative h-[280px] perspective-[1000px]"
+      onMouseEnter={() => setIsFlipped(true)}
+      onMouseLeave={() => setIsFlipped(false)}
+    >
+      <motion.div
+        className="relative w-full h-full"
+        animate={{ rotateY: isFlipped ? 180 : 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        style={{ transformStyle: 'preserve-3d' }}
+      >
+        {/* Front face */}
+        <div
+          className="absolute inset-0 rounded-2xl border border-landing-card-border bg-landing-card-bg p-8 text-center flex flex-col items-center justify-center"
+          style={{ backfaceVisibility: 'hidden' }}
+        >
+          <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center mx-auto mb-5 shadow-lg`}>
+            <span className="text-white text-xl font-bold" style={{ fontFamily: 'var(--font-display)' }}>
+              {member.initials}
+            </span>
+          </div>
+          <h3
+            className="text-lg font-bold text-landing-text"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            {t(member.nameKey)}
+          </h3>
+          <p className="text-sm font-medium text-[#2563EB] mt-1">
+            {t(member.roleKey)}
+          </p>
+        </div>
+
+        {/* Back face */}
+        <div
+          className="absolute inset-0 rounded-2xl border border-[#2563EB]/20 bg-gradient-to-br from-[#2563EB]/[0.04] to-violet-500/[0.04] p-8 flex flex-col items-center justify-center text-center"
+          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+        >
+          <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center mx-auto mb-4`}>
+            <span className="text-white text-sm font-bold" style={{ fontFamily: 'var(--font-display)' }}>
+              {member.initials}
+            </span>
+          </div>
+          <h3
+            className="text-base font-bold text-landing-text mb-1"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            {t(member.nameKey)}
+          </h3>
+          <p className="text-sm text-landing-text-muted leading-relaxed">
+            {t(member.bioKey)}
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function AboutPage() {
   const t = useTranslations('about');
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress: heroScroll } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  // GradientMesh moves at 50% speed of content (parallax)
+  const meshY = useTransform(heroScroll, [0, 1], [0, -120]);
 
   return (
     <main className="min-h-screen bg-landing-bg">
       <Nav />
 
       {/* ━━━ 1. HERO ━━━ */}
-      <section className="relative pt-32 pb-28 px-6 overflow-hidden">
-        <GradientMesh />
+      <section ref={heroRef} className="relative pt-32 pb-28 px-6 overflow-hidden">
+        <motion.div style={{ y: meshY }}>
+          <GradientMesh />
+        </motion.div>
 
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <motion.div
@@ -203,8 +303,8 @@ export default function AboutPage() {
 
           {/* Timeline */}
           <div className="relative">
-            {/* Vertical line */}
-            <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-[#2563EB]/30 via-[#2563EB]/15 to-transparent md:-translate-x-px" />
+            {/* Animated vertical line — draws progressively on scroll */}
+            <AnimatedTimelineLine />
 
             {timelineMilestones.map((milestone, idx) => {
               const Icon = milestone.icon;
@@ -364,31 +464,7 @@ export default function AboutPage() {
           <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" stagger={0.12}>
             {teamMembers.map((member) => (
               <StaggerItem key={member.nameKey}>
-                <motion.div
-                  className="group relative overflow-hidden rounded-2xl border border-landing-card-border bg-landing-card-bg p-8 text-center transition-all duration-300 hover:border-[#2563EB]/15 hover:shadow-lg hover:shadow-black/5"
-                  whileHover={{ y: -4 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                >
-                  {/* Avatar circle with initials */}
-                  <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center mx-auto mb-5 shadow-lg group-hover:scale-105 transition-transform duration-300`}>
-                    <span className="text-white text-xl font-bold" style={{ fontFamily: 'var(--font-display)' }}>
-                      {member.initials}
-                    </span>
-                  </div>
-
-                  <h3
-                    className="text-lg font-bold text-landing-text"
-                    style={{ fontFamily: 'var(--font-display)' }}
-                  >
-                    {t(member.nameKey)}
-                  </h3>
-                  <p className="text-sm font-medium text-[#2563EB] mt-1">
-                    {t(member.roleKey)}
-                  </p>
-                  <p className="text-sm text-landing-text-muted mt-3 leading-relaxed">
-                    {t(member.bioKey)}
-                  </p>
-                </motion.div>
+                <TeamCard member={member} t={t} />
               </StaggerItem>
             ))}
           </StaggerContainer>

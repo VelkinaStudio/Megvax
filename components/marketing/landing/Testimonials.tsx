@@ -1,17 +1,33 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import { Star } from 'lucide-react';
+import { useRef } from 'react';
 import { useTranslations } from '@/lib/i18n';
 import { ScrollReveal, StaggerContainer, StaggerItem } from './ScrollReveal';
 
-// ─── Star Rating ─────────────────────────────────────────────────────────────
+// ─── Star Rating with staggered animation ────────────────────────────────────
 
 function StarRating({ count = 5 }: { count?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-30px' });
+
   return (
-    <div className="flex gap-0.5">
+    <div ref={ref} className="flex gap-0.5">
       {Array.from({ length: count }).map((_, i) => (
-        <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, scale: 0, rotate: -30 }}
+          animate={isInView ? { opacity: 1, scale: 1, rotate: 0 } : { opacity: 0, scale: 0, rotate: -30 }}
+          transition={{
+            delay: i * 0.08,
+            type: 'spring',
+            stiffness: 400,
+            damping: 15,
+          }}
+        >
+          <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+        </motion.div>
       ))}
     </div>
   );
@@ -63,6 +79,83 @@ const aggregateStats = [
   { valueKey: 'testimonials_aggregate_managed', labelKey: 'testimonials_aggregate_managed_label', icon: '▲' },
 ] as const;
 
+// ─── Activity Ticker ─────────────────────────────────────────────────────────
+// Auto-scrolling marquee showing recent user activity, like social proof.
+
+const activityItems = [
+  { nameKey: 'ticker_name_1', resultKey: 'ticker_result_1' },
+  { nameKey: 'ticker_name_2', resultKey: 'ticker_result_2' },
+  { nameKey: 'ticker_name_3', resultKey: 'ticker_result_3' },
+  { nameKey: 'ticker_name_4', resultKey: 'ticker_result_4' },
+  { nameKey: 'ticker_name_5', resultKey: 'ticker_result_5' },
+  { nameKey: 'ticker_name_6', resultKey: 'ticker_result_6' },
+] as const;
+
+function ActivityTicker() {
+  const t = useTranslations('landing');
+
+  // Build the ticker items. When a translation key is missing, t() returns
+  // the key path itself (e.g. "landing.ticker_name_1"). We detect that to
+  // decide whether to use translations or fallback data.
+  const items = activityItems.map(({ nameKey, resultKey }) => {
+    const name = t(nameKey);
+    const result = t(resultKey);
+    // If the returned value looks like a key path, the translation is missing
+    const nameIsMissing = name.includes('ticker_name_');
+    const resultIsMissing = result.includes('ticker_result_');
+    if (nameIsMissing || resultIsMissing) return null;
+    return { name, result };
+  }).filter(Boolean) as { name: string; result: string }[];
+
+  // Fallback ticker data when translation keys don't exist
+  const fallbackItems = [
+    { name: 'Sarah Chen', result: 'CPA -40%' },
+    { name: 'Marcus Webb', result: 'ROAS 5.1x' },
+    { name: 'Elif Yılmaz', result: 'Conv. +120%' },
+    { name: 'David Park', result: 'CPA -35%' },
+    { name: 'Ayşe Kaya', result: 'ROAS 4.8x' },
+    { name: 'James Miller', result: 'Spend -28%' },
+  ];
+
+  const tickerData = items.length >= 3 ? items : fallbackItems;
+
+  // Duplicate for seamless loop
+  const doubled = [...tickerData, ...tickerData];
+
+  return (
+    <div className="mt-10 overflow-hidden relative" aria-hidden="true">
+      {/* Fade edges */}
+      <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-landing-bg to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-landing-bg to-transparent z-10 pointer-events-none" />
+
+      <motion.div
+        className="flex gap-6 whitespace-nowrap"
+        animate={{ x: ['0%', '-50%'] }}
+        transition={{
+          x: {
+            repeat: Infinity,
+            repeatType: 'loop',
+            duration: 25,
+            ease: 'linear',
+          },
+        }}
+      >
+        {doubled.map((item, i) => (
+          <div
+            key={i}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-landing-card-bg border border-landing-card-border text-xs shrink-0"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+            <span className="font-medium text-landing-text">{item.name}</span>
+            <span className="text-landing-text-muted">→</span>
+            <span className="font-semibold text-emerald-600">{item.result}</span>
+          </div>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export function Testimonials() {
@@ -102,7 +195,7 @@ export function Testimonials() {
               <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl bg-gradient-to-r from-[#2563EB] via-[#7C3AED] to-[#2563EB] opacity-60" />
 
               <div className="flex flex-col h-full">
-                {/* Stars */}
+                {/* Stars — staggered animation */}
                 <div className="mb-5">
                   <StarRating />
                 </div>
@@ -158,7 +251,7 @@ export function Testimonials() {
                   whileHover={{ y: -3 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 >
-                  {/* Stars */}
+                  {/* Stars — staggered animation */}
                   <div className="mb-3">
                     <StarRating />
                   </div>
@@ -217,6 +310,11 @@ export function Testimonials() {
               </div>
             ))}
           </div>
+        </ScrollReveal>
+
+        {/* Activity ticker — auto-scrolling social proof */}
+        <ScrollReveal delay={0.4}>
+          <ActivityTicker />
         </ScrollReveal>
       </div>
     </section>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle,
@@ -43,6 +43,67 @@ const SERVICES: Service[] = [
 // Generate 30 days of uptime blocks (all green for now)
 function generateUptimeBlocks(): ('operational' | 'degraded' | 'outage')[] {
   return Array.from({ length: 30 }, () => 'operational');
+}
+
+// Get the date string for N days ago
+function getDateLabel(daysAgo: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+}
+
+/* ───── Uptime block with hover tooltip ───── */
+function UptimeBlock({
+  status,
+  index,
+  total,
+  colorClass,
+  statusLabel,
+  dayLabel,
+}: {
+  status: string;
+  index: number;
+  total: number;
+  colorClass: string;
+  statusLabel: string;
+  dayLabel: string;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const blockRef = useRef<HTMLDivElement>(null);
+  const daysAgo = total - 1 - index;
+  const dateStr = getDateLabel(daysAgo);
+
+  return (
+    <motion.div
+      ref={blockRef}
+      className={`relative flex-1 h-8 rounded-sm ${colorClass} cursor-default`}
+      initial={{ scaleY: 0 }}
+      animate={{ scaleY: 1 }}
+      transition={{ delay: index * 0.02, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      style={{ transformOrigin: 'bottom' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <AnimatePresence>
+        {hovered && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute -top-12 left-1/2 -translate-x-1/2 z-30 whitespace-nowrap"
+          >
+            <div className="bg-[#1A1A1A] text-white text-[10px] font-medium px-2.5 py-1.5 rounded-lg shadow-lg">
+              <span className="font-semibold">{dateStr}</span>
+              <span className="text-white/50 ml-1.5">{statusLabel}</span>
+            </div>
+            {/* Tooltip arrow */}
+            <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-[#1A1A1A] rotate-45" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
 }
 
 export default function StatusPage() {
@@ -118,15 +179,23 @@ export default function StatusPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Overall status badge */}
+            {/* Overall status badge — live pulse ring */}
             <motion.div
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 ${
+              className={`relative inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 ${
                 allOperational ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
               }`}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
             >
+              {/* Expanding pulse ring */}
+              <motion.div
+                className={`absolute inset-0 rounded-full ${
+                  allOperational ? 'bg-emerald-400/20' : 'bg-amber-400/20'
+                }`}
+                animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+              />
               <span className="relative flex h-2.5 w-2.5">
                 <span
                   className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
@@ -139,7 +208,7 @@ export default function StatusPage() {
                   }`}
                 />
               </span>
-              {allOperational ? t('all_operational') : t('some_issues')}
+              <span className="relative">{allOperational ? t('all_operational') : t('some_issues')}</span>
             </motion.div>
 
             <h1
@@ -169,7 +238,17 @@ export default function StatusPage() {
                           <Icon className="w-4.5 h-4.5 text-[#6B7280] group-hover:text-[#2563EB] transition-colors" />
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className={`w-2 h-2 rounded-full ${config.dotColor}`} />
+                          {/* Pulsing dot for operational services */}
+                          <span className="relative flex h-2 w-2">
+                            {service.status === 'operational' && (
+                              <motion.span
+                                className={`absolute inline-flex h-full w-full rounded-full ${config.dotColor}`}
+                                animate={{ scale: [1, 1.8, 1], opacity: [0.6, 0, 0.6] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                              />
+                            )}
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${config.dotColor}`} />
+                          </span>
                           <span className={`text-xs font-semibold ${config.textColor}`}>
                             {config.label}
                           </span>
@@ -216,14 +295,14 @@ export default function StatusPage() {
                 </div>
                 <div className="flex gap-[3px]">
                   {uptimeBlocks.map((status, i) => (
-                    <motion.div
+                    <UptimeBlock
                       key={i}
-                      className={`flex-1 h-8 rounded-sm ${blockColorMap[status]} hover:opacity-80 transition-opacity cursor-default`}
-                      initial={{ scaleY: 0 }}
-                      animate={{ scaleY: 1 }}
-                      transition={{ delay: i * 0.02, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                      style={{ transformOrigin: 'bottom' }}
-                      title={`${t('day')} ${i + 1}: ${t(status)}`}
+                      status={status}
+                      index={i}
+                      total={uptimeBlocks.length}
+                      colorClass={blockColorMap[status]}
+                      statusLabel={t(status)}
+                      dayLabel={t('day')}
                     />
                   ))}
                 </div>

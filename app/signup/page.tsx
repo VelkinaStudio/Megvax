@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Mail, Lock, User, Building, ArrowRight, Eye, EyeOff, Check, Shield, Clock, CreditCard } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
@@ -55,6 +55,83 @@ function GlowOrb({ className }: { className?: string }) {
   );
 }
 
+/* ───── Ambient particle field for dark panel ───── */
+function ParticleField() {
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 25 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: 2 + Math.random() * 3,
+        opacity: 0.05 + Math.random() * 0.1,
+        duration: 12 + Math.random() * 18,
+        delay: Math.random() * 8,
+        driftX: (Math.random() - 0.5) * 60,
+        driftY: (Math.random() - 0.5) * 40,
+      })),
+    []
+  );
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute rounded-full bg-white"
+          style={{
+            width: p.size,
+            height: p.size,
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            opacity: p.opacity,
+          }}
+          animate={{
+            x: [0, p.driftX, -p.driftX * 0.5, 0],
+            y: [0, p.driftY, -p.driftY * 0.7, 0],
+            opacity: [p.opacity, p.opacity * 1.5, p.opacity * 0.6, p.opacity],
+          }}
+          transition={{
+            duration: p.duration,
+            delay: p.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ───── Focus-enhanced input wrapper ───── */
+function FocusInput({
+  children,
+  isFocused,
+}: {
+  children: React.ReactNode;
+  isFocused: boolean;
+}) {
+  return (
+    <motion.div
+      className="relative"
+      animate={{
+        scale: isFocused ? 1.02 : 1,
+      }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+    >
+      <motion.div
+        className="absolute -inset-[2px] rounded-[14px] pointer-events-none"
+        style={{
+          background: 'linear-gradient(135deg, rgba(37,99,235,0.15), rgba(37,99,235,0.08))',
+        }}
+        animate={{ opacity: isFocused ? 1 : 0 }}
+        transition={{ duration: 0.25 }}
+      />
+      <div className="relative">{children}</div>
+    </motion.div>
+  );
+}
+
 /* ───── Trust badge ───── */
 function TrustBadge({
   icon: Icon,
@@ -88,6 +165,10 @@ export default function SignupPage() {
   const { register, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [nameFocused, setNameFocused] = useState(false);
+  const [companyFocused, setCompanyFocused] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     company: '',
@@ -141,6 +222,9 @@ export default function SignupPage() {
         {/* Background glow effects */}
         <GlowOrb className="w-[400px] h-[400px] bg-[#2563EB]/30 -top-20 -left-20" />
         <GlowOrb className="w-[300px] h-[300px] bg-[#7c3aed]/20 bottom-20 right-10" />
+
+        {/* Ambient particle field */}
+        <ParticleField />
 
         {/* Top: Logo */}
         <div className="relative z-10">
@@ -218,109 +302,144 @@ export default function SignupPage() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name */}
+            {/* Name — focus-enhanced */}
             <div className="space-y-1.5">
               <label htmlFor="name" className="text-sm font-medium text-[#374151]">
                 {t('full_name')}
               </label>
-              <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#9CA3AF]" />
-                <input
-                  id="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="John Doe"
-                  className="w-full pl-11 pr-4 py-3 bg-white border border-[#E5E7EB] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all duration-200"
-                  required
-                />
-              </div>
+              <FocusInput isFocused={nameFocused}>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#9CA3AF]" />
+                  <input
+                    id="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onFocus={() => setNameFocused(true)}
+                    onBlur={() => setNameFocused(false)}
+                    placeholder="John Doe"
+                    className="w-full pl-11 pr-4 py-3 bg-white border border-[#E5E7EB] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all duration-200"
+                    required
+                  />
+                </div>
+              </FocusInput>
             </div>
 
-            {/* Company (optional) */}
+            {/* Company (optional) — focus-enhanced */}
             <div className="space-y-1.5">
               <label htmlFor="company" className="text-sm font-medium text-[#374151]">
                 {t('company_name')} <span className="text-[#9CA3AF] font-normal">({t('optional')})</span>
               </label>
-              <div className="relative">
-                <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#9CA3AF]" />
-                <input
-                  id="company"
-                  type="text"
-                  value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  placeholder="Company Inc."
-                  className="w-full pl-11 pr-4 py-3 bg-white border border-[#E5E7EB] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all duration-200"
-                />
-              </div>
+              <FocusInput isFocused={companyFocused}>
+                <div className="relative">
+                  <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#9CA3AF]" />
+                  <input
+                    id="company"
+                    type="text"
+                    value={formData.company}
+                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                    onFocus={() => setCompanyFocused(true)}
+                    onBlur={() => setCompanyFocused(false)}
+                    placeholder="Company Inc."
+                    className="w-full pl-11 pr-4 py-3 bg-white border border-[#E5E7EB] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all duration-200"
+                  />
+                </div>
+              </FocusInput>
             </div>
 
-            {/* Email */}
+            {/* Email — focus-enhanced */}
             <div className="space-y-1.5">
               <label htmlFor="email" className="text-sm font-medium text-[#374151]">
                 {t('work_email')}
               </label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#9CA3AF]" />
-                <input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="email@company.com"
-                  className="w-full pl-11 pr-4 py-3 bg-white border border-[#E5E7EB] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all duration-200"
-                  required
-                />
-              </div>
+              <FocusInput isFocused={emailFocused}>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#9CA3AF]" />
+                  <input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onFocus={() => setEmailFocused(true)}
+                    onBlur={() => setEmailFocused(false)}
+                    placeholder="email@company.com"
+                    className="w-full pl-11 pr-4 py-3 bg-white border border-[#E5E7EB] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all duration-200"
+                    required
+                  />
+                </div>
+              </FocusInput>
             </div>
 
-            {/* Password */}
+            {/* Password — focus-enhanced */}
             <div className="space-y-1.5">
               <label htmlFor="password" className="text-sm font-medium text-[#374151]">
                 {t('password')}
               </label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#9CA3AF]" />
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder="••••••••"
-                  className="w-full pl-11 pr-12 py-3 bg-white border border-[#E5E7EB] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all duration-200"
-                  required
-                  minLength={8}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
-                </button>
-              </div>
-
-              {/* Password strength indicator */}
-              {formData.password.length > 0 && (
-                <div className="pt-1.5 space-y-1.5">
-                  <div className="flex gap-1">
-                    {[1, 2, 3].map((segment) => (
-                      <div
-                        key={segment}
-                        className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                          passwordStrength.level >= segment
-                            ? strengthColors[passwordStrength.level]
-                            : 'bg-[#E5E7EB]'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <p className={`text-xs ${strengthTextColors[passwordStrength.level]}`}>
-                    {t(`password_${passwordStrength.label}`)}
-                  </p>
+              <FocusInput isFocused={passwordFocused}>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#9CA3AF]" />
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onFocus={() => setPasswordFocused(true)}
+                    onBlur={() => setPasswordFocused(false)}
+                    placeholder="••••••••"
+                    className="w-full pl-11 pr-12 py-3 bg-white border border-[#E5E7EB] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all duration-200"
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
+                  </button>
                 </div>
-              )}
+              </FocusInput>
+
+              {/* Password strength indicator — spring-animated bars */}
+              <AnimatePresence>
+                {formData.password.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="pt-1.5 space-y-1.5 overflow-hidden"
+                  >
+                    <div className="flex gap-1">
+                      {[1, 2, 3].map((segment) => (
+                        <div key={segment} className="relative h-1 flex-1 rounded-full bg-[#E5E7EB] overflow-hidden">
+                          <motion.div
+                            className={`absolute inset-0 rounded-full ${
+                              passwordStrength.level >= segment
+                                ? strengthColors[passwordStrength.level]
+                                : 'bg-[#E5E7EB]'
+                            }`}
+                            initial={{ scaleX: 0 }}
+                            animate={{
+                              scaleX: passwordStrength.level >= segment ? 1 : 0,
+                            }}
+                            transition={{
+                              type: 'spring',
+                              stiffness: 200,
+                              damping: 20,
+                              delay: segment * 0.08,
+                            }}
+                            style={{ transformOrigin: 'left' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <p className={`text-xs ${strengthTextColors[passwordStrength.level]}`}>
+                      {t(`password_${passwordStrength.label}`)}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <p className="text-xs text-[#9CA3AF]">{t('password_requirements')}</p>
             </div>

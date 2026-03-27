@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform, useInView } from 'framer-motion';
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { Shield } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 import { GradientMesh } from './GradientMesh';
@@ -13,6 +13,179 @@ const spring = {
   damping: 20,
   mass: 0.8,
 };
+
+// ─── Floating Particles ────────────────────────────────────────────────────
+// Subtle ambient dots that drift slowly in the hero background.
+// Uses Framer Motion for GPU-accelerated transform/opacity animations.
+
+interface Particle {
+  id: number;
+  x: number;   // % from left
+  y: number;   // % from top
+  size: number; // px
+  duration: number;
+  delay: number;
+  dx: number;  // drift x range
+  dy: number;  // drift y range
+}
+
+function useParticles(count: number): Particle[] {
+  return useMemo(() => {
+    // Seeded pseudo-random for SSR/client consistency
+    const particles: Particle[] = [];
+    for (let i = 0; i < count; i++) {
+      // Distribute across the section with some entropy
+      const seed = (i * 137.508) % 1; // golden angle fraction
+      particles.push({
+        id: i,
+        x: ((i * 23.7 + 10) % 90) + 5,
+        y: ((i * 31.3 + 15) % 80) + 10,
+        size: 2 + (seed * 3),
+        duration: 8 + (i % 5) * 2,
+        delay: (i * 0.4) % 3,
+        dx: 15 + (i % 4) * 8,
+        dy: 10 + (i % 3) * 6,
+      });
+    }
+    return particles;
+  }, [count]);
+}
+
+function FloatingParticles() {
+  const particles = useParticles(10);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="hero-particle absolute rounded-full bg-[#2563EB]"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: p.size,
+            height: p.size,
+            opacity: 0,
+            willChange: 'transform, opacity',
+          }}
+          animate={{
+            x: [0, p.dx, -p.dx * 0.6, 0],
+            y: [0, -p.dy, p.dy * 0.5, 0],
+            opacity: [0, 0.12, 0.08, 0],
+          }}
+          transition={{
+            duration: p.duration,
+            delay: p.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Mouse-tracking Spotlight ──────────────────────────────────────────────
+// A radial gradient glow that follows the cursor across the hero section.
+
+function MouseSpotlight() {
+  const [pos, setPos] = useState({ x: 50, y: 50 });
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current?.parentElement;
+    if (!el) return;
+
+    function handleMove(e: MouseEvent) {
+      const rect = el!.getBoundingClientRect();
+      setPos({
+        x: ((e.clientX - rect.left) / rect.width) * 100,
+        y: ((e.clientY - rect.top) / rect.height) * 100,
+      });
+    }
+
+    el.addEventListener('mousemove', handleMove);
+    return () => el.removeEventListener('mousemove', handleMove);
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className="absolute inset-0 pointer-events-none transition-opacity duration-700"
+      aria-hidden="true"
+      style={{
+        background: `radial-gradient(600px circle at ${pos.x}% ${pos.y}%, rgba(37, 99, 235, 0.06), transparent 60%)`,
+        willChange: 'background',
+      }}
+    />
+  );
+}
+
+// ─── Stat Counter (hero-specific) ──────────────────────────────────────────
+// Counts up from 0 on scroll-in using requestAnimationFrame.
+
+function HeroStatCounter({ text }: { text: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-40px' });
+  const [display, setDisplay] = useState(text);
+  const hasAnimated = useRef(false);
+
+  // Parse the stat value: "3.2x" → number=3.2, suffix="x" | "12 hrs" → number=12, suffix=" hrs" | "150+" → number=150, suffix="+"
+  const parsed = useMemo(() => {
+    const match = text.match(/^([\d.,]+)\s*(.*)$/);
+    if (!match) return null;
+    const numStr = match[1].replace(',', '.');
+    const num = parseFloat(numStr);
+    if (isNaN(num)) return null;
+    return { num, suffix: match[2], hasDecimal: numStr.includes('.'), decimalPlaces: numStr.includes('.') ? numStr.split('.')[1].length : 0 };
+  }, [text]);
+
+  const animate = useCallback(() => {
+    if (hasAnimated.current || !parsed) return;
+    hasAnimated.current = true;
+
+    const start = performance.now();
+    const durationMs = 1600;
+    const easeOutExpo = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
+
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / durationMs, 1);
+      const eased = easeOutExpo(progress);
+      const current = eased * parsed.num;
+
+      const formatted = parsed.hasDecimal
+        ? current.toFixed(parsed.decimalPlaces)
+        : Math.round(current).toString();
+
+      setDisplay(`${formatted}${parsed.suffix}`);
+
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        // Ensure we land on the exact original text
+        setDisplay(text);
+      }
+    };
+
+    requestAnimationFrame(tick);
+  }, [parsed, text]);
+
+  useEffect(() => {
+    if (isInView && parsed) {
+      animate();
+    }
+  }, [isInView, parsed, animate]);
+
+  // If we can't parse it (e.g. pure text), just show it static
+  if (!parsed) {
+    return <span ref={ref}>{text}</span>;
+  }
+
+  return <span ref={ref}>{display}</span>;
+}
+
+// ─── Dashboard Mockup ──────────────────────────────────────────────────────
 
 interface DashboardTranslations {
   overview: string;
@@ -212,9 +385,9 @@ function DashboardMockup({ translations: tr }: { translations: DashboardTranslat
             </div>
           </div>
         </div>
-
-        <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-[80%] h-[100px] bg-[#2563EB]/6 rounded-full blur-3xl pointer-events-none" />
       </div>
+
+      <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-[80%] h-[100px] bg-[#2563EB]/6 rounded-full blur-3xl pointer-events-none" />
     </motion.div>
   );
 }
@@ -237,6 +410,12 @@ export function Hero() {
   return (
     <section className="relative pt-32 pb-24 px-6 overflow-hidden">
       <GradientMesh />
+
+      {/* Floating ambient particles */}
+      <FloatingParticles />
+
+      {/* Mouse-tracking radial spotlight */}
+      <MouseSpotlight />
 
       <div className="relative z-10 mx-auto max-w-6xl">
         {/* Badge */}
@@ -264,7 +443,10 @@ export function Hero() {
           style={{ fontFamily: 'var(--font-display)' }}
         >
           {firstPart}{' '}
-          <span className="bg-gradient-to-r from-[#2563EB] via-blue-500 to-violet-500 bg-clip-text text-transparent">
+          <span
+            className="shimmer-text bg-gradient-to-r from-[#2563EB] via-[#60A5FA] via-[#7C3AED] to-[#2563EB] bg-clip-text text-transparent"
+            style={{ backgroundSize: '200% auto' }}
+          >
             {lastWord}
           </span>
         </motion.h1>
@@ -298,7 +480,7 @@ export function Hero() {
           </span>
         </motion.div>
 
-        {/* Stats strip */}
+        {/* Stats strip — numbers count up on scroll */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -308,7 +490,7 @@ export function Hero() {
           {stats.map((stat) => (
             <div key={stat.label} className="flex flex-col items-center">
               <span className="text-xl sm:text-2xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
-                {stat.value}
+                <HeroStatCounter text={stat.value} />
               </span>
               <span className="text-[11px] text-[#71717A] mt-1">{stat.label}</span>
             </div>

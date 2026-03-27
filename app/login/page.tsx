@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -10,7 +10,7 @@ import { useTranslations } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
 import { ApiError } from '@/lib/api';
 
-/* ───── Floating KPI card for brand panel ───── */
+/* ───── Floating KPI card for brand panel — gentle bob animation ───── */
 function KpiCard({
   label,
   value,
@@ -25,8 +25,19 @@ function KpiCard({
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      animate={{
+        opacity: 1,
+        y: [0, -6, 0],
+      }}
+      transition={{
+        opacity: { delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+        y: {
+          delay: delay + 0.6,
+          duration: 3 + delay * 2,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        },
+      }}
       className="bg-white/[0.06] backdrop-blur-md border border-white/[0.08] rounded-xl px-5 py-4 min-w-[160px]"
     >
       <p className="text-[11px] uppercase tracking-wider text-white/40 mb-1">{label}</p>
@@ -50,6 +61,84 @@ function GlowOrb({ className }: { className?: string }) {
   );
 }
 
+/* ───── Ambient particle field for dark panel ───── */
+function ParticleField() {
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 25 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: 2 + Math.random() * 3,
+        opacity: 0.05 + Math.random() * 0.1,
+        duration: 12 + Math.random() * 18,
+        delay: Math.random() * 8,
+        driftX: (Math.random() - 0.5) * 60,
+        driftY: (Math.random() - 0.5) * 40,
+      })),
+    []
+  );
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute rounded-full bg-white"
+          style={{
+            width: p.size,
+            height: p.size,
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            opacity: p.opacity,
+          }}
+          animate={{
+            x: [0, p.driftX, -p.driftX * 0.5, 0],
+            y: [0, p.driftY, -p.driftY * 0.7, 0],
+            opacity: [p.opacity, p.opacity * 1.5, p.opacity * 0.6, p.opacity],
+          }}
+          transition={{
+            duration: p.duration,
+            delay: p.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ───── Focus-enhanced input wrapper ───── */
+function FocusInput({
+  children,
+  isFocused,
+}: {
+  children: React.ReactNode;
+  isFocused: boolean;
+}) {
+  return (
+    <motion.div
+      className="relative"
+      animate={{
+        scale: isFocused ? 1.02 : 1,
+      }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+    >
+      {/* Blue glow ring that fades in on focus */}
+      <motion.div
+        className="absolute -inset-[2px] rounded-[14px] pointer-events-none"
+        style={{
+          background: 'linear-gradient(135deg, rgba(37,99,235,0.15), rgba(37,99,235,0.08))',
+        }}
+        animate={{ opacity: isFocused ? 1 : 0 }}
+        transition={{ duration: 0.25 }}
+      />
+      <div className="relative">{children}</div>
+    </motion.div>
+  );
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const toast = useToast();
@@ -58,6 +147,8 @@ export default function LoginPage() {
   const { login, isAuthenticated, devLogin } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -103,6 +194,9 @@ export default function LoginPage() {
         {/* Background glow effects */}
         <GlowOrb className="w-[400px] h-[400px] bg-[#2563EB]/30 -top-20 -left-20" />
         <GlowOrb className="w-[300px] h-[300px] bg-[#7c3aed]/20 bottom-20 right-10" />
+
+        {/* Ambient particle field */}
+        <ParticleField />
 
         {/* Top: Logo */}
         <div className="relative z-10">
@@ -180,50 +274,58 @@ export default function LoginPage() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
+            {/* Email — focus-enhanced */}
             <div className="space-y-1.5">
               <label htmlFor="email" className="text-sm font-medium text-[#374151]">
                 {t('email')}
               </label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#9CA3AF]" />
-                <input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="email@company.com"
-                  className="w-full pl-11 pr-4 py-3 bg-white border border-[#E5E7EB] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all duration-200"
-                  required
-                />
-              </div>
+              <FocusInput isFocused={emailFocused}>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#9CA3AF]" />
+                  <input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onFocus={() => setEmailFocused(true)}
+                    onBlur={() => setEmailFocused(false)}
+                    placeholder="email@company.com"
+                    className="w-full pl-11 pr-4 py-3 bg-white border border-[#E5E7EB] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all duration-200"
+                    required
+                  />
+                </div>
+              </FocusInput>
             </div>
 
-            {/* Password */}
+            {/* Password — focus-enhanced */}
             <div className="space-y-1.5">
               <label htmlFor="password" className="text-sm font-medium text-[#374151]">
                 {t('password')}
               </label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#9CA3AF]" />
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder="••••••••"
-                  className="w-full pl-11 pr-12 py-3 bg-white border border-[#E5E7EB] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all duration-200"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
-                </button>
-              </div>
+              <FocusInput isFocused={passwordFocused}>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#9CA3AF]" />
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onFocus={() => setPasswordFocused(true)}
+                    onBlur={() => setPasswordFocused(false)}
+                    placeholder="••••••••"
+                    className="w-full pl-11 pr-12 py-3 bg-white border border-[#E5E7EB] rounded-xl text-[#1A1A1A] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all duration-200"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
+                  </button>
+                </div>
+              </FocusInput>
             </div>
 
             {/* Remember Me + Forgot Password */}

@@ -1,11 +1,70 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslations } from '@/lib/i18n';
 import { ScrollReveal, StaggerContainer, StaggerItem } from './ScrollReveal';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 const SPRING_HOVER = { type: 'spring', stiffness: 300, damping: 25 } as const;
+
+// ─── Stat Counter (counts up numbers found in translated text) ─────────────
+function AnimatedStat({ text }: { text: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-30px' });
+  const [display, setDisplay] = useState(text);
+  const hasAnimated = useRef(false);
+
+  // Try to extract a leading number: "20+ saat" → 20, "+40% ..." → 40
+  const parsed = useMemo(() => {
+    const match = text.match(/([\d.,]+)/);
+    if (!match) return null;
+    const numStr = match[1].replace(',', '.');
+    const num = parseFloat(numStr);
+    if (isNaN(num)) return null;
+    const idx = text.indexOf(match[1]);
+    return {
+      num,
+      before: text.slice(0, idx),
+      after: text.slice(idx + match[1].length),
+      hasDecimal: numStr.includes('.'),
+      decimalPlaces: numStr.includes('.') ? numStr.split('.')[1].length : 0,
+      original: match[1],
+    };
+  }, [text]);
+
+  const animate = useCallback(() => {
+    if (hasAnimated.current || !parsed) return;
+    hasAnimated.current = true;
+
+    const start = performance.now();
+    const durationMs = 1400;
+    const easeOutExpo = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
+
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / durationMs, 1);
+      const eased = easeOutExpo(progress);
+      const current = eased * parsed.num;
+      const formatted = parsed.hasDecimal
+        ? current.toFixed(parsed.decimalPlaces)
+        : Math.round(current).toString();
+      setDisplay(`${parsed.before}${formatted}${parsed.after}`);
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        setDisplay(text);
+      }
+    };
+    requestAnimationFrame(tick);
+  }, [parsed, text]);
+
+  useEffect(() => {
+    if (isInView && parsed) animate();
+  }, [isInView, parsed, animate]);
+
+  return <span ref={ref}>{display}</span>;
+}
 
 // ─── Before mockup elements (messy, broken feel) ────────────────────────────
 function BeforeMockupVisual() {
@@ -89,37 +148,64 @@ function AfterMockupVisual() {
   );
 }
 
-// ─── Animated arrow between cards ────────────────────────────────────────────
-function TransitionArrow() {
+// ─── VS Divider with pulsing badge ──────────────────────────────────────────
+function VSDivider() {
   return (
-    <div className="flex md:flex-col items-center justify-center py-4 md:py-0 md:px-2">
+    <div className="flex md:flex-col items-center justify-center py-6 md:py-0 md:px-4 relative">
+      {/* Vertical line (desktop) / horizontal line (mobile) */}
       <motion.div
-        className="flex items-center justify-center w-12 h-12 rounded-full bg-landing-card-bg border-2 border-[#2563EB]/20 shadow-lg shadow-[#2563EB]/10"
+        className="hidden md:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px"
+        style={{
+          background: 'linear-gradient(to bottom, transparent, rgba(37, 99, 235, 0.2) 30%, rgba(37, 99, 235, 0.2) 70%, transparent)',
+        }}
+        initial={{ scaleY: 0 }}
+        whileInView={{ scaleY: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+      />
+      <motion.div
+        className="md:hidden absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px"
+        style={{
+          background: 'linear-gradient(to right, transparent, rgba(37, 99, 235, 0.2) 30%, rgba(37, 99, 235, 0.2) 70%, transparent)',
+        }}
+        initial={{ scaleX: 0 }}
+        whileInView={{ scaleX: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+      />
+
+      {/* Pulsing VS badge */}
+      <motion.div
+        className="relative z-10 flex items-center justify-center w-12 h-12 rounded-full bg-landing-card-bg border-2 border-[#2563EB]/20 shadow-lg shadow-[#2563EB]/10"
         animate={{
-          scale: [1, 1.1, 1],
+          scale: [1, 1.08, 1],
           boxShadow: [
             '0 4px 6px -1px rgba(37, 99, 235, 0.1)',
-            '0 10px 15px -3px rgba(37, 99, 235, 0.2)',
+            '0 10px 20px -3px rgba(37, 99, 235, 0.25)',
             '0 4px 6px -1px rgba(37, 99, 235, 0.1)',
           ],
         }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
       >
-        {/* Right arrow on mobile/desktop */}
-        <svg
-          className="w-5 h-5 text-[#2563EB] rotate-90 md:rotate-0"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
+        <span
+          className="text-xs font-bold tracking-wider"
+          style={{ color: 'var(--color-accent-primary)' }}
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-          />
-        </svg>
+          VS
+        </span>
       </motion.div>
+    </div>
+  );
+}
+
+// ─── Scroll-triggered shake wrapper ─────────────────────────────────────────
+function ShakeOnView({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-80px' });
+
+  return (
+    <div ref={ref} className={isInView ? 'animate-shake' : ''}>
+      {children}
     </div>
   );
 }
@@ -155,90 +241,96 @@ export function BeforeAfter() {
           </p>
         </ScrollReveal>
 
-        {/* Cards + Arrow layout */}
+        {/* Cards + VS Divider layout */}
         <StaggerContainer className="flex flex-col md:flex-row md:items-stretch gap-2 md:gap-0">
           {/* ── Without MegVax ─────────────────────────────────────── */}
           <StaggerItem className="flex-1">
-            <motion.div
-              className="group relative rounded-2xl p-[1px] h-full"
-              whileHover={{ scale: 1.01 }}
-              transition={SPRING_HOVER}
-            >
-              {/* Red gradient border */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-red-400/60 via-red-300/40 to-red-400/20 opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+            <ShakeOnView>
+              <motion.div
+                className="group relative rounded-2xl p-[1px] h-full"
+                whileHover={{ scale: 1.01 }}
+                transition={SPRING_HOVER}
+              >
+                {/* Red gradient border */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-red-400/60 via-red-300/40 to-red-400/20 opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
 
-              <div className="relative rounded-2xl bg-gradient-to-br from-red-50/90 to-white p-7 sm:p-8 h-full">
-                {/* Top accent bar */}
-                <motion.div
-                  className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl bg-gradient-to-r from-red-500 via-red-400 to-rose-400"
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
-                  style={{ transformOrigin: 'left' }}
-                />
+                <div className="relative rounded-2xl bg-gradient-to-br from-red-50/90 to-white p-7 sm:p-8 h-full">
+                  {/* Top accent bar */}
+                  <motion.div
+                    className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl bg-gradient-to-r from-red-500 via-red-400 to-rose-400"
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
+                    style={{ transformOrigin: 'left' }}
+                  />
 
-                {/* Card header */}
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-11 h-11 rounded-xl bg-red-100 flex items-center justify-center shadow-sm shadow-red-200/50">
-                    <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className="text-sm font-semibold text-red-700">{t('before_title')}</span>
-                    <p className="text-[10px] text-red-400 mt-0.5">{t('before_subtitle')}</p>
-                  </div>
-                </div>
-
-                {/* Broken mockup visual */}
-                <div className="mb-6">
-                  <BeforeMockupVisual />
-                </div>
-
-                {/* Pain items */}
-                <ul className="space-y-3">
-                  {beforeItems.map((item, i) => (
-                    <motion.li
-                      key={i}
-                      className="flex items-start gap-3 text-sm text-red-900/70"
-                      initial={{ opacity: 0, x: -10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.4 + i * 0.08, duration: 0.4 }}
-                    >
-                      <svg className="w-4 h-4 text-red-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  {/* Card header */}
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-11 h-11 rounded-xl bg-red-100 flex items-center justify-center shadow-sm shadow-red-200/50">
+                      <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      {item}
-                    </motion.li>
-                  ))}
-                </ul>
-
-                {/* Bottom stats */}
-                <div className="mt-6 pt-4 border-t border-red-200/60">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5">
-                      <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span className="text-xs font-semibold text-red-600">{t('before_time_weekly')}</span>
                     </div>
-                    <span className="text-[10px] text-red-400">&middot;</span>
-                    <span className="text-xs font-medium text-red-500">{t('before_cost_waste')}</span>
+                    <div>
+                      <span className="text-sm font-semibold text-red-700">{t('before_title')}</span>
+                      <p className="text-[10px] text-red-400 mt-0.5">{t('before_subtitle')}</p>
+                    </div>
+                  </div>
+
+                  {/* Broken mockup visual */}
+                  <div className="mb-6">
+                    <BeforeMockupVisual />
+                  </div>
+
+                  {/* Pain items */}
+                  <ul className="space-y-3">
+                    {beforeItems.map((item, i) => (
+                      <motion.li
+                        key={i}
+                        className="flex items-start gap-3 text-sm text-red-900/70"
+                        initial={{ opacity: 0, x: -10 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.4 + i * 0.08, duration: 0.4 }}
+                      >
+                        <svg className="w-4 h-4 text-red-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        {item}
+                      </motion.li>
+                    ))}
+                  </ul>
+
+                  {/* Bottom stats with animated numbers */}
+                  <div className="mt-6 pt-4 border-t border-red-200/60">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-xs font-semibold text-red-600">
+                          <AnimatedStat text={t('before_time_weekly')} />
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-red-400">&middot;</span>
+                      <span className="text-xs font-medium text-red-500">
+                        <AnimatedStat text={t('before_cost_waste')} />
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </ShakeOnView>
           </StaggerItem>
 
-          {/* ── Animated Arrow ──────────────────────────────────────── */}
-          <TransitionArrow />
+          {/* ── VS Divider ──────────────────────────────────────────── */}
+          <VSDivider />
 
           {/* ── With MegVax ───────────────────────────────────────── */}
           <StaggerItem className="flex-1">
             <motion.div
-              className="group relative rounded-2xl p-[1px] h-full"
+              className="group relative rounded-2xl p-[1px] h-full animate-glow-pulse"
               whileHover={{ scale: 1.01 }}
               transition={SPRING_HOVER}
             >
@@ -317,20 +409,22 @@ export function BeforeAfter() {
                   ))}
                 </ul>
 
-                {/* Bottom stats */}
+                {/* Bottom stats with animated numbers */}
                 <div className="mt-6 pt-4" style={{ borderTop: '1px solid color-mix(in srgb, var(--color-accent-primary) 15%, transparent)' }}>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1.5">
                       <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                       </svg>
-                      <span className="text-xs font-semibold text-emerald-600">{t('after_time_weekly')}</span>
+                      <span className="text-xs font-semibold text-emerald-600">
+                        <AnimatedStat text={t('after_time_weekly')} />
+                      </span>
                     </div>
                     <span className="text-[10px]" style={{ color: 'color-mix(in srgb, var(--color-accent-primary) 40%, transparent)' }}>
                       &middot;
                     </span>
                     <span className="text-xs font-medium" style={{ color: 'var(--color-accent-primary)' }}>
-                      {t('after_budget_safe')}
+                      <AnimatedStat text={t('after_budget_safe')} />
                     </span>
                   </div>
                 </div>

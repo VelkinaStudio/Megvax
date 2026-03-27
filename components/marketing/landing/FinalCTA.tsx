@@ -1,10 +1,128 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Shield, CreditCard, Clock } from 'lucide-react';
+import { useRef, useState, useEffect } from 'react';
 import { useTranslations } from '@/lib/i18n';
 import { ScrollReveal } from './ScrollReveal';
+
+// ─── Mouse-tracking gradient for the dark background ────────────────────────
+
+function MouseGradient() {
+  const [pos, setPos] = useState({ x: 50, y: 50 });
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current?.parentElement;
+    if (!el) return;
+
+    function handleMove(e: MouseEvent) {
+      const rect = el!.getBoundingClientRect();
+      setPos({
+        x: ((e.clientX - rect.left) / rect.width) * 100,
+        y: ((e.clientY - rect.top) / rect.height) * 100,
+      });
+    }
+
+    el.addEventListener('mousemove', handleMove);
+    return () => el.removeEventListener('mousemove', handleMove);
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className="absolute inset-0 pointer-events-none transition-[background] duration-300"
+      aria-hidden="true"
+      style={{
+        background: `radial-gradient(700px circle at ${pos.x}% ${pos.y}%, rgba(37, 99, 235, 0.08), transparent 55%)`,
+      }}
+    />
+  );
+}
+
+// ─── Typing animation for the headline ──────────────────────────────────────
+// Text appears character by character, then stays. One-shot animation.
+
+function TypingHeadline({ text }: { text: string }) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-60px' });
+  const [visibleCount, setVisibleCount] = useState(0);
+  const hasStarted = useRef(false);
+
+  useEffect(() => {
+    if (!isInView || hasStarted.current) return;
+    hasStarted.current = true;
+
+    let i = 0;
+    const len = text.length;
+    // Speed: 30ms per char for a ~1.5s total on 50-char text
+    const charDelay = Math.max(20, Math.min(35, 1500 / len));
+
+    const interval = setInterval(() => {
+      i++;
+      setVisibleCount(i);
+      if (i >= len) clearInterval(interval);
+    }, charDelay);
+
+    return () => clearInterval(interval);
+  }, [isInView, text]);
+
+  // Show all text if not yet in view (for SSR/layout), but invisible
+  const showAll = visibleCount >= text.length;
+
+  return (
+    <h2
+      ref={ref}
+      className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-5 leading-tight max-w-2xl mx-auto"
+      style={{ fontFamily: 'var(--font-display)' }}
+      aria-label={text}
+    >
+      {showAll ? (
+        text
+      ) : (
+        <>
+          <span>{text.slice(0, visibleCount)}</span>
+          {visibleCount > 0 && visibleCount < text.length && (
+            <motion.span
+              className="inline-block w-[2px] h-[0.9em] bg-white/60 ml-0.5 align-middle"
+              animate={{ opacity: [1, 0] }}
+              transition={{ duration: 0.5, repeat: Infinity, repeatType: 'reverse' }}
+            />
+          )}
+          <span className="invisible">{text.slice(visibleCount)}</span>
+        </>
+      )}
+    </h2>
+  );
+}
+
+// ─── Pulse Ring animation on the CTA button ─────────────────────────────────
+// Concentric rings that expand outward periodically.
+
+function PulseRings() {
+  return (
+    <span className="absolute inset-0 pointer-events-none cta-pulse-ring" aria-hidden="true">
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          className="absolute inset-0 rounded-xl border border-white/20"
+          animate={{
+            scale: [1, 1.6],
+            opacity: [0.3, 0],
+          }}
+          transition={{
+            duration: 2,
+            delay: i * 0.6,
+            repeat: Infinity,
+            ease: 'easeOut',
+          }}
+          style={{ willChange: 'transform, opacity' }}
+        />
+      ))}
+    </span>
+  );
+}
 
 // ─── Floating UI preview elements ────────────────────────────────────────────
 
@@ -80,6 +198,9 @@ export function FinalCTA() {
             />
           </div>
 
+          {/* Mouse-tracking gradient overlay */}
+          <MouseGradient />
+
           {/* Floating UI preview elements */}
           <FloatingCard className="top-12 left-8 sm:left-16 p-3 hidden lg:block" delay={0}>
             <div className="flex items-center gap-2">
@@ -150,12 +271,8 @@ export function FinalCTA() {
               {t('cta_join_count')}
             </motion.div>
 
-            <h2
-              className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-5 leading-tight max-w-2xl mx-auto"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              {t('cta_heading')}
-            </h2>
+            {/* Typing headline */}
+            <TypingHeadline text={t('cta_heading')} />
 
             <p className="text-white/45 max-w-lg mx-auto mb-10 text-sm sm:text-base leading-relaxed">
               {t('cta_subtitle')}
@@ -163,14 +280,16 @@ export function FinalCTA() {
 
             {/* Dual CTAs */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-              {/* Primary CTA */}
+              {/* Primary CTA with pulse rings */}
               <motion.div
+                className="relative"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
               >
+                <PulseRings />
                 <Link
                   href="/signup"
-                  className="group inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white text-landing-frame-bg font-semibold text-sm hover:bg-white/90 transition-all duration-300 shadow-xl shadow-black/20"
+                  className="group relative inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white text-landing-frame-bg font-semibold text-sm hover:bg-white/90 transition-all duration-300 shadow-xl shadow-black/20"
                 >
                   {t('cta_button')}
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" />

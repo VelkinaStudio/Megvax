@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { Check, X, Plus, Minus, Shield, ShieldCheck, Zap, ArrowRight } from 'lucide-react';
 import { Nav } from '@/components/marketing/landing/Nav';
 import { Footer } from '@/components/marketing/landing/Footer';
@@ -139,6 +139,59 @@ const cardVariant = {
   }),
 };
 
+/* ─── Animated Price Counter (count up/down on toggle) ───────── */
+
+function AnimatedPrice({ value, className }: { value: string; className?: string }) {
+  const numericValue = parseInt(value.replace(/\./g, ''), 10);
+  const [display, setDisplay] = useState(value);
+  const prevValue = useRef(numericValue);
+
+  const formatTurkish = useCallback((n: number) => {
+    return n.toLocaleString('tr-TR');
+  }, []);
+
+  useEffect(() => {
+    const from = prevValue.current;
+    const to = numericValue;
+    prevValue.current = to;
+
+    if (from === to) return;
+
+    const duration = 400;
+    const start = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(from + (to - from) * eased);
+      setDisplay(formatTurkish(current));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+
+    requestAnimationFrame(tick);
+  }, [numericValue, formatTurkish]);
+
+  return <span className={className}>{display}</span>;
+}
+
+/* ─── Breathing Gradient Glow for Pro card ───────────────────── */
+
+function BreathingGlow() {
+  return (
+    <motion.div
+      className="absolute -inset-[1px] rounded-2xl -z-10"
+      style={{
+        background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #3b82f6 100%)',
+        filter: 'blur(2px)',
+      }}
+      animate={{ opacity: [1, 0.6, 1] }}
+      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+    />
+  );
+}
+
 /* ─── Components ─────────────────────────────────────────────── */
 
 function BillingToggle({
@@ -219,16 +272,8 @@ function PricingCard({
           : 'bg-white border border-black/[0.06] hover:border-black/[0.12] hover:shadow-lg'
       }`}
     >
-      {/* Gradient glow border for Pro */}
-      {isPro && (
-        <div
-          className="absolute -inset-[1px] rounded-2xl -z-10"
-          style={{
-            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #3b82f6 100%)',
-            filter: 'blur(2px)',
-          }}
-        />
-      )}
+      {/* Gradient glow border for Pro — breathing animation */}
+      {isPro && <BreathingGlow />}
 
       {/* Badges */}
       {isPro && (
@@ -260,11 +305,11 @@ function PricingCard({
         </p>
       </div>
 
-      {/* Price */}
+      {/* Price — animated counter on toggle */}
       <div className="text-center mb-6">
         <div className="flex items-baseline justify-center gap-1">
           <span className={`text-4xl font-extrabold tracking-tight ${isPro ? 'text-white' : 'text-[#1A1A1A]'}`}>
-            ₺{price}
+            ₺<AnimatedPrice value={price} />
           </span>
           <span className={`text-sm ${isPro ? 'text-blue-200' : 'text-[#6B7280]'}`}>{t('per_month')}</span>
         </div>
@@ -286,13 +331,17 @@ function PricingCard({
       {/* Divider */}
       <div className={`h-px mb-6 ${isPro ? 'bg-white/15' : 'bg-black/[0.06]'}`} />
 
-      {/* Features */}
+      {/* Features — hover micro-interactions */}
       <ul className="space-y-3.5 mb-8 flex-1">
         {plan.features.map((feature) => (
-          <li
+          <motion.li
             key={feature.key}
-            className="flex items-start gap-2.5"
+            className={`flex items-start gap-2.5 rounded-lg px-2 py-1 -mx-2 cursor-default transition-colors duration-200 ${
+              isPro ? 'hover:bg-white/[0.06]' : 'hover:bg-[#F3F4F6]'
+            }`}
             title={feature.tooltip ? t(feature.tooltip) : undefined}
+            whileHover={{ x: 4 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           >
             <Check
               className={`w-4.5 h-4.5 mt-0.5 shrink-0 ${isPro ? 'text-emerald-300' : 'text-emerald-500'}`}
@@ -301,7 +350,7 @@ function PricingCard({
             <span className={`text-sm leading-snug ${isPro ? 'text-blue-100' : 'text-[#4B5563]'}`}>
               {t(feature.key)}
             </span>
-          </li>
+          </motion.li>
         ))}
       </ul>
 

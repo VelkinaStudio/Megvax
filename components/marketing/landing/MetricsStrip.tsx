@@ -1,12 +1,150 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { type ReactNode } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { type ReactNode, useRef, useState, useEffect, useCallback } from 'react';
 import { useTranslations } from '@/lib/i18n';
-import { Counter } from './Counter';
 import { ScrollReveal, StaggerContainer, StaggerItem } from './ScrollReveal';
 
-/* ─── Mini Visualizations ─────────────────────────────── */
+/* ─── Odometer Digit ─────────────────────────────────────── */
+// Each digit rolls in from below like a slot machine.
+
+function OdometerDigit({ digit, delay }: { digit: string; delay: number }) {
+  const isNumber = /\d/.test(digit);
+
+  if (!isNumber) {
+    // Static character (comma, dot, prefix, suffix)
+    return (
+      <motion.span
+        className="inline-block"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: delay + 0.1, duration: 0.3 }}
+      >
+        {digit}
+      </motion.span>
+    );
+  }
+
+  return (
+    <span className="inline-block overflow-hidden relative" style={{ height: '1.15em' }}>
+      <motion.span
+        className="inline-block"
+        initial={{ y: '100%', opacity: 0 }}
+        animate={{ y: '0%', opacity: 1 }}
+        transition={{
+          delay,
+          duration: 0.5,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        style={{ willChange: 'transform' }}
+      >
+        {digit}
+      </motion.span>
+    </span>
+  );
+}
+
+/* ─── Odometer Counter ───────────────────────────────────── */
+// Animates each digit rolling in sequentially for a slot-machine feel.
+// After all digits are in place, fires a particle burst.
+
+interface OdometerCounterProps {
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  onComplete?: () => void;
+}
+
+function OdometerCounter({ value, prefix = '', suffix = '', onComplete }: OdometerCounterProps) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-50px' });
+  const [displayChars, setDisplayChars] = useState<string[]>([]);
+  const [showFinal, setShowFinal] = useState(false);
+  const hasAnimated = useRef(false);
+
+  const fullText = `${prefix}${value}${suffix}`;
+  const chars = fullText.split('');
+
+  useEffect(() => {
+    if (!isInView || hasAnimated.current) return;
+    hasAnimated.current = true;
+
+    // Set chars immediately so they animate in via Framer Motion
+    setDisplayChars(chars);
+
+    // Fire completion after all digits have rolled in
+    const totalDelay = chars.length * 0.07 + 0.5; // stagger + duration
+    const timer = setTimeout(() => {
+      setShowFinal(true);
+      onComplete?.();
+    }, totalDelay * 1000);
+
+    return () => clearTimeout(timer);
+  }, [isInView, chars, onComplete]);
+
+  if (!isInView && displayChars.length === 0) {
+    // Before scroll-in, show placeholder to prevent layout shift
+    return (
+      <span ref={ref} className="inline-flex">
+        {chars.map((c, i) => (
+          <span key={i} className="invisible">{c}</span>
+        ))}
+      </span>
+    );
+  }
+
+  return (
+    <span ref={ref} className="inline-flex">
+      {displayChars.map((char, i) => (
+        <OdometerDigit key={`${char}-${i}`} digit={char} delay={i * 0.07} />
+      ))}
+    </span>
+  );
+}
+
+/* ─── Particle Burst ─────────────────────────────────────── */
+// Small dots that expand outward and fade when counter completes.
+
+function ParticleBurst({ active }: { active: boolean }) {
+  if (!active) return null;
+
+  // 5 particles at different angles
+  const particles = [
+    { angle: -60, distance: 20, size: 4 },
+    { angle: -20, distance: 25, size: 3 },
+    { angle: 15, distance: 22, size: 4 },
+    { angle: 50, distance: 18, size: 3 },
+    { angle: 80, distance: 24, size: 3.5 },
+  ];
+
+  return (
+    <span className="absolute inset-0 pointer-events-none" aria-hidden="true">
+      {particles.map((p, i) => {
+        const rad = (p.angle * Math.PI) / 180;
+        const tx = Math.cos(rad) * p.distance;
+        const ty = Math.sin(rad) * p.distance;
+
+        return (
+          <motion.span
+            key={i}
+            className="absolute left-1/2 top-1/2 rounded-full bg-accent-primary"
+            style={{
+              width: p.size,
+              height: p.size,
+              marginLeft: -p.size / 2,
+              marginTop: -p.size / 2,
+            }}
+            initial={{ opacity: 0.8, x: 0, y: 0, scale: 1 }}
+            animate={{ opacity: 0, x: tx, y: ty, scale: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut', delay: i * 0.04 }}
+          />
+        );
+      })}
+    </span>
+  );
+}
+
+/* ─── Mini Visualizations ─────────────────────────────────── */
 
 function MiniBarChart() {
   const bars = [35, 48, 42, 65, 55, 72, 80];
@@ -112,10 +250,20 @@ function MiniTrendLine() {
   );
 }
 
-/* ─── MetricsStrip ────────────────────────────────────── */
+/* ─── MetricsStrip ────────────────────────────────────────── */
 
 export function MetricsStrip() {
   const t = useTranslations('landing');
+
+  // Track burst states per metric
+  const [bursts, setBursts] = useState([false, false, false]);
+  const triggerBurst = useCallback((index: number) => {
+    setBursts((prev) => {
+      const next = [...prev];
+      next[index] = true;
+      return next;
+    });
+  }, []);
 
   const metrics: {
     visual: ReactNode;
@@ -124,20 +272,31 @@ export function MetricsStrip() {
   }[] = [
     {
       visual: <MiniBarChart />,
-      value: <Counter value={2} prefix="₺" suffix="M+" />,
+      value: (
+        <span className="relative inline-flex">
+          <OdometerCounter value={2} prefix="₺" suffix="M+" onComplete={() => triggerBurst(0)} />
+          <ParticleBurst active={bursts[0]} />
+        </span>
+      ),
       label: t('metric_spend'),
     },
     {
       visual: <MiniAvatarGrid />,
-      value: <Counter value={150} suffix="+" />,
+      value: (
+        <span className="relative inline-flex">
+          <OdometerCounter value={150} suffix="+" onComplete={() => triggerBurst(1)} />
+          <ParticleBurst active={bursts[1]} />
+        </span>
+      ),
       label: t('metric_accounts'),
     },
     {
       visual: <MiniTrendLine />,
       value: (
-        <span>
-          <Counter value={3} suffix="" />
-          .2x
+        <span className="relative inline-flex">
+          <OdometerCounter value={3} suffix="" onComplete={() => triggerBurst(2)} />
+          <span>.2x</span>
+          <ParticleBurst active={bursts[2]} />
         </span>
       ),
       label: t('metric_roas'),
