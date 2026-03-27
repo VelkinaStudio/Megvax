@@ -11,7 +11,7 @@ const columns = [
     links: [
       { href: '/about', key: 'footer_about' },
       { href: '/pricing', key: 'footer_pricing' },
-      { href: '/#ozellikler', key: 'footer_product' },
+      { href: '/#features', key: 'footer_product' },
     ],
   },
   {
@@ -98,10 +98,10 @@ export function Footer() {
               {t('footer_contact_title')}
             </span>
             <a
-              href="mailto:hello@megvax.com"
+              href="mailto:destek@megvax.com"
               className="text-[14px] text-landing-text-muted hover:text-[#2563EB] transition-colors"
             >
-              hello@megvax.com
+              destek@megvax.com
             </a>
             <span className="text-[14px] text-landing-text-muted">
               {t('footer_location')}

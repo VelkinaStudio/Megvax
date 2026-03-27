@@ -20,6 +20,7 @@ import { Nav } from '@/components/marketing/landing/Nav';
 import { Footer } from '@/components/marketing/landing/Footer';
 import { ScrollReveal } from '@/components/marketing/landing/ScrollReveal';
 import { useTranslations } from '@/lib/i18n';
+import { useToast } from '@/components/ui/Toast';
 import { Calendar as CalendarPicker } from '@/components/ui/Calendar';
 import { TimeSlotPicker } from '@/components/ui/TimeSlotPicker';
 import type { TimeSlot } from '@/components/ui';
@@ -44,6 +45,7 @@ const STEPS = [1, 2, 3] as const;
 
 export default function BookPage() {
   const t = useTranslations('book');
+  const toast = useToast();
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -77,11 +79,12 @@ export default function BookPage() {
         }),
       });
     } catch {
-      // API might not be available yet — proceed with UI confirmation anyway
-    } finally {
+      toast.error(t('booking_error') || 'Could not complete booking. Please try again or contact us directly.');
       setBooking(false);
-      setBooked(true);
+      return;
     }
+    setBooking(false);
+    setBooked(true);
   };
 
   const handleReset = () => {

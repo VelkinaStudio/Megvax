@@ -20,7 +20,7 @@ export function Nav() {
   const borderOpacity = useTransform(scrollY, [0, 100], [0, 0.05]);
 
   const links = [
-    { href: '#ozellikler', label: t('features') },
+    { href: '#features', label: t('features') },
     { href: '/pricing', label: t('pricing') },
     { href: '/contact', label: t('contact') },
   ];

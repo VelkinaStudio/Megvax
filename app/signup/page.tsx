@@ -126,7 +126,7 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignup = () => {
-    // OAuth integration pending — no-op for now
+    toast.info(t('google_coming_soon') || 'Google signup coming soon');
   };
 
   return (

@@ -88,7 +88,7 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = () => {
-    // OAuth integration pending — no-op for now
+    toast.info(t('google_coming_soon') || 'Google login coming soon');
   };
 
   return (
@@ -138,7 +138,7 @@ export default function LoginPage() {
           <div className="flex flex-wrap gap-4">
             <KpiCard label="ROAS" value="4.2x" delta="+18%" delay={0.5} />
             <KpiCard label="CTR" value="3.8%" delta="+0.6%" delay={0.65} />
-            <KpiCard label={t('kpi_spend')} value="$12.4K" delta="-12%" delay={0.8} />
+            <KpiCard label={t('kpi_spend')} value="₺142.8K" delta="-12%" delay={0.8} />
           </div>
         </div>
 

@@ -58,10 +58,11 @@
   --color-gray-900: #111827;
 
   /* Typography */
+  --font-sans: var(--font-body), 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-display: var(--font-heading), 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: var(--font-body), 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
-  --font-heading: var(--font-display);
+  --font-heading: var(--font-heading), 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Spacing */
   --space-1: 0.25rem;
