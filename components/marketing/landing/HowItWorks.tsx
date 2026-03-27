@@ -379,14 +379,14 @@ export function HowItWorks() {
             {steps.map((step, i) => (
               <StaggerItem key={step.number}>
                 <motion.div
-                  className="group relative bg-landing-card-bg rounded-2xl border border-landing-card-border p-5 hover:border-accent-primary/20 hover:shadow-lg hover:shadow-accent-primary/5 transition-all duration-500"
+                  className="group relative bg-landing-card-bg rounded-2xl border border-landing-card-border p-5 shadow-lg shadow-black/[0.06] hover:border-accent-primary/20 hover:shadow-xl hover:shadow-accent-primary/10 transition-all duration-500"
                   whileHover={{ y: -4 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 >
                   {/* Step number + title header */}
                   <div className="flex items-center gap-3 mb-4">
                     <motion.div
-                      className="w-8 h-8 rounded-full bg-accent-primary text-white text-xs font-bold flex items-center justify-center shadow-md shadow-accent-primary/30 shrink-0"
+                      className="relative w-10 h-10 rounded-full bg-accent-primary text-white text-sm font-bold flex items-center justify-center shadow-lg shadow-accent-primary/40 shrink-0"
                       initial={{ scale: 0 }}
                       whileInView={{ scale: 1 }}
                       viewport={{ once: true }}
@@ -397,6 +397,8 @@ export function HowItWorks() {
                         damping: 15,
                       }}
                     >
+                      {/* Subtle glow behind step number */}
+                      <div className="absolute inset-0 rounded-full bg-accent-primary/30 blur-md -z-10" />
                       {step.number}
                     </motion.div>
                     <div>

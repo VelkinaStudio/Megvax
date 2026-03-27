@@ -308,7 +308,7 @@ export function BeforeAfter() {
   const afterItems = [t('after_1'), t('after_2'), t('after_3'), t('after_4')];
 
   return (
-    <section className="py-24 md:py-32 px-6">
+    <section className="py-24 md:py-32 px-6 bg-gradient-to-b from-white to-[#F8F7F4]">
       <div className="mx-auto max-w-5xl">
         {/* Heading */}
         <ScrollReveal>
@@ -343,7 +343,7 @@ export function BeforeAfter() {
               >
                 {/* Red gradient border — animated rotation */}
                 <AnimatedGradientBorder colors="rgba(239,68,68,0.6), rgba(252,165,165,0.4), rgba(239,68,68,0.2), rgba(239,68,68,0.6)">
-                  <div className="relative rounded-2xl bg-gradient-to-br from-red-50/90 to-white p-7 sm:p-8 h-full">
+                  <div className="relative rounded-2xl bg-gradient-to-br from-red-50 to-red-50/40 p-7 sm:p-8 h-full shadow-xl shadow-red-500/10">
                     {/* Top accent bar */}
                     <motion.div
                       className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl bg-gradient-to-r from-red-500 via-red-400 to-rose-400"
@@ -427,9 +427,9 @@ export function BeforeAfter() {
               {/* Blue gradient border — animated rotation */}
               <AnimatedGradientBorder colors="rgba(37,99,235,0.8), rgba(96,165,250,0.5), rgba(139,92,246,0.3), rgba(37,99,235,0.8)">
                 <div
-                  className="relative rounded-2xl p-7 sm:p-8 h-full"
+                  className="relative rounded-2xl p-7 sm:p-8 h-full shadow-xl shadow-blue-500/10"
                   style={{
-                    background: 'linear-gradient(to bottom right, color-mix(in srgb, var(--color-accent-primary) 6%, white), white)',
+                    background: 'linear-gradient(to bottom right, color-mix(in srgb, var(--color-accent-primary) 8%, white), color-mix(in srgb, var(--color-accent-primary) 3%, white))',
                   }}
                 >
                   {/* Top accent bar */}

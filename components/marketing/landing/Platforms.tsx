@@ -1,9 +1,9 @@
 'use client';
 
-import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTranslations } from '@/lib/i18n';
 import { ScrollReveal } from './ScrollReveal';
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 
 // ─── Platform logo SVG components (muted, monochrome) ────────────────────────
 
@@ -120,21 +120,9 @@ function MarqueeRow({ direction = 'left' }: { direction?: 'left' | 'right' }) {
   const items = [...logos, ...logos]; // duplicate for seamless loop
   const xFrom = direction === 'left' ? '0%' : '-50%';
   const xTo = direction === 'left' ? '-50%' : '0%';
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [centerX, setCenterX] = useState(0);
-
-  useEffect(() => {
-    const updateCenter = () => {
-      setCenterX(window.innerWidth / 2);
-    };
-    updateCenter();
-    window.addEventListener('resize', updateCenter);
-    return () => window.removeEventListener('resize', updateCenter);
-  }, []);
 
   return (
     <motion.div
-      ref={containerRef}
       className="flex gap-12 items-center"
       animate={{ x: [xFrom, xTo] }}
       transition={{

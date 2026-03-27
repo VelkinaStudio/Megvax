@@ -1,5 +1,6 @@
 import { Nav } from '@/components/marketing/landing/Nav';
 import { Hero } from '@/components/marketing/landing/Hero';
+import { DashboardPreview } from '@/components/marketing/landing/DashboardPreview';
 import { Platforms } from '@/components/marketing/landing/Platforms';
 import { BeforeAfter } from '@/components/marketing/landing/BeforeAfter';
 import { HowItWorks } from '@/components/marketing/landing/HowItWorks';
@@ -14,6 +15,7 @@ export default function Home() {
     <main className="bg-[#FAFAF8] text-[#1A1A1A] min-h-screen">
       <Nav />
       <Hero />
+      <DashboardPreview />
       <Platforms />
       <BeforeAfter />
       <HowItWorks />

@@ -181,7 +181,7 @@ export function Testimonials() {
   const secondary = testimonialConfigs.slice(1);
 
   return (
-    <section className="py-24 md:py-32 px-6">
+    <section className="py-24 md:py-32 px-6 bg-gradient-to-b from-[#FAFAF8] to-[#F3F2EF]">
       <div className="mx-auto max-w-6xl">
         {/* Section Header */}
         <ScrollReveal>
@@ -203,7 +203,7 @@ export function Testimonials() {
           {/* Featured testimonial — spans 3 columns */}
           <StaggerItem className="lg:col-span-3">
             <motion.div
-              className="group relative h-full rounded-2xl bg-landing-card-bg border border-landing-card-border p-8 hover:border-[#2563EB]/20 hover:shadow-xl hover:shadow-[#2563EB]/5 transition-all duration-500 overflow-hidden"
+              className="group relative h-full rounded-2xl bg-gradient-to-br from-white to-[#F8FAFF] border border-landing-card-border p-8 shadow-2xl shadow-black/[0.06] hover:border-[#2563EB]/20 hover:shadow-2xl hover:shadow-[#2563EB]/10 transition-all duration-500 overflow-hidden"
               whileHover={{ y: -4 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             >
@@ -364,15 +364,15 @@ export function Testimonials() {
 
         {/* Aggregate metrics strip */}
         <ScrollReveal delay={0.3}>
-          <div className="grid grid-cols-3 gap-4 sm:gap-6 rounded-2xl bg-landing-card-bg border border-landing-card-border p-5 sm:p-8">
+          <div className="grid grid-cols-3 gap-4 sm:gap-6 rounded-2xl bg-[#0C0D14] border border-white/[0.06] p-5 sm:p-8 shadow-xl shadow-black/20">
             {aggregateStats.map(({ valueKey, labelKey, icon }, i) => (
               <div
                 key={valueKey}
-                className={`text-center ${i < 2 ? 'border-r border-landing-card-border' : ''}`}
+                className={`text-center ${i < 2 ? 'border-r border-white/[0.08]' : ''}`}
               >
                 <div className="flex items-center justify-center gap-1.5 mb-1">
                   <motion.span
-                    className="text-[#2563EB] text-xs"
+                    className="text-[#60A5FA] text-xs"
                     animate={{
                       y: [0, -2, 0],
                       rotate: [0, 5, -5, 0],
@@ -388,13 +388,13 @@ export function Testimonials() {
                     {icon}
                   </motion.span>
                   <p
-                    className="text-lg sm:text-2xl font-bold text-landing-text"
+                    className="text-lg sm:text-2xl font-bold text-white"
                     style={{ fontFamily: 'var(--font-display)' }}
                   >
                     {t(valueKey)}
                   </p>
                 </div>
-                <p className="text-xs text-landing-text-muted">{t(labelKey)}</p>
+                <p className="text-xs text-white/50">{t(labelKey)}</p>
               </div>
             ))}
           </div>

@@ -488,10 +488,10 @@ const featureConfigs: FeatureConfig[] = [
     titleKey: 'what_it_does_feature1_title',
     descKey: 'what_it_does_feature1_desc',
     badgeKey: 'what_it_does_feature1_badge',
-    badgeColor: 'bg-amber-500/10 text-amber-600',
-    gradientFrom: 'from-amber-50/50',
+    badgeColor: 'bg-amber-500/15 text-amber-400',
+    gradientFrom: 'from-amber-500/[0.04]',
     gradientTo: 'to-transparent',
-    accentColor: 'text-amber-500/20',
+    accentColor: 'text-amber-500/[0.08]',
     mockup: <AutopilotMockup />,
   },
   {
@@ -499,10 +499,10 @@ const featureConfigs: FeatureConfig[] = [
     titleKey: 'what_it_does_feature2_title',
     descKey: 'what_it_does_feature2_desc',
     badgeKey: 'what_it_does_feature2_badge',
-    badgeColor: 'bg-violet-500/10 text-violet-600',
-    gradientFrom: 'from-violet-50/50',
+    badgeColor: 'bg-violet-500/15 text-violet-400',
+    gradientFrom: 'from-violet-500/[0.04]',
     gradientTo: 'to-transparent',
-    accentColor: 'text-violet-500/20',
+    accentColor: 'text-violet-500/[0.08]',
     mockup: <SuggestionsMockup />,
   },
   {
@@ -510,10 +510,10 @@ const featureConfigs: FeatureConfig[] = [
     titleKey: 'what_it_does_feature3_title',
     descKey: 'what_it_does_feature3_desc',
     badgeKey: 'what_it_does_feature3_badge',
-    badgeColor: 'bg-teal-500/10 text-teal-600',
-    gradientFrom: 'from-teal-50/50',
+    badgeColor: 'bg-teal-500/15 text-teal-400',
+    gradientFrom: 'from-teal-500/[0.04]',
     gradientTo: 'to-transparent',
-    accentColor: 'text-teal-500/20',
+    accentColor: 'text-teal-500/[0.08]',
     mockup: <DashboardMockup />,
   },
 ];
@@ -523,21 +523,30 @@ export function WhatItDoes() {
   const t = useTranslations('landing');
 
   return (
-    <section id="features" className="py-24 md:py-32 scroll-mt-20">
-      <div className="mx-auto max-w-6xl px-6">
+    <section id="features" className="py-24 md:py-32 scroll-mt-20 bg-[#0C0D14] relative overflow-hidden">
+      {/* Dot grid pattern */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        aria-hidden="true"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+      <div className="relative z-10 mx-auto max-w-6xl px-6">
         {/* Section Header */}
         <ScrollReveal>
           <div className="text-center mb-20">
-            <span className="inline-block px-3 py-1 rounded-full bg-accent-primary/8 text-accent-primary text-xs font-medium mb-4">
+            <span className="inline-block px-3 py-1 rounded-full bg-white/[0.08] text-white/70 text-xs font-medium mb-4">
               {t('what_it_does_section_badge')}
             </span>
             <h2
-              className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold text-landing-text tracking-[-0.03em] mb-4"
+              className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold text-white tracking-[-0.03em] mb-4"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {t('what_it_does_section_heading')}
             </h2>
-            <p className="text-landing-text-muted max-w-md mx-auto">
+            <p className="text-white/60 max-w-md mx-auto">
               {t('what_it_does_section_subtitle')}
             </p>
           </div>
@@ -548,7 +557,7 @@ export function WhatItDoes() {
           {featureConfigs.map((feature, idx) => (
             <StaggerContainer
               key={feature.titleKey}
-              className={`relative rounded-3xl bg-gradient-to-br ${feature.gradientFrom} ${feature.gradientTo} border border-black/[0.04] overflow-hidden`}
+              className={`relative rounded-3xl bg-gradient-to-br ${feature.gradientFrom} ${feature.gradientTo} bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] overflow-hidden`}
             >
               {/* Large background number watermark */}
               <div
@@ -569,7 +578,7 @@ export function WhatItDoes() {
                     {/* Number + Badge row */}
                     <div className="flex items-center gap-3 mb-5">
                       <span
-                        className="text-3xl sm:text-4xl font-black text-landing-text/10"
+                        className="text-3xl sm:text-4xl font-black text-white/10"
                         style={{ fontFamily: 'var(--font-display)' }}
                       >
                         {t(feature.numberKey)}
@@ -582,12 +591,12 @@ export function WhatItDoes() {
                     </div>
 
                     <h3
-                      className="text-xl sm:text-2xl lg:text-3xl font-bold text-landing-text mb-4 tracking-[-0.02em]"
+                      className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-4 tracking-[-0.02em]"
                       style={{ fontFamily: 'var(--font-display)' }}
                     >
                       {t(feature.titleKey)}
                     </h3>
-                    <p className="text-[15px] sm:text-base text-landing-text-muted leading-relaxed max-w-md">
+                    <p className="text-[15px] sm:text-base text-white/60 leading-relaxed max-w-md">
                       {t(feature.descKey)}
                     </p>
                   </div>

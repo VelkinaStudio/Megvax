@@ -389,10 +389,10 @@ function FAQItem({ questionKey, answerKey, t }: { questionKey: string; answerKey
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border-b border-black/[0.06] last:border-b-0">
+    <div className="bg-white rounded-xl border border-black/[0.06] shadow-sm overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full py-5 text-left group"
+        className="flex items-center justify-between w-full py-5 px-6 text-left group"
         aria-expanded={isOpen}
       >
         <span className="text-[15px] font-semibold text-[#1A1A1A] pr-4 group-hover:text-[#2563EB] transition-colors">
@@ -411,7 +411,7 @@ function FAQItem({ questionKey, answerKey, t }: { questionKey: string; answerKey
             transition={{ duration: 0.25, ease: 'easeOut' }}
             className="overflow-hidden"
           >
-            <p className="pb-5 text-sm leading-relaxed text-[#6B7280] max-w-2xl">{t(answerKey)}</p>
+            <p className="pb-5 px-6 text-sm leading-relaxed text-[#6B7280] max-w-2xl">{t(answerKey)}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -481,7 +481,7 @@ export default function PricingPage() {
       </section>
 
       {/* ── Pricing Cards ─────────────────────────────────────── */}
-      <section className="py-12 md:py-16">
+      <section className="py-12 md:py-16 bg-gradient-to-b from-[#FAFAF8] to-[#F0EFEC]">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-5 items-start">
             {plans.map((plan, i) => (
@@ -529,7 +529,7 @@ export default function PricingPage() {
       </motion.section>
 
       {/* ── Feature Comparison Table ──────────────────────────── */}
-      <section className="py-16 md:py-20">
+      <section className="py-16 md:py-20 bg-[#F3F2EF]">
         <div className="max-w-5xl mx-auto px-4">
           <motion.div
             variants={fadeUp}
@@ -537,15 +537,18 @@ export default function PricingPage() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="text-center mb-10"
+            className="text-center mb-12"
           >
+            <span className="inline-flex items-center rounded-full bg-white px-3.5 py-1 text-xs font-semibold text-[#2563EB] ring-1 ring-[#2563EB]/10 mb-5">
+              {t('cmp_feature')}
+            </span>
             <h2
-              className="text-3xl md:text-4xl font-bold text-[--color-landing-text] mb-3"
+              className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {t('comparison_title')}
             </h2>
-            <p className="text-[--color-landing-text-muted]">{t('comparison_subtitle')}</p>
+            <p className="text-[#6B7280] text-lg">{t('comparison_subtitle')}</p>
           </motion.div>
 
           <motion.div
@@ -556,43 +559,45 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="overflow-x-auto -mx-4 px-4"
           >
-            <table className="w-full min-w-[640px] border-collapse">
-              <thead>
-                <tr className="sticky top-0 z-20 bg-[--color-landing-bg]">
-                  <th className="text-left py-4 pr-4 text-sm font-semibold text-[--color-landing-text-muted] w-[40%]">
-                    {t('cmp_feature')}
-                  </th>
-                  <th className="text-center py-4 px-3 text-sm font-semibold text-[--color-landing-text] w-[20%]">
-                    {t('plan_starter')}
-                  </th>
-                  <th className="text-center py-4 px-3 w-[20%]">
-                    <span className="inline-flex items-center gap-1.5 text-sm font-bold text-[#2563EB]">
-                      {t('plan_pro')}
-                      <Zap className="w-3.5 h-3.5" />
-                    </span>
-                  </th>
-                  <th className="text-center py-4 pl-3 text-sm font-semibold text-[--color-landing-text] w-[20%]">
-                    {t('plan_business')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparisonRows.map((row, i) => (
-                  <tr key={row.labelKey} className={i % 2 === 0 ? 'bg-[#F9FAFB]' : ''}>
-                    <td className="py-3.5 pr-4 text-sm text-[#4B5563]">{t(row.labelKey)}</td>
-                    <td className="py-3.5 px-3 text-center">
-                      <ComparisonCell value={row.starter} t={t} />
-                    </td>
-                    <td className="py-3.5 px-3 text-center bg-blue-50/50">
-                      <ComparisonCell value={row.pro} t={t} />
-                    </td>
-                    <td className="py-3.5 pl-3 text-center">
-                      <ComparisonCell value={row.business} t={t} />
-                    </td>
+            <div className="bg-white rounded-2xl border border-black/[0.08] shadow-sm overflow-hidden">
+              <table className="w-full min-w-[640px] border-collapse">
+                <thead>
+                  <tr className="border-b border-black/[0.08] bg-[#FAFAF8]">
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-[#6B7280] w-[40%]">
+                      {t('cmp_feature')}
+                    </th>
+                    <th className="text-center py-4 px-3 text-sm font-semibold text-[#1A1A1A] w-[20%]">
+                      {t('plan_starter')}
+                    </th>
+                    <th className="text-center py-4 px-3 w-[20%]">
+                      <span className="inline-flex items-center gap-1.5 text-sm font-bold text-[#2563EB]">
+                        {t('plan_pro')}
+                        <Zap className="w-3.5 h-3.5" />
+                      </span>
+                    </th>
+                    <th className="text-center py-4 px-3 text-sm font-semibold text-[#1A1A1A] w-[20%]">
+                      {t('plan_business')}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {comparisonRows.map((row, i) => (
+                    <tr key={row.labelKey} className={`border-b border-black/[0.04] last:border-b-0 ${i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}`}>
+                      <td className="py-3.5 px-6 text-sm text-[#4B5563] font-medium">{t(row.labelKey)}</td>
+                      <td className="py-3.5 px-3 text-center">
+                        <ComparisonCell value={row.starter} t={t} />
+                      </td>
+                      <td className="py-3.5 px-3 text-center bg-blue-50/40">
+                        <ComparisonCell value={row.pro} t={t} />
+                      </td>
+                      <td className="py-3.5 px-3 text-center">
+                        <ComparisonCell value={row.business} t={t} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -606,15 +611,18 @@ export default function PricingPage() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="text-center mb-10"
+            className="text-center mb-12"
           >
+            <span className="inline-flex items-center rounded-full bg-[#EFF6FF] px-3.5 py-1 text-xs font-semibold text-[#2563EB] ring-1 ring-[#2563EB]/10 mb-5">
+              FAQ
+            </span>
             <h2
-              className="text-3xl md:text-4xl font-bold text-[--color-landing-text] mb-3"
+              className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {t('faq_title')}
             </h2>
-            <p className="text-[--color-landing-text-muted]">{t('faq_subtitle')}</p>
+            <p className="text-[#6B7280] text-lg">{t('faq_subtitle')}</p>
           </motion.div>
 
           <motion.div
@@ -622,6 +630,7 @@ export default function PricingPage() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
+            className="space-y-3"
           >
             {faqKeys.map((faqKey) => (
               <motion.div key={faqKey} variants={fadeUp} custom={0}>
@@ -633,7 +642,7 @@ export default function PricingPage() {
       </section>
 
       {/* ── Bottom CTA ────────────────────────────────────────── */}
-      <section className="py-20 md:py-24">
+      <section className="py-20 md:py-24 bg-[#0C0D14]">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <motion.div
             variants={fadeUp}
@@ -643,25 +652,25 @@ export default function PricingPage() {
             viewport={{ once: true }}
           >
             <h2
-              className="text-3xl md:text-4xl font-bold text-[--color-landing-text] mb-4"
+              className="text-3xl md:text-4xl font-bold text-white mb-4"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {t('bottom_cta_title')}
             </h2>
-            <p className="text-[--color-landing-text-muted] mb-8 max-w-lg mx-auto">
+            <p className="text-[#9CA3AF] mb-8 max-w-lg mx-auto">
               {t('bottom_cta_subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/signup"
-                className="group inline-flex items-center gap-2 bg-[#2563EB] text-white px-7 py-3.5 rounded-xl font-semibold text-sm hover:bg-[#1D4ED8] transition-colors shadow-lg shadow-blue-600/20"
+                className="group inline-flex items-center gap-2 bg-[#2563EB] text-white px-7 py-3.5 rounded-xl font-semibold text-sm hover:bg-[#3B82F6] transition-colors shadow-lg shadow-blue-600/30"
               >
                 {t('bottom_cta_trial')}
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 border-2 border-[#1A1A1A]/10 text-[#1A1A1A] px-7 py-3.5 rounded-xl font-semibold text-sm hover:border-[#1A1A1A]/20 hover:bg-[#F3F4F6] transition-colors"
+                className="inline-flex items-center gap-2 border-2 border-white/15 text-white px-7 py-3.5 rounded-xl font-semibold text-sm hover:border-white/30 hover:bg-white/5 transition-colors"
               >
                 {t('bottom_cta_talk')}
               </Link>

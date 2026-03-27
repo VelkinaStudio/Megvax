@@ -67,12 +67,12 @@ function AnimatedTimelineLine() {
   const scaleY = useTransform(scrollYProgress, [0, 0.8], [0, 1]);
 
   return (
-    <div ref={ref} className="absolute left-6 md:left-1/2 top-0 bottom-0 md:-translate-x-px">
+    <div ref={ref} className="absolute left-6 md:left-1/2 top-0 bottom-0 md:-translate-x-0.5">
       {/* Static faint track */}
-      <div className="absolute inset-0 w-px bg-[#2563EB]/10" />
+      <div className="absolute inset-0 w-1 rounded-full bg-[#2563EB]/10" />
       {/* Animated drawn line */}
       <motion.div
-        className="absolute top-0 left-0 w-px bg-gradient-to-b from-[#2563EB] via-[#2563EB]/60 to-transparent origin-top"
+        className="absolute top-0 left-0 w-1 rounded-full bg-gradient-to-b from-[#2563EB] via-[#2563EB]/60 to-transparent origin-top"
         style={{ scaleY, height: '100%' }}
       />
     </div>
@@ -91,7 +91,7 @@ function TeamCard({
 
   return (
     <div
-      className="relative h-[280px] perspective-[1000px]"
+      className="relative h-[300px] perspective-[1000px]"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}
     >
@@ -103,11 +103,11 @@ function TeamCard({
       >
         {/* Front face */}
         <div
-          className="absolute inset-0 rounded-2xl border border-landing-card-border bg-landing-card-bg p-8 text-center flex flex-col items-center justify-center"
+          className="absolute inset-0 rounded-2xl border border-black/[0.08] bg-white p-8 text-center flex flex-col items-center justify-center shadow-lg transition-shadow duration-300 hover:shadow-xl"
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center mx-auto mb-5 shadow-lg`}>
-            <span className="text-white text-xl font-bold" style={{ fontFamily: 'var(--font-display)' }}>
+          <div className={`w-24 h-24 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center mx-auto mb-5 shadow-lg ring-4 ring-white`}>
+            <span className="text-white text-2xl font-bold" style={{ fontFamily: 'var(--font-display)' }}>
               {member.initials}
             </span>
           </div>
@@ -124,10 +124,10 @@ function TeamCard({
 
         {/* Back face */}
         <div
-          className="absolute inset-0 rounded-2xl border border-[#2563EB]/20 bg-gradient-to-br from-[#2563EB]/[0.04] to-violet-500/[0.04] p-8 flex flex-col items-center justify-center text-center"
+          className="absolute inset-0 rounded-2xl border border-[#2563EB]/20 bg-gradient-to-br from-[#2563EB]/[0.06] to-violet-500/[0.06] p-8 flex flex-col items-center justify-center text-center shadow-lg"
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
-          <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center mx-auto mb-4`}>
+          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center mx-auto mb-4 shadow-md`}>
             <span className="text-white text-sm font-bold" style={{ fontFamily: 'var(--font-display)' }}>
               {member.initials}
             </span>
@@ -210,7 +210,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Mission */}
             <ScrollReveal direction="left" delay={0}>
-              <div className="relative overflow-hidden rounded-2xl border border-landing-card-border bg-gradient-to-br from-white via-white to-blue-50/50 p-8 sm:p-10 h-full">
+              <div className="relative overflow-hidden rounded-2xl border border-black/[0.08] border-l-[3px] border-l-[#2563EB] bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 sm:p-10 h-full">
                 <div className="absolute top-0 right-0 w-[200px] h-[200px] rounded-full bg-[#2563EB]/[0.04] blur-[60px] translate-x-1/3 -translate-y-1/3" />
                 <div className="relative z-10">
                   <div className="w-12 h-12 rounded-xl bg-[#2563EB]/10 flex items-center justify-center mb-5">
@@ -231,7 +231,7 @@ export default function AboutPage() {
 
             {/* Vision */}
             <ScrollReveal direction="right" delay={0.1}>
-              <div className="relative overflow-hidden rounded-2xl border border-landing-card-border bg-gradient-to-br from-white via-white to-violet-50/50 p-8 sm:p-10 h-full">
+              <div className="relative overflow-hidden rounded-2xl border border-black/[0.08] border-l-[3px] border-l-violet-500 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 sm:p-10 h-full">
                 <div className="absolute top-0 right-0 w-[200px] h-[200px] rounded-full bg-violet-500/[0.04] blur-[60px] translate-x-1/3 -translate-y-1/3" />
                 <div className="relative z-10">
                   <div className="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center mb-5">
@@ -254,18 +254,26 @@ export default function AboutPage() {
       </section>
 
       {/* ━━━ 3. STATS STRIP ━━━ */}
-      <section className="py-20 px-6 bg-landing-frame-bg">
-        <div className="mx-auto max-w-5xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <section className="py-24 px-6 bg-[#0C0D14] relative overflow-hidden">
+        {/* Subtle dot grid overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle, rgba(37,99,235,0.08) 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+          }}
+        />
+        <div className="relative z-10 mx-auto max-w-5xl">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
             {statsData.map((stat) => (
               <ScrollReveal key={stat.labelKey} direction="up" delay={0}>
                 <div>
                   <p
-                    className="text-3xl sm:text-4xl font-bold text-white"
+                    className="text-4xl sm:text-5xl font-bold text-[#2563EB]"
                     style={{ fontFamily: 'var(--font-display)' }}
                   >
                     {stat.display ? (
-                      /* For the ₺2M+ stat, show static to avoid confusing large number animation */
                       <span>{stat.prefix}{stat.display}{stat.suffix}</span>
                     ) : (
                       <Counter
@@ -273,12 +281,12 @@ export default function AboutPage() {
                         prefix={stat.prefix}
                         suffix={stat.suffix}
                         decimals={stat.decimals}
-                        className="text-3xl sm:text-4xl font-bold text-white"
+                        className="text-4xl sm:text-5xl font-bold text-[#2563EB]"
                         duration={2}
                       />
                     )}
                   </p>
-                  <p className="text-white/50 text-sm mt-2">{t(stat.labelKey)}</p>
+                  <p className="text-white/60 text-sm font-medium mt-3 tracking-wide uppercase">{t(stat.labelKey)}</p>
                 </div>
               </ScrollReveal>
             ))}
@@ -287,11 +295,11 @@ export default function AboutPage() {
       </section>
 
       {/* ━━━ 4. STORY TIMELINE ━━━ */}
-      <section className="py-28 px-6 bg-landing-bg-alt">
+      <section className="py-28 px-6 bg-[#F3F2EF]">
         <div className="mx-auto max-w-3xl">
           <ScrollReveal>
             <h2
-              className="text-3xl sm:text-4xl font-bold text-center text-landing-text mb-4"
+              className="text-3xl sm:text-[2.75rem] font-bold text-center text-landing-text mb-4 leading-tight"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {t('story_title')}
@@ -322,7 +330,7 @@ export default function AboutPage() {
                       {/* Left content */}
                       <div className={`${isLeft ? '' : 'order-3'}`}>
                         {isLeft ? (
-                          <div className="text-right pr-4">
+                          <div className="text-right pr-4 bg-white rounded-xl border border-black/[0.08] shadow-md p-5">
                             <span className="inline-block text-xs font-semibold text-[#2563EB] bg-[#2563EB]/10 px-2.5 py-1 rounded-full mb-2">
                               {t(milestone.dateKey)}
                             </span>
@@ -343,15 +351,15 @@ export default function AboutPage() {
 
                       {/* Center dot */}
                       <div className="flex justify-center order-2">
-                        <div className="w-10 h-10 rounded-full bg-white border-2 border-[#2563EB]/30 flex items-center justify-center shadow-sm z-10">
-                          <Icon className="w-4 h-4 text-[#2563EB]" />
+                        <div className="w-12 h-12 rounded-full bg-white border-2 border-[#2563EB]/40 flex items-center justify-center shadow-md ring-4 ring-[#2563EB]/10 z-10">
+                          <Icon className="w-5 h-5 text-[#2563EB]" />
                         </div>
                       </div>
 
                       {/* Right content */}
                       <div className={`${isLeft ? 'order-3' : ''}`}>
                         {!isLeft ? (
-                          <div className="pl-4">
+                          <div className="pl-4 bg-white rounded-xl border border-black/[0.08] shadow-md p-5">
                             <span className="inline-block text-xs font-semibold text-[#2563EB] bg-[#2563EB]/10 px-2.5 py-1 rounded-full mb-2">
                               {t(milestone.dateKey)}
                             </span>
@@ -373,12 +381,12 @@ export default function AboutPage() {
 
                     {/* Mobile: left-aligned */}
                     <div className="flex items-start gap-4 md:hidden w-full">
-                      <div className="shrink-0 w-12 h-10 flex items-center justify-center">
-                        <div className="w-10 h-10 rounded-full bg-white border-2 border-[#2563EB]/30 flex items-center justify-center shadow-sm z-10">
-                          <Icon className="w-4 h-4 text-[#2563EB]" />
+                      <div className="shrink-0 w-12 h-12 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-white border-2 border-[#2563EB]/40 flex items-center justify-center shadow-md ring-4 ring-[#2563EB]/10 z-10">
+                          <Icon className="w-5 h-5 text-[#2563EB]" />
                         </div>
                       </div>
-                      <div className="pt-1">
+                      <div className="bg-white rounded-xl border border-black/[0.08] shadow-md p-4 flex-1">
                         <span className="inline-block text-xs font-semibold text-[#2563EB] bg-[#2563EB]/10 px-2.5 py-1 rounded-full mb-2">
                           {t(milestone.dateKey)}
                         </span>
@@ -402,11 +410,11 @@ export default function AboutPage() {
       </section>
 
       {/* ━━━ 5. VALUES GRID ━━━ */}
-      <section className="py-28 px-6 bg-landing-bg">
+      <section className="py-28 px-6 bg-white">
         <div className="mx-auto max-w-5xl">
           <ScrollReveal>
             <h2
-              className="text-3xl sm:text-4xl font-bold text-center text-landing-text mb-4"
+              className="text-3xl sm:text-[2.75rem] font-bold text-center text-landing-text mb-4 leading-tight"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {t('values_title')}
@@ -422,7 +430,7 @@ export default function AboutPage() {
               return (
                 <StaggerItem key={val.titleKey}>
                   <motion.div
-                    className="group relative overflow-hidden rounded-2xl border border-landing-card-border bg-landing-card-bg p-8 transition-all duration-300 hover:border-[#2563EB]/20 hover:shadow-lg hover:shadow-[#2563EB]/5 cursor-default"
+                    className="group relative overflow-hidden rounded-2xl border border-black/[0.08] bg-white p-8 shadow-lg transition-all duration-300 hover:border-[#2563EB]/25 hover:shadow-xl cursor-default"
                     whileHover={{ y: -4 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                   >
@@ -447,11 +455,11 @@ export default function AboutPage() {
       </section>
 
       {/* ━━━ 6. TEAM SECTION ━━━ */}
-      <section className="py-28 px-6 bg-landing-bg-alt">
+      <section className="py-28 px-6 bg-[#F3F2EF]">
         <div className="mx-auto max-w-5xl">
           <ScrollReveal>
             <h2
-              className="text-3xl sm:text-4xl font-bold text-center text-landing-text mb-4"
+              className="text-3xl sm:text-[2.75rem] font-bold text-center text-landing-text mb-4 leading-tight"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {t('team_title')}

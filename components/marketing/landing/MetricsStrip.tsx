@@ -148,35 +148,33 @@ function ParticleBurst({ active }: { active: boolean }) {
 
 function MiniBarChart() {
   const bars = [35, 48, 42, 65, 55, 72, 80];
-  // Each bar breathes on its own timing after the initial entry
   return (
     <div className="flex items-end gap-[3px] h-10 mb-5 justify-center">
-      {bars.map((h, i) => (
-        <motion.div
-          key={i}
-          className="w-[6px] rounded-t-sm bg-accent-primary/70"
-          style={{ transformOrigin: 'bottom', willChange: 'transform' }}
-          initial={{ scaleY: 0 }}
-          whileInView={{ scaleY: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3 + i * 0.06, duration: 0.5, ease: 'backOut' }}
-        >
-          {/* Breathing overlay on top of the static bar */}
+      {bars.map((h, i) => {
+        // Each bar enters from 0, then breathes between 0.9 and 1.1
+        const breathMin = 1 - (i % 2 === 0 ? 0.1 : 0.08);
+        const breathMax = 1 + (i % 2 === 0 ? 0.08 : 0.1);
+        return (
           <motion.div
-            className="w-full rounded-t-sm bg-accent-primary/70 absolute bottom-0 left-0 right-0"
-            style={{ height: `${h}%`, transformOrigin: 'bottom' }}
-            animate={{
-              scaleY: [1, 1 + (i % 2 === 0 ? 0.1 : -0.1), 1],
+            key={i}
+            className="w-[6px] rounded-t-sm bg-accent-primary/70"
+            style={{
+              height: `${h}%`,
+              transformOrigin: 'bottom',
+              willChange: 'transform',
             }}
+            initial={{ scaleY: 0 }}
+            animate={{ scaleY: [0, 1, breathMax, breathMin, 1, breathMax, breathMin, 1] }}
             transition={{
-              duration: 3 + i * 0.5,
-              repeat: Infinity,
+              delay: 0.3 + i * 0.06,
+              duration: 8,
               ease: 'easeInOut',
-              delay: i * 0.3,
+              repeat: Infinity,
+              times: [0, 0.08, 0.2, 0.4, 0.55, 0.7, 0.85, 1],
             }}
           />
-        </motion.div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -404,13 +402,16 @@ export function MetricsStrip() {
           {metrics.map((metric) => (
             <StaggerItem key={metric.label}>
               <motion.div
-                className="group relative text-center rounded-2xl bg-landing-card-bg border border-landing-card-border p-8 hover:border-accent-primary/15 transition-all duration-500"
+                className="group relative text-center rounded-2xl bg-landing-card-bg border border-landing-card-border p-8 shadow-lg shadow-black/[0.06] hover:border-accent-primary/15 hover:shadow-xl transition-all duration-500 overflow-hidden"
                 whileHover={{ y: -4 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               >
+                {/* Top gradient accent line */}
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#2563EB] via-[#60A5FA] to-[#7C3AED]" />
+
                 {metric.visual}
 
-                <div className="text-3xl sm:text-4xl font-bold tracking-tight font-[family-name:var(--font-display)] text-foreground mb-2">
+                <div className="text-4xl sm:text-5xl font-bold tracking-tight font-[family-name:var(--font-display)] text-foreground mb-2">
                   {metric.value}
                 </div>
                 <p className="text-sm font-medium text-foreground/70">
