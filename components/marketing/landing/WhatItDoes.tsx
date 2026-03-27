@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { type ReactNode } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { type ReactNode, useState, useEffect, useMemo } from 'react';
 import { useTranslations } from '@/lib/i18n';
 import { ScrollReveal, StaggerContainer, StaggerItem } from './ScrollReveal';
 
@@ -31,46 +31,96 @@ function MockupFrame({
   );
 }
 
-// ─── Autopilot Mockup — Activity Feed ───────────────────────────────────────
+// ─── Autopilot Mockup — Live Activity Feed ───────────────────────────────────
 function AutopilotMockup() {
   const t = useTranslations('landing');
 
-  const items = [
-    {
-      action: t('autopilot_action_paused'),
-      campaign: t('autopilot_campaign_1'),
-      reason: t('autopilot_reason_1'),
-      color: 'text-amber-400',
-      bg: 'bg-amber-400/10',
-      saved: t('autopilot_saved_1'),
-      time: t('autopilot_time_1'),
-    },
-    {
-      action: t('autopilot_action_scaled'),
-      campaign: t('autopilot_campaign_2'),
-      reason: t('autopilot_reason_2'),
-      color: 'text-emerald-400',
-      bg: 'bg-emerald-400/10',
-      saved: null,
-      time: t('autopilot_time_2'),
-    },
-    {
-      action: t('autopilot_action_paused'),
-      campaign: t('autopilot_campaign_3'),
-      reason: t('autopilot_reason_3'),
-      color: 'text-amber-400',
-      bg: 'bg-amber-400/10',
-      saved: t('autopilot_saved_3'),
-      time: t('autopilot_time_3'),
-    },
-  ];
+  const allItems = useMemo(
+    () => [
+      {
+        action: t('autopilot_action_paused'),
+        campaign: t('autopilot_campaign_1'),
+        reason: t('autopilot_reason_1'),
+        color: 'text-amber-400',
+        bg: 'bg-amber-400/10',
+        saved: t('autopilot_saved_1'),
+        time: t('autopilot_time_1'),
+      },
+      {
+        action: t('autopilot_action_scaled'),
+        campaign: t('autopilot_campaign_2'),
+        reason: t('autopilot_reason_2'),
+        color: 'text-emerald-400',
+        bg: 'bg-emerald-400/10',
+        saved: null,
+        time: t('autopilot_time_2'),
+      },
+      {
+        action: t('autopilot_action_paused'),
+        campaign: t('autopilot_campaign_3'),
+        reason: t('autopilot_reason_3'),
+        color: 'text-amber-400',
+        bg: 'bg-amber-400/10',
+        saved: t('autopilot_saved_3'),
+        time: t('autopilot_time_3'),
+      },
+      {
+        action: t('autopilot_action_scaled'),
+        campaign: 'Brand Campaign',
+        reason: 'ROAS > 4.0x',
+        color: 'text-emerald-400',
+        bg: 'bg-emerald-400/10',
+        saved: null,
+        time: '11:30',
+      },
+      {
+        action: t('autopilot_action_paused'),
+        campaign: 'Conversion #5',
+        reason: 'CPA limit',
+        color: 'text-amber-400',
+        bg: 'bg-amber-400/10',
+        saved: '₺180',
+        time: '12:45',
+      },
+    ],
+    [t],
+  );
+
+  const [visibleStart, setVisibleStart] = useState(0);
+
+  // Ticking "saved" counter
+  const [savedAmount, setSavedAmount] = useState(4200);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSavedAmount((prev) => prev + 15);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Live feed cycling
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisibleStart((prev) => (prev + 1) % allItems.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [allItems.length]);
+
+  const visibleItems = [0, 1, 2].map(
+    (offset) => allItems[(visibleStart + offset) % allItems.length],
+  );
 
   return (
     <MockupFrame glowColor="bg-amber-500/8">
       <div className="rounded-2xl bg-landing-frame-bg p-5 shadow-2xl shadow-black/20 border border-white/[0.06]">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            {/* Pulsing active dot */}
+            <motion.div
+              className="w-2 h-2 rounded-full bg-emerald-400"
+              animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ willChange: 'transform, opacity' }}
+            />
             <span className="text-[11px] text-white/50 font-medium">
               {t('autopilot_active')}
             </span>
@@ -78,40 +128,50 @@ function AutopilotMockup() {
           <span className="text-[10px] text-white/30">{t('autopilot_last_hours')}</span>
         </div>
         <div className="space-y-2.5">
-          {items.map((item, i) => (
-            <motion.div
-              key={i}
-              className="flex items-center gap-3 rounded-xl bg-white/[0.04] border border-white/[0.06] px-3 py-3 hover:bg-white/[0.06] transition-colors"
-              initial={{ opacity: 0, x: -12 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
-            >
-              <span
-                className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${item.bg} ${item.color} whitespace-nowrap`}
+          <AnimatePresence mode="popLayout" initial={false}>
+            {visibleItems.map((item, i) => (
+              <motion.div
+                key={`${item.campaign}-${(visibleStart + i) % allItems.length}`}
+                className="flex items-center gap-3 rounded-xl bg-white/[0.04] border border-white/[0.06] px-3 py-3 hover:bg-white/[0.06] transition-colors"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                layout
               >
-                {item.action}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-white/80 truncate">{item.campaign}</p>
-                <p className="text-[10px] text-white/40">{item.reason}</p>
-              </div>
-              <div className="text-right shrink-0">
-                {item.saved && (
-                  <p className="text-[10px] text-emerald-400 font-medium">
-                    {item.saved}
-                  </p>
-                )}
-                <p className="text-[9px] text-white/20">{item.time}</p>
-              </div>
-            </motion.div>
-          ))}
+                <span
+                  className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${item.bg} ${item.color} whitespace-nowrap`}
+                >
+                  {item.action}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-white/80 truncate">{item.campaign}</p>
+                  <p className="text-[10px] text-white/40">{item.reason}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  {item.saved && (
+                    <p className="text-[10px] text-emerald-400 font-medium">
+                      {item.saved}
+                    </p>
+                  )}
+                  <p className="text-[9px] text-white/20">{item.time}</p>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
         <div className="mt-4 pt-3 border-t border-white/[0.05] flex items-center justify-between">
           <span className="text-[10px] text-white/30">{t('autopilot_actions_completed')}</span>
-          <span className="text-[11px] text-emerald-400 font-semibold">
-            {t('autopilot_total_saved')}
-          </span>
+          {/* Ticking saved counter */}
+          <motion.span
+            className="text-[11px] text-emerald-400 font-semibold font-mono"
+            key={savedAmount}
+            initial={{ y: 4, opacity: 0.5 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            ₺{savedAmount.toLocaleString('tr-TR')}
+          </motion.span>
         </div>
       </div>
     </MockupFrame>
@@ -121,6 +181,25 @@ function AutopilotMockup() {
 // ─── Smart Suggestions Mockup ─────────────────────────────────────────────
 function SuggestionsMockup() {
   const t = useTranslations('landing');
+
+  // Fluctuating impact numbers
+  const [revenueOffset, setRevenueOffset] = useState(0);
+  const [roasOffset, setRoasOffset] = useState(0);
+  const [cpaOffset, setCpaOffset] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRevenueOffset(Math.round((Math.random() - 0.5) * 300));
+      setRoasOffset(Math.round((Math.random() - 0.5) * 4) / 10);
+      setCpaOffset(Math.round((Math.random() - 0.5) * 2));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Base values extracted from the translation keys (approximate display values)
+  const baseRevenue = 12500;
+  const baseRoas = 3.8;
+  const baseCpa = 24;
 
   return (
     <MockupFrame glowColor="bg-violet-500/8">
@@ -160,23 +239,59 @@ function SuggestionsMockup() {
             <p className="text-[10px] text-white/30 mb-2">{t('suggestion_estimated_impact')}</p>
             <div className="grid grid-cols-3 gap-2 text-center">
               <div>
-                <p className="text-xs font-semibold text-white/80">{t('suggestion_extra_revenue')}</p>
+                <motion.p
+                  className="text-xs font-semibold text-white/80 font-mono"
+                  key={revenueOffset}
+                  initial={{ opacity: 0.6 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  +₺{(baseRevenue + revenueOffset).toLocaleString('tr-TR')}
+                </motion.p>
                 <p className="text-[9px] text-white/30">{t('suggestion_extra_revenue_label')}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-violet-400">{t('suggestion_expected_roas')}</p>
+                <motion.p
+                  className="text-xs font-semibold text-violet-400 font-mono"
+                  key={roasOffset}
+                  initial={{ opacity: 0.6 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  {(baseRoas + roasOffset).toFixed(1)}x
+                </motion.p>
                 <p className="text-[9px] text-white/30">{t('suggestion_expected_roas_label')}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-white/80">{t('suggestion_expected_cpa')}</p>
+                <motion.p
+                  className="text-xs font-semibold text-white/80 font-mono"
+                  key={cpaOffset}
+                  initial={{ opacity: 0.6 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  ₺{baseCpa + cpaOffset}
+                </motion.p>
                 <p className="text-[9px] text-white/30">{t('suggestion_expected_cpa_label')}</p>
               </div>
             </div>
           </div>
           <div className="flex gap-2">
-            <div className="flex-1 px-3 py-2 rounded-lg bg-violet-500 text-white text-[11px] font-medium text-center">
+            {/* Approve button with pulsing glow */}
+            <motion.div
+              className="flex-1 px-3 py-2 rounded-lg bg-violet-500 text-white text-[11px] font-medium text-center cursor-pointer"
+              animate={{
+                boxShadow: [
+                  '0 0 4px 0px rgba(139,92,246,0.3)',
+                  '0 0 14px 3px rgba(139,92,246,0.5)',
+                  '0 0 4px 0px rgba(139,92,246,0.3)',
+                ],
+              }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ willChange: 'box-shadow' }}
+            >
               {t('suggestion_approve')}
-            </div>
+            </motion.div>
             <div className="px-4 py-2 rounded-lg bg-white/[0.06] text-white/50 text-[11px] text-center">
               {t('suggestion_reject')}
             </div>
@@ -197,11 +312,61 @@ function SuggestionsMockup() {
 function DashboardMockup() {
   const t = useTranslations('landing');
 
-  const accounts = [
-    { nameKey: 'dashboard_account_1', spendKey: 'dashboard_spend_1', roasKey: 'dashboard_roas_1', campaigns: 5, color: 'bg-violet-500' },
-    { nameKey: 'dashboard_account_2', spendKey: 'dashboard_spend_2', roasKey: 'dashboard_roas_2', campaigns: 3, color: 'bg-cyan-500' },
-    { nameKey: 'dashboard_account_3', spendKey: 'dashboard_spend_3', roasKey: 'dashboard_roas_3', campaigns: 4, color: 'bg-rose-500' },
-  ];
+  const baseAccounts = useMemo(
+    () => [
+      {
+        nameKey: 'dashboard_account_1',
+        spendKey: 'dashboard_spend_1',
+        baseRoas: 3.2,
+        campaigns: 5,
+        color: 'bg-violet-500',
+      },
+      {
+        nameKey: 'dashboard_account_2',
+        spendKey: 'dashboard_spend_2',
+        baseRoas: 2.8,
+        campaigns: 3,
+        color: 'bg-cyan-500',
+      },
+      {
+        nameKey: 'dashboard_account_3',
+        spendKey: 'dashboard_spend_3',
+        baseRoas: 4.1,
+        campaigns: 4,
+        color: 'bg-rose-500',
+      },
+    ],
+    [t],
+  );
+
+  // Slowly fluctuating ROAS values
+  const [roasOffsets, setRoasOffsets] = useState([0, 0, 0]);
+  // Status cycling: index of the account that temporarily changes status
+  const [statusFlip, setStatusFlip] = useState(-1);
+
+  const statusLabels = useMemo(() => ['Aktif', 'Ölçeklendi'], []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRoasOffsets([
+        Math.round((Math.random() - 0.5) * 4) / 10,
+        Math.round((Math.random() - 0.5) * 4) / 10,
+        Math.round((Math.random() - 0.5) * 4) / 10,
+      ]);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStatusFlip((prev) => {
+        // Toggle: if one is flipped, reset. Otherwise, flip a random one
+        if (prev >= 0) return -1;
+        return Math.floor(Math.random() * 3);
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <MockupFrame glowColor="bg-teal-500/8">
@@ -218,51 +383,78 @@ function DashboardMockup() {
           </div>
         </div>
         <div className="space-y-2">
-          {accounts.map((account, i) => (
-            <motion.div
-              key={i}
-              className="flex items-center gap-3 rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 py-3 hover:bg-white/[0.06] transition-colors"
-              initial={{ opacity: 0, y: 8 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
-            >
-              <div
-                className={`w-9 h-9 rounded-lg ${account.color} flex items-center justify-center text-white text-xs font-bold`}
+          {baseAccounts.map((account, i) => {
+            const currentRoas = account.baseRoas + roasOffsets[i];
+            const isFlipped = statusFlip === i;
+
+            return (
+              <motion.div
+                key={i}
+                className="flex items-center gap-3 rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 py-3 hover:bg-white/[0.06] transition-colors"
+                initial={{ opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
               >
-                {t(account.nameKey)[0]}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-white/85">
-                  {t(account.nameKey)}
-                </p>
-                <p className="text-[10px] text-white/35">
-                  {t('dashboard_active_campaigns', { count: String(account.campaigns) })}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs font-mono text-white/70 font-medium">
-                  {t(account.spendKey)}
-                </p>
-                <p className="text-[10px] text-emerald-400 font-medium">
-                  {t(account.roasKey)} ROAS
-                </p>
-              </div>
-              <svg
-                className="w-4 h-4 text-white/20"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.5}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                />
-              </svg>
-            </motion.div>
-          ))}
+                <div
+                  className={`w-9 h-9 rounded-lg ${account.color} flex items-center justify-center text-white text-xs font-bold`}
+                >
+                  {t(account.nameKey)[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-white/85">
+                    {t(account.nameKey)}
+                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[10px] text-white/35">
+                      {t('dashboard_active_campaigns', { count: String(account.campaigns) })}
+                    </p>
+                    {/* Status badge that occasionally flips */}
+                    <motion.span
+                      className={`text-[8px] px-1 py-0.5 rounded ${
+                        isFlipped
+                          ? 'bg-blue-400/15 text-blue-400'
+                          : 'bg-emerald-400/15 text-emerald-400'
+                      }`}
+                      key={isFlipped ? 'flipped' : 'normal'}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {isFlipped ? statusLabels[1] : statusLabels[0]}
+                    </motion.span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-mono text-white/70 font-medium">
+                    {t(account.spendKey)}
+                  </p>
+                  <motion.p
+                    className="text-[10px] text-emerald-400 font-medium font-mono"
+                    key={roasOffsets[i]}
+                    initial={{ opacity: 0.5 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    {currentRoas.toFixed(1)}x ROAS
+                  </motion.p>
+                </div>
+                <svg
+                  className="w-4 h-4 text-white/20"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                  />
+                </svg>
+              </motion.div>
+            );
+          })}
         </div>
         <div className="mt-4 pt-3 border-t border-white/[0.05] flex items-center justify-between">
           <span className="text-[10px] text-white/30">

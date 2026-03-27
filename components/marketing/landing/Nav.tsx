@@ -36,9 +36,21 @@ export function Nav() {
       >
         <div className="mx-auto max-w-6xl px-6 flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center">
+            {/* M logo with infinite glow pulse */}
+            <motion.div
+              className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center"
+              animate={{
+                boxShadow: [
+                  '0 0 6px 0px rgba(37,99,235,0.25)',
+                  '0 0 16px 4px rgba(37,99,235,0.45)',
+                  '0 0 6px 0px rgba(37,99,235,0.25)',
+                ],
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ willChange: 'box-shadow' }}
+            >
               <span className="text-white font-bold text-sm" style={{ fontFamily: 'var(--font-display)' }}>M</span>
-            </div>
+            </motion.div>
             <span className="text-lg font-semibold tracking-tight text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>MegVax</span>
           </Link>
 
@@ -63,7 +75,7 @@ export function Nav() {
             <Link href="/login" className="text-sm font-medium text-[#1A1A1A] hover:text-[#2563EB] transition-colors duration-200">
               {t('login')}
             </Link>
-            <Link href="/signup" className="glow-button inline-flex items-center px-5 py-2 rounded-full bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200">
+            <Link href="/signup" className="glow-button glow-button-always inline-flex items-center px-5 py-2 rounded-full bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200">
               {t('signup')}
             </Link>
           </div>

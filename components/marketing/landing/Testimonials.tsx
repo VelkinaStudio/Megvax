@@ -33,7 +33,7 @@ function StarRating({ count = 5 }: { count?: number }) {
   );
 }
 
-// ─── Avatar with initials ────────────────────────────────────────────────────
+// ─── Avatar with initials + ambient pulse ring ──────────────────────────────
 
 function Avatar({
   name,
@@ -55,10 +55,26 @@ function Avatar({
   };
 
   return (
-    <div
-      className={`${sizeClasses[size]} rounded-full ${color} flex items-center justify-center text-white font-bold shadow-lg`}
-    >
-      {initials}
+    <div className="relative">
+      {/* Expanding pulse ring */}
+      <motion.div
+        className={`absolute inset-0 rounded-full ${color}`}
+        animate={{
+          scale: [1, 1.35, 1.35],
+          opacity: [0.3, 0, 0],
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: 'easeOut',
+        }}
+        style={{ willChange: 'transform, opacity' }}
+      />
+      <div
+        className={`${sizeClasses[size]} rounded-full ${color} flex items-center justify-center text-white font-bold shadow-lg relative z-10`}
+      >
+        {initials}
+      </div>
     </div>
   );
 }
@@ -111,9 +127,9 @@ function ActivityTicker() {
   const fallbackItems = [
     { name: 'Sarah Chen', result: 'CPA -40%' },
     { name: 'Marcus Webb', result: 'ROAS 5.1x' },
-    { name: 'Elif Yılmaz', result: 'Conv. +120%' },
+    { name: 'Elif Y\u0131lmaz', result: 'Conv. +120%' },
     { name: 'David Park', result: 'CPA -35%' },
-    { name: 'Ayşe Kaya', result: 'ROAS 4.8x' },
+    { name: 'Ay\u015Fe Kaya', result: 'ROAS 4.8x' },
     { name: 'James Miller', result: 'Spend -28%' },
   ];
 
@@ -147,7 +163,7 @@ function ActivityTicker() {
           >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
             <span className="font-medium text-landing-text">{item.name}</span>
-            <span className="text-landing-text-muted">→</span>
+            <span className="text-landing-text-muted">&rarr;</span>
             <span className="font-semibold text-emerald-600">{item.result}</span>
           </div>
         ))}
@@ -187,10 +203,29 @@ export function Testimonials() {
           {/* Featured testimonial — spans 3 columns */}
           <StaggerItem className="lg:col-span-3">
             <motion.div
-              className="group relative h-full rounded-2xl bg-landing-card-bg border border-landing-card-border p-8 hover:border-[#2563EB]/20 hover:shadow-xl hover:shadow-[#2563EB]/5 transition-all duration-500"
+              className="group relative h-full rounded-2xl bg-landing-card-bg border border-landing-card-border p-8 hover:border-[#2563EB]/20 hover:shadow-xl hover:shadow-[#2563EB]/5 transition-all duration-500 overflow-hidden"
               whileHover={{ y: -4 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             >
+              {/* Animated shimmer border on featured card */}
+              <div
+                className="absolute inset-0 rounded-2xl pointer-events-none"
+                style={{ padding: '1px' }}
+              >
+                <div
+                  className="absolute inset-[-1px] rounded-2xl animate-[border-shimmer_8s_linear_infinite]"
+                  style={{
+                    background:
+                      'conic-gradient(from var(--shimmer-angle, 0deg), transparent 0%, #2563EB 10%, #7C3AED 20%, transparent 30%)',
+                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    maskComposite: 'exclude',
+                    WebkitMaskComposite: 'xor',
+                    padding: '1.5px',
+                    opacity: 0.5,
+                  }}
+                />
+              </div>
+
               {/* Subtle gradient accent at top */}
               <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl bg-gradient-to-r from-[#2563EB] via-[#7C3AED] to-[#2563EB] opacity-60" />
 
@@ -200,28 +235,50 @@ export function Testimonials() {
                   <StarRating />
                 </div>
 
-                {/* Large quote */}
-                <svg
+                {/* Large quote — floating rotation */}
+                <motion.svg
                   className="w-10 h-10 text-[#2563EB]/10 mb-4 shrink-0"
                   viewBox="0 0 24 24"
                   fill="currentColor"
+                  animate={{ rotate: [-5, 5, -5] }}
+                  transition={{
+                    duration: 6,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                  style={{ willChange: 'transform' }}
                 >
                   <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151C7.546 6.068 5.983 8.789 5.983 11H10v10H0z" />
-                </svg>
+                </motion.svg>
 
                 <p className="text-base sm:text-lg text-landing-text leading-relaxed mb-6 flex-1">
                   &quot;{t(`testimonial_${featured.id}_quote`)}&quot;
                 </p>
 
-                {/* Metric highlight — larger for featured */}
-                <div className="rounded-xl bg-gradient-to-r from-[#EFF6FF] to-[#F5F3FF] border border-[#2563EB]/10 px-5 py-3.5 mb-6">
+                {/* Metric highlight — with ambient glow */}
+                <motion.div
+                  className="rounded-xl bg-gradient-to-r from-[#EFF6FF] to-[#F5F3FF] border border-[#2563EB]/10 px-5 py-3.5 mb-6"
+                  animate={{
+                    boxShadow: [
+                      '0 0 0px 0px rgba(37, 99, 235, 0)',
+                      '0 0 12px 2px rgba(37, 99, 235, 0.12)',
+                      '0 0 0px 0px rgba(37, 99, 235, 0)',
+                    ],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                  style={{ willChange: 'box-shadow' }}
+                >
                   <p className="text-lg font-bold text-[#2563EB]">
                     {t(`testimonial_${featured.id}_metric`)}
                   </p>
                   <p className="text-xs text-[#2563EB]/60">
                     {t(`testimonial_${featured.id}_metric_label`)}
                   </p>
-                </div>
+                </motion.div>
 
                 {/* Author */}
                 <div className="flex items-center gap-4">
@@ -261,15 +318,31 @@ export function Testimonials() {
                     &quot;{t(`testimonial_${id}_quote`)}&quot;
                   </p>
 
-                  {/* Metric highlight */}
-                  <div className="rounded-lg bg-[#EFF6FF] border border-[#2563EB]/10 px-3 py-2 mb-4">
+                  {/* Metric highlight — with ambient glow */}
+                  <motion.div
+                    className="rounded-lg bg-[#EFF6FF] border border-[#2563EB]/10 px-3 py-2 mb-4"
+                    animate={{
+                      boxShadow: [
+                        '0 0 0px 0px rgba(37, 99, 235, 0)',
+                        '0 0 10px 1px rgba(37, 99, 235, 0.1)',
+                        '0 0 0px 0px rgba(37, 99, 235, 0)',
+                      ],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                      delay: id * 0.5,
+                    }}
+                    style={{ willChange: 'box-shadow' }}
+                  >
                     <p className="text-sm font-semibold text-[#2563EB]">
                       {t(`testimonial_${id}_metric`)}
                     </p>
                     <p className="text-[10px] text-[#2563EB]/60">
                       {t(`testimonial_${id}_metric_label`)}
                     </p>
-                  </div>
+                  </motion.div>
 
                   {/* Author */}
                   <div className="flex items-center gap-3">
@@ -298,7 +371,22 @@ export function Testimonials() {
                 className={`text-center ${i < 2 ? 'border-r border-landing-card-border' : ''}`}
               >
                 <div className="flex items-center justify-center gap-1.5 mb-1">
-                  <span className="text-[#2563EB] text-xs">{icon}</span>
+                  <motion.span
+                    className="text-[#2563EB] text-xs"
+                    animate={{
+                      y: [0, -2, 0],
+                      rotate: [0, 5, -5, 0],
+                    }}
+                    transition={{
+                      duration: 3,
+                      delay: i * 0.4,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                    style={{ willChange: 'transform' }}
+                  >
+                    {icon}
+                  </motion.span>
                   <p
                     className="text-lg sm:text-2xl font-bold text-landing-text"
                     style={{ fontFamily: 'var(--font-display)' }}

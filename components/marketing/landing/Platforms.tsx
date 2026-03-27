@@ -1,8 +1,9 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { useTranslations } from '@/lib/i18n';
 import { ScrollReveal } from './ScrollReveal';
+import { useRef, useEffect, useState, useCallback } from 'react';
 
 // ─── Platform logo SVG components (muted, monochrome) ────────────────────────
 
@@ -64,6 +65,17 @@ function WhatsAppLogo() {
 
 // ─── Logo items for the marquee ──────────────────────────────────────────────
 
+// Brand colors for hover effect
+const brandColors: Record<string, string> = {
+  Facebook: '#1877F2',
+  Instagram: '#E4405F',
+  'Google Ads': '#4285F4',
+  TikTok: '#000000',
+  YouTube: '#FF0000',
+  Messenger: '#0084FF',
+  WhatsApp: '#25D366',
+};
+
 const logos = [
   { name: 'Facebook', Icon: FacebookLogo },
   { name: 'Instagram', Icon: InstagramLogo },
@@ -74,15 +86,55 @@ const logos = [
   { name: 'WhatsApp', Icon: WhatsAppLogo },
 ];
 
-// ─── Marquee Row ─────────────────────────────────────────────────────────────
+// ─── Single Logo Item with hover brand color ─────────────────────────────────
+
+function LogoItem({ name, Icon }: { name: string; Icon: () => React.JSX.Element }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const brandColor = brandColors[name] || '#6B7280';
+
+  return (
+    <motion.div
+      className="flex items-center gap-3 shrink-0 transition-colors duration-300"
+      style={{
+        color: isHovered ? brandColor : '#9CA3AF',
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      animate={isHovered ? { scale: 1.08 } : { scale: 1 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+    >
+      <Icon />
+      <span
+        className="text-sm font-medium whitespace-nowrap"
+        style={{ fontFamily: 'var(--font-display)' }}
+      >
+        {name}
+      </span>
+    </motion.div>
+  );
+}
+
+// ─── Marquee Row with center proximity scale ─────────────────────────────────
 
 function MarqueeRow({ direction = 'left' }: { direction?: 'left' | 'right' }) {
   const items = [...logos, ...logos]; // duplicate for seamless loop
   const xFrom = direction === 'left' ? '0%' : '-50%';
   const xTo = direction === 'left' ? '-50%' : '0%';
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [centerX, setCenterX] = useState(0);
+
+  useEffect(() => {
+    const updateCenter = () => {
+      setCenterX(window.innerWidth / 2);
+    };
+    updateCenter();
+    window.addEventListener('resize', updateCenter);
+    return () => window.removeEventListener('resize', updateCenter);
+  }, []);
 
   return (
     <motion.div
+      ref={containerRef}
       className="flex gap-12 items-center"
       animate={{ x: [xFrom, xTo] }}
       transition={{
@@ -95,18 +147,7 @@ function MarqueeRow({ direction = 'left' }: { direction?: 'left' | 'right' }) {
       }}
     >
       {items.map((logo, i) => (
-        <div
-          key={`${logo.name}-${i}`}
-          className="flex items-center gap-3 shrink-0 text-[#9CA3AF] hover:text-[#6B7280] transition-colors duration-300"
-        >
-          <logo.Icon />
-          <span
-            className="text-sm font-medium whitespace-nowrap"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            {logo.name}
-          </span>
-        </div>
+        <LogoItem key={`${logo.name}-${i}`} name={logo.name} Icon={logo.Icon} />
       ))}
     </motion.div>
   );

@@ -150,6 +150,13 @@
 .glow-button:hover::before {
   opacity: 1;
 }
+/* Always-active variant: conic gradient visible at 30%, full on hover */
+.glow-button-always::before {
+  opacity: 0.3;
+}
+.glow-button-always:hover::before {
+  opacity: 1;
+}
 .glow-button::after {
   content: '';
   position: absolute;
@@ -165,6 +172,32 @@
   syntax: '<angle>';
   initial-value: 0deg;
   inherits: false;
+}
+
+/* ─── Ambient animation keyframes ─────────────────────────────────────── */
+
+/* Footer gradient border shift */
+@keyframes gradient-shift {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+
+/* Featured card border shimmer — requires @property for conic-gradient */
+@keyframes border-shimmer {
+  0% { --shimmer-angle: 0deg; }
+  100% { --shimmer-angle: 360deg; }
+}
+@property --shimmer-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* FinalCTA dot grid diagonal scroll */
+@keyframes dot-scroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 280px 280px; }
 }
 
 /* Reduced Motion */
@@ -184,8 +217,13 @@
   .animate-glow-pulse {
     animation: none !important;
   }
+  .glow-button-always::before {
+    opacity: 0 !important;
+    animation: none !important;
+  }
   .hero-particle,
-  .cta-pulse-ring {
+  .cta-pulse-ring,
+  .footer-particle {
     display: none !important;
   }
 }

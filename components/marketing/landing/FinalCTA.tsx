@@ -140,14 +140,15 @@ function FloatingCard({
       className={`absolute rounded-xl bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] shadow-lg pointer-events-none ${className}`}
       animate={{
         y: [0, -8, 0],
-        rotate: [0, 0.5, 0],
+        rotate: [0, 2, 0, -2, 0],
       }}
       transition={{
-        duration: 5,
+        duration: 12,
         delay,
         repeat: Infinity,
         ease: 'easeInOut',
       }}
+      style={{ willChange: 'transform' }}
     >
       {children}
     </motion.div>
@@ -173,14 +174,50 @@ export function FinalCTA() {
         <div className="relative overflow-hidden rounded-3xl sm:rounded-[2rem] bg-landing-frame-bg mx-auto max-w-7xl">
           {/* Background effects */}
           <div className="absolute inset-0">
-            {/* Large gradient orbs */}
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-[#2563EB]/20 blur-[120px] -translate-y-1/2" />
-            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-violet-500/15 blur-[100px] translate-y-1/3" />
-            <div className="absolute top-1/2 left-0 w-[300px] h-[300px] rounded-full bg-cyan-500/10 blur-[80px] -translate-x-1/2" />
+            {/* Large gradient orbs — slowly orbiting */}
+            <motion.div
+              className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-[#2563EB]/20 blur-[120px]"
+              animate={{
+                x: [0, 40, 0, -40, 0],
+                y: ['-50%', '-40%', '-50%', '-60%', '-50%'],
+              }}
+              transition={{
+                duration: 25,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              style={{ willChange: 'transform' }}
+            />
+            <motion.div
+              className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-violet-500/15 blur-[100px]"
+              animate={{
+                x: [0, -30, 0, 30, 0],
+                y: ['33%', '25%', '33%', '40%', '33%'],
+              }}
+              transition={{
+                duration: 30,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              style={{ willChange: 'transform' }}
+            />
+            <motion.div
+              className="absolute top-1/2 left-0 w-[300px] h-[300px] rounded-full bg-cyan-500/10 blur-[80px]"
+              animate={{
+                x: ['-50%', '-40%', '-50%', '-60%', '-50%'],
+                y: [0, 30, 0, -30, 0],
+              }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              style={{ willChange: 'transform' }}
+            />
 
-            {/* Dot grid overlay */}
+            {/* Dot grid overlay — slowly scrolling diagonally */}
             <div
-              className="absolute inset-0"
+              className="absolute inset-0 animate-[dot-scroll_30s_linear_infinite]"
               style={{
                 backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px)',
                 backgroundSize: '28px 28px',
@@ -256,7 +293,7 @@ export function FinalCTA() {
 
           {/* Content */}
           <div className="relative z-10 py-20 sm:py-28 lg:py-32 px-6 sm:px-10 text-center">
-            {/* Social proof badge */}
+            {/* Social proof badge — with pulse ring on green dot */}
             <motion.div
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.08] border border-white/[0.08] text-white/60 text-xs font-medium mb-8"
               initial={{ opacity: 0, y: 8 }}
@@ -266,6 +303,23 @@ export function FinalCTA() {
             >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <motion.span
+                  className="absolute inline-flex rounded-full bg-emerald-400/30"
+                  animate={{
+                    scale: [1, 2.5, 2.5],
+                    opacity: [0.4, 0, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'easeOut',
+                  }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    willChange: 'transform, opacity',
+                  }}
+                />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
               </span>
               {t('cta_join_count')}
@@ -310,11 +364,23 @@ export function FinalCTA() {
               </motion.div>
             </div>
 
-            {/* Trust badges — more prominent */}
+            {/* Trust badges — icons slowly rotating */}
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-white/40">
-              {trustBadges.map(({ icon: Icon, key }) => (
+              {trustBadges.map(({ icon: Icon, key }, i) => (
                 <span key={key} className="flex items-center gap-2 bg-white/[0.04] px-3 py-1.5 rounded-full">
-                  <Icon className="w-3.5 h-3.5 text-white/50" />
+                  <motion.span
+                    className="inline-flex"
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 20,
+                      delay: i * 2,
+                      repeat: Infinity,
+                      ease: 'linear',
+                    }}
+                    style={{ willChange: 'transform' }}
+                  >
+                    <Icon className="w-3.5 h-3.5 text-white/50" />
+                  </motion.span>
                   {t(key)}
                 </span>
               ))}

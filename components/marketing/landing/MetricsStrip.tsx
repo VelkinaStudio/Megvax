@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { type ReactNode, useRef, useState, useEffect, useCallback } from 'react';
+import { type ReactNode, useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslations } from '@/lib/i18n';
 import { ScrollReveal, StaggerContainer, StaggerItem } from './ScrollReveal';
 
@@ -148,38 +148,98 @@ function ParticleBurst({ active }: { active: boolean }) {
 
 function MiniBarChart() {
   const bars = [35, 48, 42, 65, 55, 72, 80];
+  // Each bar breathes on its own timing after the initial entry
   return (
     <div className="flex items-end gap-[3px] h-10 mb-5 justify-center">
       {bars.map((h, i) => (
         <motion.div
           key={i}
           className="w-[6px] rounded-t-sm bg-accent-primary/70"
-          style={{ height: `${h}%`, transformOrigin: 'bottom' }}
+          style={{ transformOrigin: 'bottom', willChange: 'transform' }}
           initial={{ scaleY: 0 }}
           whileInView={{ scaleY: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3 + i * 0.06, duration: 0.5, ease: 'backOut' }}
-        />
+        >
+          {/* Breathing overlay on top of the static bar */}
+          <motion.div
+            className="w-full rounded-t-sm bg-accent-primary/70 absolute bottom-0 left-0 right-0"
+            style={{ height: `${h}%`, transformOrigin: 'bottom' }}
+            animate={{
+              scaleY: [1, 1 + (i % 2 === 0 ? 0.1 : -0.1), 1],
+            }}
+            transition={{
+              duration: 3 + i * 0.5,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              delay: i * 0.3,
+            }}
+          />
+        </motion.div>
       ))}
     </div>
   );
 }
 
 function MiniAvatarGrid() {
-  const colors = [
-    'bg-violet-400',
-    'bg-cyan-400',
-    'bg-rose-400',
-    'bg-amber-400',
-    'bg-emerald-400',
-    'bg-blue-400',
-    'bg-pink-400',
-    'bg-teal-400',
-    'bg-orange-400',
-    'bg-indigo-400',
-    'bg-lime-400',
-    'bg-fuchsia-400',
-  ];
+  const baseColors = useMemo(
+    () => [
+      'bg-violet-400',
+      'bg-cyan-400',
+      'bg-rose-400',
+      'bg-amber-400',
+      'bg-emerald-400',
+      'bg-blue-400',
+      'bg-pink-400',
+      'bg-teal-400',
+      'bg-orange-400',
+      'bg-indigo-400',
+      'bg-lime-400',
+      'bg-fuchsia-400',
+    ],
+    [],
+  );
+
+  // All possible colors for cycling
+  const allColors = useMemo(
+    () => [
+      'bg-violet-400',
+      'bg-cyan-400',
+      'bg-rose-400',
+      'bg-amber-400',
+      'bg-emerald-400',
+      'bg-blue-400',
+      'bg-pink-400',
+      'bg-teal-400',
+      'bg-orange-400',
+      'bg-indigo-400',
+      'bg-lime-400',
+      'bg-fuchsia-400',
+      'bg-red-400',
+      'bg-sky-400',
+      'bg-yellow-400',
+      'bg-purple-400',
+    ],
+    [],
+  );
+
+  const [colors, setColors] = useState(baseColors);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setColors((prev) => {
+        const next = [...prev];
+        // Rotate 2 random avatars to new colors
+        const idx1 = Math.floor(Math.random() * next.length);
+        const idx2 = Math.floor(Math.random() * next.length);
+        next[idx1] = allColors[Math.floor(Math.random() * allColors.length)];
+        next[idx2] = allColors[Math.floor(Math.random() * allColors.length)];
+        return next;
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [allColors]);
+
   return (
     <div className="flex flex-wrap gap-1 justify-center mb-5 max-w-[100px] mx-auto">
       {colors.map((c, i) => (
@@ -195,6 +255,9 @@ function MiniAvatarGrid() {
             stiffness: 400,
             damping: 15,
           }}
+          // Smooth color transition
+          layout
+          style={{ willChange: 'transform' }}
         />
       ))}
     </div>
@@ -222,6 +285,7 @@ function MiniTrendLine() {
           viewport={{ once: true }}
           transition={{ delay: 0.3, duration: 1.2, ease: 'easeOut' }}
         />
+        {/* Endpoint dot */}
         <motion.circle
           cx="80"
           cy="4"
@@ -231,6 +295,25 @@ function MiniTrendLine() {
           whileInView={{ scale: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 1.4, type: 'spring', stiffness: 400 }}
+        />
+        {/* Pulsing glow ring around the endpoint */}
+        <motion.circle
+          cx="80"
+          cy="4"
+          r="3.5"
+          fill="none"
+          stroke="#10B981"
+          strokeWidth="1.5"
+          animate={{
+            r: [3.5, 8, 3.5],
+            opacity: [0.6, 0, 0.6],
+          }}
+          transition={{
+            duration: 2.5,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+          style={{ willChange: 'r, opacity' }}
         />
         <defs>
           <linearGradient

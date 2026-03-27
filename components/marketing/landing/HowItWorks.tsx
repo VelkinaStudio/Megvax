@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { type ReactNode } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { type ReactNode, useState, useEffect, useMemo } from 'react';
 import { useTranslations } from '@/lib/i18n';
 import { ScrollReveal, StaggerContainer, StaggerItem } from './ScrollReveal';
 
@@ -22,29 +22,61 @@ function OAuthMockup({ t }: { t: (key: string) => string }) {
     { name: 'Beauty Brand', connected: false },
   ];
 
+  // Ghost account that fades in/out on a 4s loop
+  const [showGhost, setShowGhost] = useState(false);
+  useEffect(() => {
+    // Use CSS-driven timing: toggle every 2s (2s visible, 2s hidden = 4s cycle)
+    const interval = setInterval(() => setShowGhost((p) => !p), 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <MiniMockup>
       <div className="flex items-center gap-2.5 mb-2.5">
-        <div className="w-7 h-7 rounded-lg bg-[#1877F2] flex items-center justify-center shrink-0">
+        {/* Facebook logo with breathing glow */}
+        <motion.div
+          className="w-7 h-7 rounded-lg bg-[#1877F2] flex items-center justify-center shrink-0"
+          animate={{
+            boxShadow: [
+              '0 0 4px 0px rgba(24,119,242,0.3)',
+              '0 0 12px 3px rgba(24,119,242,0.5)',
+              '0 0 4px 0px rgba(24,119,242,0.3)',
+            ],
+          }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ willChange: 'box-shadow' }}
+        >
           <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
           </svg>
-        </div>
+        </motion.div>
         <div>
           <p className="text-[10px] text-white/70 font-medium">Meta Business Suite</p>
           <p className="text-[8px] text-white/35">3 {t('how_step1_account_found')}</p>
         </div>
       </div>
       <div className="space-y-1.5">
-        {accounts.map((account) => (
+        {accounts.map((account, i) => (
           <div
             key={account.name}
             className="flex items-center gap-2 rounded-md bg-white/[0.04] px-2 py-1.5"
           >
-            <div
+            {/* Pulsing connected dot — staggered */}
+            <motion.div
               className={`w-1.5 h-1.5 rounded-full ${
                 account.connected ? 'bg-emerald-400' : 'bg-white/20'
               }`}
+              animate={
+                account.connected
+                  ? { scale: [1, 1.3, 1] }
+                  : {}
+              }
+              transition={
+                account.connected
+                  ? { duration: 2, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }
+                  : {}
+              }
+              style={{ willChange: 'transform' }}
             />
             <span className="text-[9px] text-white/60 flex-1">{account.name}</span>
             <span
@@ -56,6 +88,29 @@ function OAuthMockup({ t }: { t: (key: string) => string }) {
             </span>
           </div>
         ))}
+
+        {/* Ghost account row — fades in/out on 4s cycle */}
+        <AnimatePresence>
+          {showGhost && (
+            <motion.div
+              className="flex items-center gap-2 rounded-md bg-white/[0.04] px-2 py-1.5"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.6, ease: 'easeInOut' }}
+            >
+              <motion.div
+                className="w-1.5 h-1.5 rounded-full bg-emerald-400"
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <span className="text-[9px] text-white/60 flex-1">New Account</span>
+              <span className="text-[8px] text-emerald-400">
+                {t('how_step1_connected')}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </MiniMockup>
   );
@@ -69,17 +124,26 @@ function RulesMockup({ t }: { t: (key: string) => string }) {
         {t('how_step2_rules_title')}
       </p>
       <div className="space-y-2">
-        {/* ROAS slider */}
+        {/* ROAS slider — oscillates 35%-50% */}
         <div className="rounded-md bg-white/[0.04] px-2.5 py-2">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[9px] text-white/60">{t('how_step2_min_roas')}</span>
             <span className="text-[10px] text-white/80 font-mono font-semibold">2.0x</span>
           </div>
           <div className="h-1 rounded-full bg-white/[0.08] overflow-hidden">
-            <div className="h-full w-[40%] rounded-full bg-accent-primary" />
+            <motion.div
+              className="h-full rounded-full bg-accent-primary"
+              animate={{ width: ['35%', '50%', '35%'] }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              style={{ willChange: 'width' }}
+            />
           </div>
         </div>
-        {/* Budget slider */}
+        {/* Budget slider — oscillates 60%-75% */}
         <div className="rounded-md bg-white/[0.04] px-2.5 py-2">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[9px] text-white/60">{t('how_step2_budget_limit')}</span>
@@ -88,13 +152,28 @@ function RulesMockup({ t }: { t: (key: string) => string }) {
             </span>
           </div>
           <div className="h-1 rounded-full bg-white/[0.08] overflow-hidden">
-            <div className="h-full w-[65%] rounded-full bg-violet-400" />
+            <motion.div
+              className="h-full rounded-full bg-violet-400"
+              animate={{ width: ['60%', '75%', '60%'] }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: 1.5,
+              }}
+              style={{ willChange: 'width' }}
+            />
           </div>
         </div>
-        {/* CPA toggle */}
+        {/* CPA toggle — green dot blinks on 3s cycle */}
         <div className="flex items-center gap-2 rounded-md bg-white/[0.04] px-2.5 py-2">
           <div className="w-3 h-3 rounded bg-emerald-400/20 flex items-center justify-center">
-            <div className="w-1.5 h-1.5 rounded-sm bg-emerald-400" />
+            <motion.div
+              className="w-1.5 h-1.5 rounded-sm bg-emerald-400"
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ willChange: 'opacity' }}
+            />
           </div>
           <span className="text-[9px] text-white/60 flex-1">{t('how_step2_cpa_rule')}</span>
           <span className="text-[8px] text-emerald-400">{t('how_step2_active')}</span>
@@ -106,53 +185,137 @@ function RulesMockup({ t }: { t: (key: string) => string }) {
 
 // ─── Step 3: Live Activity Mockup ────────────────────────────────────────────
 function ActivityMockup({ t }: { t: (key: string) => string }) {
-  const activities = [
-    {
-      action: t('how_step3_paused'),
-      campaign: 'Lookalike %1',
-      color: 'text-amber-400',
-      bg: 'bg-amber-400/10',
-      time: '03:42',
-    },
-    {
-      action: t('how_step3_scaled'),
-      campaign: 'Retargeting',
-      color: 'text-emerald-400',
-      bg: 'bg-emerald-400/10',
-      time: '05:18',
-    },
-    {
-      action: t('how_step3_report'),
-      campaign: t('how_step3_daily_summary'),
-      color: 'text-blue-400',
-      bg: 'bg-blue-400/10',
-      time: '06:00',
-    },
-  ];
+  const allActivities = useMemo(
+    () => [
+      {
+        action: t('how_step3_paused'),
+        campaign: 'Lookalike %1',
+        color: 'text-amber-400',
+        bg: 'bg-amber-400/10',
+        time: '03:42',
+      },
+      {
+        action: t('how_step3_scaled'),
+        campaign: 'Retargeting',
+        color: 'text-emerald-400',
+        bg: 'bg-emerald-400/10',
+        time: '05:18',
+      },
+      {
+        action: t('how_step3_report'),
+        campaign: t('how_step3_daily_summary'),
+        color: 'text-blue-400',
+        bg: 'bg-blue-400/10',
+        time: '06:00',
+      },
+      {
+        action: t('how_step3_scaled'),
+        campaign: 'Brand Awareness',
+        color: 'text-emerald-400',
+        bg: 'bg-emerald-400/10',
+        time: '07:15',
+      },
+      {
+        action: t('how_step3_paused'),
+        campaign: 'Conversion #3',
+        color: 'text-amber-400',
+        bg: 'bg-amber-400/10',
+        time: '08:30',
+      },
+    ],
+    [t],
+  );
+
+  const [visibleStart, setVisibleStart] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisibleStart((prev) => (prev + 1) % allActivities.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [allActivities.length]);
+
+  // Get 3 visible items cycling through the pool
+  const visibleItems = [0, 1, 2].map(
+    (offset) => allActivities[(visibleStart + offset) % allActivities.length],
+  );
 
   return (
     <MiniMockup>
-      <div className="flex items-center gap-1.5 mb-2">
-        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-        <p className="text-[9px] text-white/40 font-medium">{t('how_step3_live')}</p>
-      </div>
-      <div className="space-y-1.5">
-        {activities.map((item, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-2 rounded-md bg-white/[0.04] px-2 py-1.5"
-          >
-            <span
-              className={`text-[7px] font-medium px-1.5 py-0.5 rounded ${item.bg} ${item.color}`}
-            >
-              {item.action}
-            </span>
-            <span className="text-[9px] text-white/60 flex-1 truncate">{item.campaign}</span>
-            <span className="text-[7px] text-white/25">{item.time}</span>
-          </div>
-        ))}
+      {/* Scanning line effect */}
+      <div className="relative overflow-hidden">
+        <motion.div
+          className="absolute left-0 right-0 h-px bg-white/[0.05] z-10 pointer-events-none"
+          animate={{ top: ['0%', '100%'] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+          style={{ willChange: 'top' }}
+        />
+        <div className="flex items-center gap-1.5 mb-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <p className="text-[9px] text-white/40 font-medium">{t('how_step3_live')}</p>
+        </div>
+        <div className="space-y-1.5">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {visibleItems.map((item, i) => (
+              <motion.div
+                key={`${item.campaign}-${(visibleStart + i) % allActivities.length}`}
+                className="flex items-center gap-2 rounded-md bg-white/[0.04] px-2 py-1.5"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                layout
+              >
+                <span
+                  className={`text-[7px] font-medium px-1.5 py-0.5 rounded ${item.bg} ${item.color}`}
+                >
+                  {item.action}
+                </span>
+                <span className="text-[9px] text-white/60 flex-1 truncate">
+                  {item.campaign}
+                </span>
+                <span className="text-[7px] text-white/25">{item.time}</span>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
     </MiniMockup>
+  );
+}
+
+// ─── Animated dots traveling along the connecting line ────────────────────────
+function ConnectingLineDots() {
+  return (
+    <div className="hidden md:block absolute top-[42px] left-[16.67%] right-[16.67%] z-0">
+      <motion.div
+        className="h-[2px] bg-gradient-to-r from-accent-primary/5 via-accent-primary/25 to-accent-primary/5"
+        initial={{ scaleX: 0 }}
+        whileInView={{ scaleX: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.2, delay: 0.5, ease: 'easeOut' }}
+        style={{ transformOrigin: 'left' }}
+      />
+      {/* 3 traveling dots */}
+      {[0, 1, 2].map((i) => (
+        <motion.div
+          key={i}
+          className="absolute top-[-2px] w-[6px] h-[6px] rounded-full bg-accent-primary"
+          style={{ willChange: 'transform, opacity' }}
+          animate={{
+            left: ['0%', '100%'],
+            opacity: [0, 1, 1, 0],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: 'linear',
+            delay: i * 1,
+            times: [0, 0.1, 0.9, 1],
+          }}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -209,17 +372,8 @@ export function HowItWorks() {
 
         {/* Step cards */}
         <StaggerContainer className="relative">
-          {/* Connecting line between cards — desktop only */}
-          <div className="hidden md:block absolute top-[42px] left-[16.67%] right-[16.67%] z-0">
-            <motion.div
-              className="h-[2px] bg-gradient-to-r from-accent-primary/5 via-accent-primary/25 to-accent-primary/5"
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.2, delay: 0.5, ease: 'easeOut' }}
-              style={{ transformOrigin: 'left' }}
-            />
-          </div>
+          {/* Connecting line between cards with traveling dots */}
+          <ConnectingLineDots />
 
           <div className="grid md:grid-cols-3 gap-6 relative z-10">
             {steps.map((step, i) => (
