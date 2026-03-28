@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { RegisterDto } from './dto/register.dto';
@@ -30,10 +30,19 @@ export class AuthService {
     private config: ConfigService,
     private emailService: EmailService,
   ) {
-    this.privateKey = readFileSync(
-      this.config.getOrThrow('JWT_PRIVATE_KEY_PATH'),
-      'utf8',
-    );
+    this.privateKey = this.loadKey('JWT_PRIVATE_KEY', 'JWT_PRIVATE_KEY_PATH');
+  }
+
+  private loadKey(envVar: string, pathVar: string): string {
+    // Prefer base64-encoded key from env (production/Railway)
+    const base64 = this.config.get<string>(envVar);
+    if (base64) return Buffer.from(base64, 'base64').toString('utf8');
+
+    // Fallback to file path (local dev)
+    const keyPath = this.config.get<string>(pathVar);
+    if (keyPath && existsSync(keyPath)) return readFileSync(keyPath, 'utf8');
+
+    throw new Error(`JWT key not found: set ${envVar} (base64) or ${pathVar} (file path)`);
   }
 
   async register(dto: RegisterDto) {

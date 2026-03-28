@@ -125,10 +125,13 @@ export class AuthController {
   }
 
   private setRefreshCookie(res: Response, token: string) {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('refresh_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: isProduction,
+      // Cross-origin (frontend ≠ API domain): 'none' + secure
+      // Same-origin: 'strict' for tighter security
+      sameSite: isProduction ? 'none' : 'strict',
       maxAge: 7 * 24 * 3600 * 1000, // 7 days
       path: '/auth', // covers /auth/refresh and /auth/logout
     });
