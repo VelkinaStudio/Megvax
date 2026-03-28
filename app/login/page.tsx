@@ -346,7 +346,7 @@ export default function LoginPage() {
   const toast = useToast();
   const t = useTranslations('auth');
   const tc = useTranslations('common');
-  const { login, isAuthenticated, devLogin } = useAuth();
+  const { login, isAuthenticated, user, devLogin } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
@@ -358,8 +358,10 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (isAuthenticated) router.replace('/app/dashboard');
-  }, [isAuthenticated, router]);
+    if (isAuthenticated && user) {
+      router.replace(user.isAdmin ? '/admin' : '/app/dashboard');
+    }
+  }, [isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -368,7 +370,7 @@ export default function LoginPage() {
     try {
       await login(formData.email, formData.password);
       toast.success(tc('success') + '!');
-      router.push('/app/dashboard');
+      // Redirect happens in useEffect based on user.isAdmin
     } catch (error) {
       if (error instanceof ApiError) {
         toast.error(error.message);

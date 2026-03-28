@@ -52,18 +52,20 @@ const MOCK_ACCOUNTS = [
 
 /** Build a realistic-looking JWT so downstream code that inspects token structure won't crash. */
 function createMockToken(user: User): string {
-  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = btoa(
+  // Use TextEncoder to handle Unicode characters (Turkish ı, ş, etc.)
+  const toBase64 = (str: string) => btoa(unescape(encodeURIComponent(str)));
+  const header = toBase64(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = toBase64(
     JSON.stringify({
       sub: user.id,
       email: user.email,
       fullName: user.fullName,
       isAdmin: user.isAdmin,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 86400, // 24h
+      exp: Math.floor(Date.now() / 1000) + 86400,
     })
   );
-  const signature = btoa('mock-signature');
+  const signature = toBase64('mock-signature');
   return `${header}.${payload}.${signature}`;
 }
 
@@ -160,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     // Try mock/demo credentials first — these always work regardless of API state
-    const mockResult = tryMockLogin(email, password);
+    const mockResult = tryMockLogin(email.toLowerCase().trim(), password);
     if (mockResult) {
       setAccessToken(mockResult.accessToken);
       setState({ user: mockResult.user, isLoading: false, isAuthenticated: true });
