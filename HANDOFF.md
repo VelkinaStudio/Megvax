@@ -3,7 +3,7 @@
 ## Last Session
 - **Date:** 2026-03-29
 - **Who:** Nalba
-- **Summary:** Railway deployment complete — both services live, DB + Redis connected.
+- **Summary:** Railway deployment live + real backend integration fixed (auth, API endpoints, empty states).
 
 ## What's Live
 - **API:** https://megvax-api-production.up.railway.app (`/health` returns OK)
