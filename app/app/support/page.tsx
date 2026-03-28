@@ -24,7 +24,7 @@ type SupportTicket = {
   status: 'new' | 'triaged' | 'replied';
 };
 
-function categoryLabel(c: SupportCategory, t: any) {
+function categoryLabel(c: SupportCategory, t: (key: string) => string) {
   if (c === 'bug') return t('category_bug');
   if (c === 'feature') return t('category_feature');
   if (c === 'account') return t('category_account');
@@ -40,7 +40,7 @@ function categoryIcon(c: SupportCategory) {
   return MessageSquare;
 }
 
-function categoryHint(c: SupportCategory, t: any) {
+function categoryHint(c: SupportCategory, t: (key: string) => string) {
   if (c === 'bug') return t('hint_bug');
   if (c === 'feature') return t('hint_feature');
   if (c === 'account') return t('hint_account');
@@ -72,7 +72,7 @@ export default function SupportPage() {
 
   const category = watch('category');
   const placeholder = useMemo(() => categoryHint(category, t), [category, t]);
-  const CategoryIcon = categoryIcon(category);
+  const _CategoryIcon = categoryIcon(category);
 
   const onSubmit = async (data: SupportTicketInput) => {
     // Sanitize input to prevent XSS

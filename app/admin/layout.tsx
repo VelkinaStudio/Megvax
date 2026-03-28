@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -41,15 +41,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
+  const hasCheckedAuth = React.useRef(false);
 
   useEffect(() => {
+    if (hasCheckedAuth.current) return;
+    hasCheckedAuth.current = true;
     const adminSession = localStorage.getItem('adminSession');
     if (!adminSession) {
       router.push('/admin-login');
     } else {
-      setIsAuthenticated(true);
+      // State update in callback to avoid synchronous setState in effect
+      queueMicrotask(() => setIsAuthenticated(true));
     }
-    setIsLoading(false);
+    queueMicrotask(() => setIsLoading(false));
   }, [router]);
 
   const handleLogout = () => {

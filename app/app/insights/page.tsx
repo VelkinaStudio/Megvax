@@ -2,14 +2,24 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { BarChart3, ArrowRight, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
+import { BarChart3, ArrowRight, Calendar, TrendingUp } from 'lucide-react';
 import { usePlatform } from '@/components/dashboard/PlatformContext';
 import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
 import { useTranslations } from '@/lib/i18n';
-import { Button, Card, Badge } from '@/components/ui';
+import { Button, Card } from '@/components/ui';
 import { PageHeader, EmptyStateCard } from '@/components/dashboard';
 import { InsightsView } from '@/components/dashboard/insights/InsightsView';
 import type { InsightsLevel, InsightsSingleResponse } from '@/types/dashboard';
+
+interface InsightSnapshotRow {
+  date?: string;
+  spend?: number;
+  conversions?: number;
+  impressions?: number;
+  clicks?: number;
+  roas?: number;
+  ctr?: number;
+}
 import { Sparkline } from '@/components/ui/Sparkline';
 import { api } from '@/lib/api';
 import { SpendChart, RoasChart } from '@/components/dashboard/charts';
@@ -48,14 +58,15 @@ export default function InsightsPage() {
     const fetchEntities = async () => {
       try {
         const [campaignsRes, adSetsRes, adsRes] = await Promise.all([
-          api<any>(`/campaigns?accountId=${encodeURIComponent(accountId)}`).catch(() => []),
-          api<any>(`/adsets?accountId=${encodeURIComponent(accountId)}`).catch(() => []),
-          api<any>(`/ads?accountId=${encodeURIComponent(accountId)}`).catch(() => []),
+          api<Record<string, unknown>>(`/campaigns?accountId=${encodeURIComponent(accountId)}`).catch(() => ({})),
+          api<Record<string, unknown>>(`/adsets?accountId=${encodeURIComponent(accountId)}`).catch(() => ({})),
+          api<Record<string, unknown>>(`/ads?accountId=${encodeURIComponent(accountId)}`).catch(() => ({})),
         ]);
 
-        const mapEntities = (data: any) => {
-          const rows = Array.isArray(data) ? data : Array.isArray(data?.campaigns) ? data.campaigns : Array.isArray(data?.adsets) ? data.adsets : Array.isArray(data?.ads) ? data.ads : [];
-          return rows.map((e: any) => ({ id: String(e.id ?? ''), name: String(e.name ?? '') }));
+        const mapEntities = (data: unknown) => {
+          const d = data as Record<string, unknown>;
+          const rows = Array.isArray(d) ? d : Array.isArray(d?.campaigns) ? d.campaigns as Record<string, unknown>[] : Array.isArray(d?.adsets) ? d.adsets as Record<string, unknown>[] : Array.isArray(d?.ads) ? d.ads as Record<string, unknown>[] : [];
+          return rows.map((e: Record<string, unknown>) => ({ id: String(e.id ?? ''), name: String(e.name ?? '') }));
         };
 
         setCampaignOptions(mapEntities(campaignsRes));
@@ -115,7 +126,7 @@ export default function InsightsPage() {
       from ? `&from=${from}` : ''
     }${to ? `&to=${to}` : ''}`;
 
-    api<{ data: any[] }>(url)
+    api<{ data: InsightSnapshotRow[] }>(url)
       .then((response) => {
         const snapshots = response.data || [];
 
@@ -146,7 +157,7 @@ export default function InsightsPage() {
         summary.roas = Number((weightedRoas / (summary.spend || 1)).toFixed(2));
 
         // Build timeseries from snapshots
-        const timeseries = snapshots.map((snap: any) => ({
+        const timeseries = snapshots.map((snap) => ({
           date: snap.date,
           spend: snap.spend ?? 0,
           roas: snap.roas ?? 0,

@@ -5,7 +5,6 @@ import {
   BarChart3,
   Users,
   CreditCard,
-  Receipt,
   TrendingUp,
   TrendingDown,
   Calendar,

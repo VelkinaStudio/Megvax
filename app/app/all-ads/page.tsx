@@ -4,22 +4,16 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslations } from '@/lib/i18n';
 import {
   Search, Filter, Download, ArrowUpDown, Eye, Pause, Play,
-  Settings2, ChevronDown, BarChart3, RefreshCw, MoreHorizontal,
-  TrendingUp, TrendingDown, Layers, X, Calendar, LayoutGrid
+  Settings2, RefreshCw, MoreHorizontal,
+  X, Calendar
 } from 'lucide-react';
 import { PageHeader } from '@/components/dashboard';
 import { Button, Card, Badge, Checkbox } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { ColumnCustomizer } from '@/components/dashboard/ColumnCustomizer';
 import { StatsSummaryBar, type StatItem } from '@/components/dashboard/StatsSummaryBar';
-import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
 import {
-  METRIC_COLUMNS,
-  FIXED_COLUMNS,
   DEFAULT_VISIBLE_COLUMNS,
-  formatColumnValue,
-  getColumnById,
-  type ColumnDefinition
 } from '@/lib/data/meta-columns';
 
 type AdStatus = 'active' | 'paused' | 'archived';
@@ -57,7 +51,6 @@ type SortDirection = 'asc' | 'desc';
 export default function AllAdsPage() {
   const t = useTranslations('all_ads');
   const toast = useToast();
-  const { range, from, to } = useDashboardQuery();
   const [allAds, setAllAds] = useState<AllAdsItem[]>([]);
   const [accounts, setAccounts] = useState<{ id: string; name: string }[]>([]);
 
@@ -96,7 +89,7 @@ export default function AllAdsPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isColumnCustomizerOpen, setIsColumnCustomizerOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_VISIBLE_COLUMNS);
-  const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [_viewMode, _setViewMode] = useState<ViewMode>('table');
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [dateRange, setDateRange] = useState<'7d' | '30d' | 'custom'>('7d');

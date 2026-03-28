@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Wand2, Image as ImageIcon, Type, Sparkles } from 'lucide-react';
+import { Image as ImageIcon, Type, Sparkles } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from '@/lib/i18n';
 import { PageHeader } from '@/components/dashboard';
-import { Card, Button } from '@/components/ui';
+import { Card } from '@/components/ui';
 
 export default function AiCreativePage() {
   const [prompt, setPrompt] = useState('');

@@ -13,7 +13,7 @@ const spring = { type: 'spring' as const, stiffness: 100, damping: 20 };
 export default function ForgotPasswordPage() {
   const toast = useToast();
   const t = useTranslations('auth');
-  const tc = useTranslations('common');
+  const _tc = useTranslations('common');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link2, LayoutGrid, Settings2, BarChart3, Check, X } from 'lucide-react';
 import Link from 'next/link';
@@ -53,12 +53,10 @@ const STEPS: OnboardingStep[] = [
 ];
 
 export function OnboardingChecklist() {
-  const [dismissed, setDismissed] = useState(true); // start hidden to avoid flash
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    setDismissed(stored === 'true');
-  }, []);
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === 'undefined') return true; // SSR: hidden
+    return localStorage.getItem(STORAGE_KEY) === 'true';
+  });
 
   const handleDismiss = () => {
     setDismissed(true);

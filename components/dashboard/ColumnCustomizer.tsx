@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, Search, Check, GripVertical, RotateCcw } from 'lucide-react';
-import { Button, Checkbox } from '@/components/ui';
+import React, { useState } from 'react';
+import { X, Search, Check, RotateCcw } from 'lucide-react';
+import { Button } from '@/components/ui';
 import {
   METRIC_COLUMNS,
   COLUMN_PRESETS,
@@ -31,10 +31,15 @@ export function ColumnCustomizer({
   const [searchQuery, setSearchQuery] = useState('');
   const [localSelection, setLocalSelection] = useState<string[]>(selectedColumns);
   const [activeCategory, setActiveCategory] = useState<MetricCategory | 'all'>('all');
+  const prevColumnsRef = React.useRef(selectedColumns);
+  const prevOpenRef = React.useRef(isOpen);
 
-  useEffect(() => {
+  // Sync local selection when props change (without synchronous setState in effect)
+  if (prevColumnsRef.current !== selectedColumns || prevOpenRef.current !== isOpen) {
+    prevColumnsRef.current = selectedColumns;
+    prevOpenRef.current = isOpen;
     setLocalSelection(selectedColumns);
-  }, [selectedColumns, isOpen]);
+  }
 
   if (!isOpen) return null;
 

@@ -67,20 +67,18 @@ function AnimatedGradientBg() {
 
 /* ───── Subtle ambient particles (reduced count, very low opacity) ───── */
 function SubtleParticles() {
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 15 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: 1.5 + Math.random() * 2,
-        opacity: 0.03 + Math.random() * 0.02,
-        duration: 14 + Math.random() * 16,
-        delay: Math.random() * 6,
-        driftX: (Math.random() - 0.5) * 50,
-        driftY: (Math.random() - 0.5) * 35,
-      })),
-    []
+  const [particles] = useState(() =>
+    Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 1.5 + Math.random() * 2,
+      opacity: 0.03 + Math.random() * 0.02,
+      duration: 14 + Math.random() * 16,
+      delay: Math.random() * 6,
+      driftX: (Math.random() - 0.5) * 50,
+      driftY: (Math.random() - 0.5) * 35,
+    }))
   );
 
   return (
@@ -220,7 +218,7 @@ export default function SignupPage() {
   const router = useRouter();
   const toast = useToast();
   const t = useTranslations('auth');
-  const tc = useTranslations('common');
+  const _tc = useTranslations('common');
   const { register, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

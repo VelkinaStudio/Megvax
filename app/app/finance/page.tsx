@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n';
-import { ArrowRight, CreditCard, Receipt, Wallet, Plus, Trash2, AlertCircle, CheckCircle2, Star } from 'lucide-react';
-import { Button, Card, Badge } from '@/components/ui';
+import { ArrowRight, CreditCard, Receipt, Wallet } from 'lucide-react';
+import { Button, Card } from '@/components/ui';
 import { PageHeader } from '@/components/dashboard';
 import { InsightsView } from '@/components/dashboard/insights/InsightsView';
 import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
@@ -53,7 +53,7 @@ export default function FinancePage() {
   const [activeTab, setActiveTab] = useState<FinanceTab>('billing');
   const t = useTranslations('finance');
 
-  const { account, range, from, to, withQuery } = useDashboardQuery();
+  const { withQuery } = useDashboardQuery();
 
   const insights = null;
 

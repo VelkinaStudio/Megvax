@@ -54,12 +54,12 @@ function getDateLabel(daysAgo: number): string {
 
 /* ───── Uptime block with hover tooltip ───── */
 function UptimeBlock({
-  status,
+  status: _status,
   index,
   total,
   colorClass,
   statusLabel,
-  dayLabel,
+  dayLabel: _dayLabel,
 }: {
   status: string;
   index: number;
@@ -112,7 +112,7 @@ export default function StatusPage() {
   const [subscribing, setSubscribing] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
 
-  const uptimeBlocks = useMemo(generateUptimeBlocks, []);
+  const uptimeBlocks = useMemo(() => generateUptimeBlocks(), []);
 
   const allOperational = SERVICES.every((s) => s.status === 'operational');
 

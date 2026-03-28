@@ -27,7 +27,7 @@ export function RecommendationCard({
   recommendation,
   onApply,
   onView,
-  onDismiss,
+  onDismiss: _onDismiss,
 }: RecommendationCardProps) {
   const getPriorityVariant = () => {
     switch (recommendation.priority) {

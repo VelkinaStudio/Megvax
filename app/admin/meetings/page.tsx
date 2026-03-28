@@ -6,7 +6,6 @@ import {
   Clock,
   Search,
   X,
-  Video,
   List,
   LayoutGrid,
   Building,

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import {
   Search,
-  Mail,
   Send,
   Archive,
   Inbox,

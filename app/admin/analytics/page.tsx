@@ -1,10 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import {
   TrendingUp,
-  Eye,
-  Users,
   ArrowRight,
   Globe,
 } from 'lucide-react';
@@ -18,7 +15,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts';
 
 // --- Mock Data ---
