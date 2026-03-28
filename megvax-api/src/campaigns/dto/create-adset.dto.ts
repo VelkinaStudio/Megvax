@@ -1,9 +1,9 @@
-import { IsString, IsOptional, IsNumber, IsObject, ValidateNested } from 'class-validator';
+import { IsString, IsUUID, IsOptional, IsNumber, IsObject, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { TargetingDto } from './targeting.dto';
 
 export class CreateAdSetDto {
-  @IsString()
+  @IsUUID()
   accountId: string;
 
   @IsString()

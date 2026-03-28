@@ -1,9 +1,9 @@
-import { IsOptional, IsString, IsIn, IsDateString, IsInt, Min, Max, IsArray } from 'class-validator';
+import { IsOptional, IsString, IsUUID, IsIn, IsDateString, IsInt, Min, Max, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class InsightsQueryDto {
   @IsOptional()
-  @IsString()
+  @IsUUID()
   accountId?: string;
 
   @IsOptional()
@@ -28,7 +28,7 @@ export class InsightsQueryDto {
 }
 
 export class TopPerformersDto {
-  @IsString()
+  @IsUUID()
   accountId: string;
 
   @IsOptional()
@@ -58,7 +58,7 @@ export class CompareDto {
 }
 
 export class AccountSummaryDto {
-  @IsString()
+  @IsUUID()
   accountId: string;
 
   @IsOptional()

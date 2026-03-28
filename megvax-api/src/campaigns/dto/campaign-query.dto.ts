@@ -1,9 +1,9 @@
-import { IsOptional, IsString, IsIn } from 'class-validator';
+import { IsOptional, IsString, IsUUID, IsIn } from 'class-validator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
 export class CampaignQueryDto extends PaginationDto {
   @IsOptional()
-  @IsString()
+  @IsUUID()
   accountId?: string;
 
   @IsOptional()
@@ -48,6 +48,6 @@ export class AdQueryDto extends PaginationDto {
 }
 
 export class TreeQueryDto {
-  @IsString()
+  @IsUUID()
   accountId: string;
 }

@@ -1,7 +1,7 @@
-import { IsString, IsOptional, IsNumber, IsArray } from 'class-validator';
+import { IsString, IsUUID, IsOptional, IsNumber, IsArray } from 'class-validator';
 
 export class CreateCampaignDto {
-  @IsString()
+  @IsUUID()
   accountId: string;
 
   @IsString()

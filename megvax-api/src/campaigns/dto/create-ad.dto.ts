@@ -1,7 +1,7 @@
-import { IsString, IsOptional, IsObject } from 'class-validator';
+import { IsString, IsUUID, IsOptional, IsObject } from 'class-validator';
 
 export class CreateAdDto {
-  @IsString()
+  @IsUUID()
   accountId: string;
 
   @IsString()

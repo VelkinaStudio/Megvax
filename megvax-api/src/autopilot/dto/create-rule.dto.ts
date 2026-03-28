@@ -1,7 +1,7 @@
-import { IsString, IsObject, IsInt, IsBoolean, IsOptional, Min } from 'class-validator';
+import { IsString, IsUUID, IsObject, IsInt, IsBoolean, IsOptional, Min } from 'class-validator';
 
 export class CreateRuleDto {
-  @IsString()
+  @IsUUID()
   accountId: string;
 
   @IsString()
