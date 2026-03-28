@@ -1,45 +1,37 @@
 # Handoff — MegVax Platform
 
 ## Last Session
-- **Date:** 2026-03-27
+- **Date:** 2026-03-28
 - **Who:** Nalba
-- **Summary:** Complete market-ready website redesign — all public pages, landing, auth, legal. 33 files changed, +4,790 / -1,826 lines.
+- **Summary:** Complete website build — landing, public pages, admin panel, mock auth, visual polish, Vercel deployment prep.
 
-## What Was Done
-- **Landing page**: Redesigned Platforms (marquee), BeforeAfter (dramatic), Testimonials (premium), FinalCTA (full-bleed), WhatItDoes (bento-grid)
-- **Pricing**: Annual/monthly toggle, feature comparison table, accordion FAQ, trust strip
-- **About**: Mission/vision cards, timeline, team section, animated counters
-- **Contact**: Two-column layout with form + info cards
-- **Status**: Service grid with uptime bars, incident history
-- **Book**: 3-step flow with benefits panel
-- **Auth**: Split layout login/signup (dark brand + clean form), all secondary auth pages rebranded
-- **Legal**: Shared LegalPageLayout with sidebar TOC, Velkina Studio company info
-- **Infrastructure**: next.config.ts (image optimization, security), vercel.json (caching, headers), sitemap expanded
-- **Cleanup**: Removed 4 dead components, completed i18n (360+ new keys both languages)
-- **Build**: 43/43 routes, zero errors
+## What's Done
+- **Landing page**: ReactBits-inspired interactive dot grid, 5 aurora orbs with mouse parallax, staggered headline, infinite animations on all 10 sections, Remotion dashboard screenshot
+- **Public pages**: Pricing (toggle, comparison, FAQ, Gemini-improved copy), About (timeline, team, dark stats), Contact, Status, Book — all with visual density + animations
+- **Auth**: Split-layout login/signup, demo accounts (demo@megvax.com/demo123, admin@megvax.com/admin123), mock auth fallback, demo mode env var
+- **Legal**: Terms/Privacy/Cookies with shared LegalPageLayout, sidebar TOC, Velkina Studio info
+- **Admin panel**: 10 complete pages (Overview, Users, Meetings, Subscriptions, Invoices, Analytics, Messages, Audit, Settings) with mock Turkish data, Recharts charts, data tables
+- **Infrastructure**: Demo mode (.env.production), Meeting Prisma model, ESLint cleanup, Vercel config, 43/43 routes zero errors
 
 ## Git State
-- **Branch:** `feat/market-ready-landing`
-- **Last commit:** `f61640e` — pushed to `origin` (VelkinaStudio/Megvax)
-- **Remote:** https://github.com/VelkinaStudio/Megvax/tree/feat/market-ready-landing
+- **Branch:** `feat/market-ready-landing` — pushed to origin (VelkinaStudio/Megvax)
+- **Build:** 43/43 routes, zero TypeScript errors
+- **Commits:** 14 on this branch
 
 ## Ready For
-- **Nalba:** Visual review of all pages in browser. Run `cd /d/MegvaxV4-main && npm run dev` and check every page. Merge to master when satisfied.
-- **Baha:** Backend meeting endpoints still needed (MeetingsModule). Prisma schema has Meeting model but controller/service not created.
-- **Claude:** Visual critique cycle with browser MCP when available. ProductShowcase tabs content was i18n'd but the component file was cleaned up — may need recreation if those tabs are wanted back on the landing page.
+- **Nalba:** Connect to Vercel, deploy preview, visual review in production
+- **Baha:** Backend — MeetingsModule (controller/service), billing endpoints, Meta OAuth
+- **Claude:** Merge to master when approved, further polish based on feedback
 
-## Blockers
-- Chrome DevTools + Playwright MCP servers disconnected during session (killed with node processes). Reconnect for visual testing.
+## What's NOT Done (Backend — Baha's scope)
+- MeetingsModule controller/service (Prisma schema ready)
+- Finance/billing integration (UI stubs exist)
+- AI Creative generation endpoint (demo UI only)
+- Meta OAuth / Google login (buttons show "coming soon")
+- Real user data — currently mock/demo only
 
 ## Vercel Deployment
-- vercel.json configured with security headers, caching for static assets
-- next.config.ts has image optimization (AVIF/WebP), poweredByHeader disabled
-- Environment variables needed: NEXT_PUBLIC_BASE_URL, NEXT_PUBLIC_API_URL
-- Branch can be deployed as preview on Vercel immediately
-
-## Recent Decisions
-- Split-layout auth pages (dark brand panel + form) instead of centered cards
-- LegalPageLayout as shared component for all legal pages with sidebar TOC
-- Removed unused MarketingNav/MarketingFooter/SocialProof/ProductShowcase
-- Annual/monthly pricing toggle with 20% discount
-- Turkish as default, English fully supported (360+ new i18n keys)
+- Set `NEXT_PUBLIC_DEMO_MODE=true` in Vercel env
+- Set `NEXT_PUBLIC_BASE_URL=https://megvax.com`
+- `NEXT_PUBLIC_API_URL` can be empty for demo mode
+- vercel.json has security headers + caching configured
