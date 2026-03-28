@@ -9,6 +9,7 @@ import { MetricsStrip } from '@/components/marketing/landing/MetricsStrip';
 import { Testimonials } from '@/components/marketing/landing/Testimonials';
 import { FinalCTA } from '@/components/marketing/landing/FinalCTA';
 import { Footer } from '@/components/marketing/landing/Footer';
+import { FeedbackWidget } from '@/components/ui/FeedbackWidget';
 
 export default function Home() {
   return (
@@ -24,6 +25,7 @@ export default function Home() {
       <Testimonials />
       <FinalCTA />
       <Footer />
+      <FeedbackWidget />
     </main>
   );
 }
