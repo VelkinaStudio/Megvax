@@ -1,7 +1,6 @@
 'use client';
 
-import { TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 export interface StatItem {
   id: string;
@@ -20,6 +19,7 @@ interface StatsSummaryBarProps {
   className?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- expandable reserved for collapsible bar feature
 export function StatsSummaryBar({ stats, expandable = false, className = '' }: StatsSummaryBarProps) {
   return (
     <div className={`relative overflow-hidden rounded-2xl ${className}`}>
@@ -30,7 +30,7 @@ export function StatsSummaryBar({ stats, expandable = false, className = '' }: S
       {/* Content */}
       <div className="relative">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-slate-700/20">
-          {stats.map((stat, index) => (
+          {stats.map((stat) => (
             <div
               key={stat.id}
               className="group relative bg-slate-900/40 backdrop-blur-xl px-5 py-4 hover:bg-slate-800/60 transition-all duration-300 cursor-pointer"

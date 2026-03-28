@@ -69,6 +69,7 @@ export default function OptimizationsPage() {
   const [isApplyConfirmOpen, setIsApplyConfirmOpen] = useState(false);
   const [isApplyLoading, setIsApplyLoading] = useState(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- used by expanded target display (Phase 2)
   const targetLabel = (level: NonNullable<Suggestion['target']>['level']) => {
     if (level === 'campaign') return t('campaign_label');
     if (level === 'adset') return t('adset_label');
@@ -148,7 +149,7 @@ export default function OptimizationsPage() {
     setIsReviewLoading(true);
 
     try {
-      const data = await api<any>(`/suggestions/${id}`);
+      const data = await api<unknown>(`/suggestions/${id}`);
       const suggestion = (data as { suggestion?: unknown })?.suggestion as Partial<Suggestion> | undefined;
       if (!suggestion) return;
 
@@ -196,7 +197,7 @@ export default function OptimizationsPage() {
     let scalePatch: { dailyBudget: number } | undefined;
     if (isScaleType && current?.target?.level === 'adset') {
       try {
-        const data = await api<any>(`/meta/adsets?accountId=${encodeURIComponent(account)}`);
+        const data = await api<unknown>(`/meta/adsets?accountId=${encodeURIComponent(account)}`);
         const rows = Array.isArray((data as { adsets?: unknown }).adsets)
           ? ((data as { adsets?: unknown }).adsets as unknown[])
           : Array.isArray(data)
@@ -312,7 +313,7 @@ export default function OptimizationsPage() {
       setSuggestionsError(null);
 
       try {
-        const data = await api<any>(`/suggestions?accountId=${encodeURIComponent(account)}&status=PENDING`);
+        const data = await api<unknown>(`/suggestions?accountId=${encodeURIComponent(account)}&status=PENDING`);
         const rows: unknown[] = Array.isArray((data as { suggestions?: unknown }).suggestions)
           ? ((data as { suggestions?: unknown }).suggestions as unknown[])
           : Array.isArray(data)
@@ -356,7 +357,7 @@ export default function OptimizationsPage() {
     const fetchRecentActions = async () => {
       setIsActionsLoading(true);
       try {
-        const data = await api<any>(`/autopilot/actions?accountId=${encodeURIComponent(account)}&limit=10`);
+        const data = await api<unknown>(`/autopilot/actions?accountId=${encodeURIComponent(account)}&limit=10`);
         const actions = Array.isArray(data)
           ? data
           : Array.isArray((data as { actions?: unknown }).actions)

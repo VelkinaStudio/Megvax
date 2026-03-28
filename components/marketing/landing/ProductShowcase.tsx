@@ -67,7 +67,7 @@ function DeepInsightsContent() {
         animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
         transition={{ duration: 0.5, ease: EXPO_OUT }}
       >
-        {levels.map((level, i) => (
+        {levels.map((level) => (
           <div
             key={level.label}
             className="px-3 py-1.5 rounded-md text-[11px] font-medium transition-colors"
@@ -206,8 +206,9 @@ function AICreativeContent() {
 
   useEffect(() => {
     if (!isInView) {
-      setShowPreview(false);
-      return;
+      // Use requestAnimationFrame to avoid synchronous setState in effect
+      const rafId = requestAnimationFrame(() => setShowPreview(false));
+      return () => cancelAnimationFrame(rafId);
     }
     const timer = setTimeout(() => setShowPreview(true), 1400);
     return () => clearTimeout(timer);

@@ -168,11 +168,13 @@ export function InteractiveGrid({
     ctx.restore();
   }, [dotSize, proximity, baseR, baseG, baseB, baseA, activeR, activeG, activeB, activeA, gap]);
 
+  /* eslint-disable react-hooks/immutability -- self-referencing animation loop requires forward reference */
   const animate = useCallback(() => {
     if (!isVisibleRef.current || prefersReducedMotion.current) return;
     draw();
     rafRef.current = requestAnimationFrame(animate);
   }, [draw]);
+  /* eslint-enable react-hooks/immutability */
 
   useEffect(() => {
     // Check reduced motion preference

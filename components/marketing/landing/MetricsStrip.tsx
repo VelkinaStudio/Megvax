@@ -59,7 +59,7 @@ function OdometerCounter({ value, prefix = '', suffix = '', onComplete }: Odomet
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
   const [displayChars, setDisplayChars] = useState<string[]>([]);
-  const [showFinal, setShowFinal] = useState(false);
+  const [, setShowFinal] = useState(false);
   const hasAnimated = useRef(false);
 
   const fullText = `${prefix}${value}${suffix}`;
@@ -69,8 +69,10 @@ function OdometerCounter({ value, prefix = '', suffix = '', onComplete }: Odomet
     if (!isInView || hasAnimated.current) return;
     hasAnimated.current = true;
 
-    // Set chars immediately so they animate in via Framer Motion
-    setDisplayChars(chars);
+    // Set chars via requestAnimationFrame to avoid synchronous setState in effect
+    const rafId = requestAnimationFrame(() => {
+      setDisplayChars(chars);
+    });
 
     // Fire completion after all digits have rolled in
     const totalDelay = chars.length * 0.07 + 0.5; // stagger + duration
@@ -79,7 +81,10 @@ function OdometerCounter({ value, prefix = '', suffix = '', onComplete }: Odomet
       onComplete?.();
     }, totalDelay * 1000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timer);
+    };
   }, [isInView, chars, onComplete]);
 
   if (!isInView && displayChars.length === 0) {

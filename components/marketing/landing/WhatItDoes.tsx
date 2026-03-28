@@ -336,7 +336,7 @@ function DashboardMockup() {
         color: 'bg-rose-500',
       },
     ],
-    [t],
+    [],
   );
 
   // Slowly fluctuating ROAS values

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Save, Check, RotateCcw, Play } from 'lucide-react';
+import { Save, Check, Play } from 'lucide-react';
 import { Modal, Button } from '@/components/ui';
 import { useTranslations } from '@/lib/i18n';
 import type { OptimizationStrategy, OptimizationStrategySettings, OptimizationTargetLevel } from '@/types/dashboard';
@@ -50,6 +50,7 @@ export function OptimizationSettingsModal({
   const [targetIds, setTargetIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
+  /* eslint-disable react-hooks/set-state-in-effect -- syncing local state from props on modal open is intentional */
   useEffect(() => {
     if (isOpen) {
       setTargetLevel(initialSettings.targetLevel);
@@ -58,6 +59,7 @@ export function OptimizationSettingsModal({
       setSearchQuery('');
     }
   }, [isOpen, initialSettings.targetLevel, initialSettings.targetMode, initialSettings.targetIds]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const isValid = useMemo(() => {
     if (targetMode === 'selected' && targetIds.length === 0) return false;

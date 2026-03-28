@@ -50,7 +50,8 @@ export function SectorComparison({ userMetrics = MOCK_USER_METRICS }: SectorComp
     return isGood ? 'text-green-600' : 'text-red-600';
   };
 
-  const _getStatusBadge = (status: 'above' | 'below' | 'average', higherBetter: boolean) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- planned for expanded comparison view
+  const getStatusBadge = (status: 'above' | 'below' | 'average', higherBetter: boolean) => {
     if (status === 'average') return <Badge variant="neutral">Average</Badge>;
     const isGood = (status === 'above' && higherBetter) || (status === 'below' && !higherBetter);
     return isGood ? <Badge variant="success">Above Average</Badge> : <Badge variant="warning">Below Average</Badge>;

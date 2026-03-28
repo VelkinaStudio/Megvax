@@ -43,6 +43,7 @@ type ViewMode = 'list' | 'schedule';
 
 export default function MeetingsPage() {
   const t = useTranslations('meetings');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- reserved for future use
   const tc = useTranslations('common');
 
   const [view, setView] = useState<ViewMode>('list');

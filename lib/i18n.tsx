@@ -45,14 +45,17 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (browserLang.toLowerCase().startsWith('en')) return 'en';
     return 'tr';
   });
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(() => typeof window !== 'undefined');
 
   useEffect(() => {
     if (!localStorage.getItem('megvax-locale')) {
       localStorage.setItem('megvax-locale', locale);
     }
-    setMounted(true);
-  }, [locale]);
+    if (!mounted) {
+      // Deferred mount update to avoid synchronous setState in effect
+      requestAnimationFrame(() => setMounted(true));
+    }
+  }, [locale, mounted]);
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);

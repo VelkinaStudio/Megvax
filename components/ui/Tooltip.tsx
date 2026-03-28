@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, ReactNode, cloneElement, ReactElement } from 'react';
+import { useState, useRef, ReactNode, ReactElement } from 'react';
 
 export interface TooltipProps {
   content: string | ReactNode;
@@ -31,11 +31,6 @@ export function Tooltip({
     setIsVisible(false);
   };
 
-  const childProps = {
-    onMouseEnter: handleMouseEnter,
-    onMouseLeave: handleMouseLeave,
-  };
-
   const placementStyles = {
     top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
     bottom: 'top-full left-1/2 -translate-x-1/2 mt-2',
@@ -51,8 +46,8 @@ export function Tooltip({
   };
 
   return (
-    <div className="relative inline-block">
-      {cloneElement(children, childProps as Record<string, unknown>)}
+    <div className="relative inline-block" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      {children}
 
       {isVisible && (
         <div

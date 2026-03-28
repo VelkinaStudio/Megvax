@@ -12,6 +12,7 @@ interface ConnectAccountModalProps {
   onConnect: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- onConnect called after successful OAuth flow (Phase 2)
 export function ConnectAccountModal({ isOpen, onClose, onConnect }: ConnectAccountModalProps) {
   const [status, setStatus] = useState<'idle' | 'connecting' | 'success'>('idle');
   const toast = useToast();

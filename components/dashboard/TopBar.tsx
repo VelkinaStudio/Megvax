@@ -17,6 +17,7 @@ function formatDateYYYYMMDD(date: Date) {
 }
 
 export function TopBar({ onMenuClick }: TopBarProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- reserved for navigation labels
   const t = useTranslations('navigation');
   const tc = useTranslations('common');
   const ta = useTranslations('accounts');

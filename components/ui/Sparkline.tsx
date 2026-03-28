@@ -24,7 +24,8 @@ export function Sparkline({
   interactive = true,
 }: SparklineProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  
+  const uniqueId = useId();
+
   if (!data || data.length < 2) return null;
 
   const min = Math.min(...data);
@@ -47,7 +48,7 @@ export function Sparkline({
     : '';
 
   // Create gradient for area fill
-  const gradientId = `sparkline-gradient-${useId()}`;
+  const gradientId = `sparkline-gradient-${uniqueId}`;
 
   return (
     <div className="relative inline-block group">

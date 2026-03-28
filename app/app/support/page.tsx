@@ -72,7 +72,8 @@ export default function SupportPage() {
 
   const category = watch('category');
   const placeholder = useMemo(() => categoryHint(category, t), [category, t]);
-  const _CategoryIcon = categoryIcon(category);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- will be used for form header icon
+  const CategoryIcon = categoryIcon(category);
 
   const onSubmit = async (data: SupportTicketInput) => {
     // Sanitize input to prevent XSS

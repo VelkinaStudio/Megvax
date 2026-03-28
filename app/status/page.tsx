@@ -54,12 +54,14 @@ function getDateLabel(daysAgo: number): string {
 
 /* ───── Uptime block with hover tooltip ───── */
 function UptimeBlock({
-  status: _status,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- passed from parent for future tooltip details
+  status,
   index,
   total,
   colorClass,
   statusLabel,
-  dayLabel: _dayLabel,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- passed from parent for future tooltip details
+  dayLabel,
 }: {
   status: string;
   index: number;

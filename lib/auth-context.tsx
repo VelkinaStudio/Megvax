@@ -2,7 +2,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { api, setAccessToken, getAccessToken } from './api';
+import { api, setAccessToken } from './api';
 
 interface User {
   id: string;

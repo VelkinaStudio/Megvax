@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/Toast';
 import { Button, Card, Skeleton, ConfirmModal } from '@/components/ui';
-import { PageHeader, EmptyStateCard, SectorComparison, OnboardingChecklist, WelcomeModal } from '@/components/dashboard';
+import { EmptyStateCard, SectorComparison, OnboardingChecklist, WelcomeModal } from '@/components/dashboard';
 
 import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
 import { usePlatform } from '@/components/dashboard/PlatformContext';
@@ -93,6 +93,7 @@ export default function DashboardPage() {
       }
 
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape is dynamic
         const data = await api<{ data: any }>(`/insights/account-summary?accountId=${encodeURIComponent(account)}${
           from && to ? `&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}` : ''
         }`);
@@ -120,6 +121,7 @@ export default function DashboardPage() {
     };
 
     fetchOverview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- tc is stable, not needed as dependency
   }, [account, range, from, to]);
 
   useEffect(() => {
@@ -153,8 +155,10 @@ export default function DashboardPage() {
       }
 
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape before mapping
         const data = await api<{ data: any[] }>(`/campaigns?accountId=${encodeURIComponent(account)}&limit=5`);
         // Note: c.dailyBudget is Prisma Decimal → string in JSON. Shows budget, not actual spend.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw API data
         const mapped: Campaign[] = (data.data || []).map((c: any) => ({
           id: c.id,
           name: c.name,
@@ -174,6 +178,7 @@ export default function DashboardPage() {
     };
 
     fetchTopCampaigns();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- tc is stable, not needed as dependency
   }, [account, range, from, to]);
 
   if (platform !== 'meta') {

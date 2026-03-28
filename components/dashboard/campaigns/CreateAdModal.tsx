@@ -511,7 +511,7 @@ export function CreateAdModal({ isOpen, onClose, initialAdSetId }: CreateAdModal
               <div>
                 <label className="form-label">Campaign</label>
                 <select className="form-select-muted cursor-not-allowed text-brand-black/70" disabled>
-                  <option>Selected ad set's campaign</option>
+                  <option>Selected ad set&apos;s campaign</option>
                 </select>
               </div>
               <div>

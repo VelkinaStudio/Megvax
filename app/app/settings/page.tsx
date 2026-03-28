@@ -6,7 +6,6 @@ import {
   Bell,
   Globe,
   Shield,
-  CreditCard,
   Mail,
   Phone,
   Building,

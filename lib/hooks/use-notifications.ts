@@ -9,7 +9,7 @@ interface Notification {
   type: string;
   title: string;
   body: string | null;
-  data: any;
+  data: Record<string, unknown> | null;
   readAt: string | null;
   createdAt: string;
 }
@@ -68,9 +68,12 @@ export function useNotifications() {
     };
   }, [sseToken]);
 
-  // Initial fetch
+  // Initial fetch — use requestAnimationFrame to avoid synchronous setState in effect
   useEffect(() => {
-    fetchNotifications();
+    const rafId = requestAnimationFrame(() => {
+      fetchNotifications();
+    });
+    return () => cancelAnimationFrame(rafId);
   }, [fetchNotifications]);
 
   const markRead = useCallback(async (id: string) => {

@@ -9,14 +9,14 @@ interface SuggestionCardProps {
   onOpenTarget?: (suggestion: Suggestion) => void;
 }
 
-function getActionIcon(type?: SuggestionActionType) {
+function renderActionIcon(type: SuggestionActionType | undefined, className: string) {
   switch (type) {
-    case 'pause': return Pause;
-    case 'resume': return Play;
-    case 'increase_budget': return TrendingUp;
-    case 'decrease_budget': return TrendingDown;
-    case 'review': return Eye;
-    default: return AlertCircle;
+    case 'pause': return <Pause className={className} />;
+    case 'resume': return <Play className={className} />;
+    case 'increase_budget': return <TrendingUp className={className} />;
+    case 'decrease_budget': return <TrendingDown className={className} />;
+    case 'review': return <Eye className={className} />;
+    default: return <AlertCircle className={className} />;
   }
 }
 
@@ -59,8 +59,8 @@ export function SuggestionCard({ suggestion, onApply, onOpenTarget }: Suggestion
     'low': t('impact_low'),
   };
 
-  const ActionIcon = getActionIcon(suggestion.action?.type);
-  const actionColorClass = getActionColor(suggestion.action?.type);
+  const actionIconType = suggestion.action?.type;
+  const actionColorClass = getActionColor(actionIconType);
 
   return (
     <Card variant="interactive" padding="lg" className="flex flex-col h-full group">
@@ -85,7 +85,7 @@ export function SuggestionCard({ suggestion, onApply, onOpenTarget }: Suggestion
       {suggestion.action && (
         <div className={`mb-4 rounded-lg p-3 border ${actionColorClass.replace('text-', 'border-').replace('bg-', '')}`}>
           <div className="flex items-start gap-2">
-            <ActionIcon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${actionColorClass.split(' ')[0]}`} />
+            {renderActionIcon(actionIconType, `w-4 h-4 mt-0.5 flex-shrink-0 ${actionColorClass.split(' ')[0]}`)}
             <div className="flex-1">
               <p className={`text-sm font-semibold ${actionColorClass.split(' ')[0]}`}>
                 {suggestion.action.label}

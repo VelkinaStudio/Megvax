@@ -218,7 +218,8 @@ export default function SignupPage() {
   const router = useRouter();
   const toast = useToast();
   const t = useTranslations('auth');
-  const _tc = useTranslations('common');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- reserved for future use
+  const tc = useTranslations('common');
   const { register, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

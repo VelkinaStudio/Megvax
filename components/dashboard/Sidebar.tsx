@@ -8,18 +8,7 @@ import { usePlatform } from '@/components/dashboard/PlatformContext';
 import { useDashboardQuery } from '@/components/dashboard/useDashboardQuery';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 
-const navItems = [
-  { label: 'Overview', href: '/app/dashboard', icon: LayoutDashboard },
-  { label: 'Smart Optimizations', href: '/app/optimizations', icon: Zap },
-  { label: 'Automation Rules', href: '/app/automations', icon: Split },
-  { label: 'AI Creative', href: '/app/ai-creative', icon: Wand2 },
-  { label: 'Campaigns', href: '/app/campaigns', icon: Megaphone },
-  { label: 'Insights', href: '/app/insights', icon: BarChart3 },
-  { label: 'Finance', href: '/app/finance', icon: CreditCard },
-  { label: 'Accounts', href: '/app/accounts', icon: Users },
-  { label: 'Support', href: '/app/support', icon: LifeBuoy },
-  { label: 'Admin', href: '/app/admin', icon: Shield },
-];
+// Navigation items are defined inside the component (translated)
 
 interface SidebarProps {
   isOpen?: boolean;

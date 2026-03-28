@@ -279,6 +279,7 @@ export default function CampaignsPage() {
         key: 'name',
         header: t('name'),
         width: '40%',
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         render: (row: TreeNode, level: number) => {
           const isCampaign = row.type === 'campaign';
           return (
@@ -469,7 +470,7 @@ export default function CampaignsPage() {
         },
       },
     ],
-    [selectedIds.size, toast, t, campaigns, refreshCampaigns]
+    [selectedIds, toast, t, campaigns, refreshCampaigns]
   );
 
   const handleRowClick = useCallback((row: TreeNode) => {

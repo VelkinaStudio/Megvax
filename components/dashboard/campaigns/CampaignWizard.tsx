@@ -17,7 +17,7 @@ import {
 } from './CampaignWizardSteps';
 import { useToast } from '@/components/ui/Toast';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { createArchiveChainUndoAction } from '@/components/ui/toastUndo';
+
 
 interface CampaignWizardProps {
   isOpen: boolean;
@@ -656,6 +656,7 @@ export function CampaignWizard({ isOpen, onClose }: CampaignWizardProps) {
       }
 
       const createdAd: unknown = await adRes.json().catch(() => ({}));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- will be used for ad detail navigation
       const createdAdId = extractNestedCreatedId(createdAd, 'ad');
 
       toast.success('Campaign + Ad Set + Ad created and submitted for review.');

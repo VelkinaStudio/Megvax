@@ -40,7 +40,7 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
   useEffect(() => {
     if (!user) return; // Wait for auth before fetching accounts
 
-    api<{ data: any[] }>('/campaigns?limit=500')
+    api<{ data: Array<{ adAccountId?: string; adAccount?: { name?: string } }> }>('/campaigns?limit=500')
       .then((res) => {
         const seen = new Map<string, { id: string; name: string; status: string }>();
         for (const c of res.data || []) {
@@ -68,7 +68,7 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
           router.replace(`${pathname}?${params.toString()}`);
         }
       });
-  }, [user]);
+  }, [user, pathname, router, searchParams]);
 
   const dateRanges = [
     { value: '7d', label: tHeader('last_7_days') },

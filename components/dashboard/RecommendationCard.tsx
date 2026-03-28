@@ -27,7 +27,8 @@ export function RecommendationCard({
   recommendation,
   onApply,
   onView,
-  onDismiss: _onDismiss,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- passed from parent, reserved for dismiss functionality
+  onDismiss,
 }: RecommendationCardProps) {
   const getPriorityVariant = () => {
     switch (recommendation.priority) {

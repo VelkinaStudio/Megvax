@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, Button } from '@/components/ui';
-import { CreditCard, Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2 } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 
 interface PaymentMethod {

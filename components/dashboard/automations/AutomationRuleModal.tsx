@@ -66,6 +66,7 @@ export function AutomationRuleModal({
   const [searchQuery, setSearchQuery] = useState('');
   const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- syncing local state from props is intentional */
   useEffect(() => {
     if (initialSettings) {
       setScopeLevel(initialSettings.scopeLevel);
@@ -79,6 +80,7 @@ export function AutomationRuleModal({
     setSelectedIds([]);
     setSearchQuery('');
   }, [scopeLevel]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const getItemsForLevel = (): SelectableItem[] => {
     switch (scopeLevel) {

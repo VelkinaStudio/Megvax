@@ -6,7 +6,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 interface ApiOptions {
   method?: string;
-  body?: any;
+  body?: Record<string, unknown> | string;
   token?: string;
   skipAuth?: boolean;
 }

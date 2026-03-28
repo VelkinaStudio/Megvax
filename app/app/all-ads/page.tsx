@@ -89,7 +89,8 @@ export default function AllAdsPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isColumnCustomizerOpen, setIsColumnCustomizerOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_VISIBLE_COLUMNS);
-  const [_viewMode, _setViewMode] = useState<ViewMode>('table');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- reserved for future view mode toggle
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [dateRange, setDateRange] = useState<'7d' | '30d' | 'custom'>('7d');

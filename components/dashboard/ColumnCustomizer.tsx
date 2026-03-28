@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Search, Check, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui';
 import {
@@ -31,15 +31,12 @@ export function ColumnCustomizer({
   const [searchQuery, setSearchQuery] = useState('');
   const [localSelection, setLocalSelection] = useState<string[]>(selectedColumns);
   const [activeCategory, setActiveCategory] = useState<MetricCategory | 'all'>('all');
-  const prevColumnsRef = React.useRef(selectedColumns);
-  const prevOpenRef = React.useRef(isOpen);
 
-  // Sync local selection when props change (without synchronous setState in effect)
-  if (prevColumnsRef.current !== selectedColumns || prevOpenRef.current !== isOpen) {
-    prevColumnsRef.current = selectedColumns;
-    prevOpenRef.current = isOpen;
+  /* eslint-disable react-hooks/set-state-in-effect -- syncing local state from props is intentional */
+  useEffect(() => {
     setLocalSelection(selectedColumns);
-  }
+  }, [selectedColumns, isOpen]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (!isOpen) return null;
 

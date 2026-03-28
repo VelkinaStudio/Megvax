@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from '@/lib/i18n';
@@ -8,12 +7,10 @@ import { useAuth } from '@/lib/auth-context';
 import {
   LayoutDashboard,
   Target,
-  Sparkles,
   PieChart,
   CreditCard,
   Users,
   HelpCircle,
-  Menu,
   X,
   ChevronLeft,
   Lightbulb,

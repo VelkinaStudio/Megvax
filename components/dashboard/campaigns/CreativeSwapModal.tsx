@@ -91,7 +91,7 @@ export function CreativeSwapModal({
                     />
                   </div>
                   <p className="text-xs text-brand-black/60 mt-2">
-                    Note: On Meta's side, creative swaps usually require a new Ad Creative + publish flow. This screen is a controlled "swap" mock in v1.
+                    Note: On Meta&apos;s side, creative swaps usually require a new Ad Creative + publish flow. This screen is a controlled &quot;swap&quot; mock in v1.
                   </p>
                 </div>
 

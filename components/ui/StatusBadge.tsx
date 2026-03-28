@@ -129,6 +129,7 @@ export function StatusToggle({
   status,
   onChange,
   allowedStatuses = ['active', 'paused'],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- size prop reserved for multi-size toggle
   size = 'md',
   className,
 }: StatusToggleProps) {
