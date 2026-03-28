@@ -131,16 +131,17 @@ export default function InsightsPage() {
         const snapshots = response.data || [];
 
         // Build summary by aggregating InsightSnapshot[] fields
-        const summary = snapshots.reduce(
+        type SummaryAcc = { spend: number; conversions: number; impressions: number; clicks: number; roas: number; ctr: number; cpc: number; cpm: number };
+        const summary = snapshots.reduce<SummaryAcc>(
           (acc, snap) => ({
             spend: acc.spend + (snap.spend ?? 0),
             conversions: acc.conversions + (snap.conversions ?? 0),
             impressions: acc.impressions + (snap.impressions ?? 0),
             clicks: acc.clicks + (snap.clicks ?? 0),
-            roas: 0, // computed below
-            ctr: 0,  // computed below
-            cpc: 0,  // computed below
-            cpm: 0,  // computed below
+            roas: 0,
+            ctr: 0,
+            cpc: 0,
+            cpm: 0,
           }),
           { spend: 0, conversions: 0, impressions: 0, clicks: 0, roas: 0, ctr: 0, cpc: 0, cpm: 0 }
         );
@@ -158,7 +159,7 @@ export default function InsightsPage() {
 
         // Build timeseries from snapshots
         const timeseries = snapshots.map((snap) => ({
-          date: snap.date,
+          date: snap.date ?? '',
           spend: snap.spend ?? 0,
           roas: snap.roas ?? 0,
           conversions: snap.conversions ?? 0,

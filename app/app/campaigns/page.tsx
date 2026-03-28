@@ -51,6 +51,9 @@ interface AdNode extends Ad {
 
 type TreeNode = CampaignNode | AdSetNode | AdNode;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw API response before mapping to domain types
+type RawRecord = Record<string, any>;
+
 function parseCurrency(value: string): number {
   const cleaned = value.replace(/[^\d.-]/g, '');
   return parseFloat(cleaned) || 0;
@@ -86,7 +89,7 @@ const levelIcons = {
 
 export default function CampaignsPage() {
   const t = useTranslations('campaigns');
-  const { platform } = usePlatform();
+  usePlatform();
   const toast = useToast();
   const searchParams = useSearchParams();
   
@@ -115,9 +118,9 @@ export default function CampaignsPage() {
       }
 
       try {
-        const treeData = await api<any[]>(`/campaigns/tree?accountId=${encodeURIComponent(accountParam)}`);
+        const treeData = await api<RawRecord[]>(`/campaigns/tree?accountId=${encodeURIComponent(accountParam)}`);
         const campaigns = Array.isArray(treeData) ? treeData : [];
-        const mapped: CampaignNode[] = campaigns.map((c: any) => ({
+        const mapped: CampaignNode[] = campaigns.map((c: RawRecord) => ({
           id: c.id,
           type: 'campaign' as const,
           name: c.name,
@@ -125,7 +128,7 @@ export default function CampaignsPage() {
           spend: c.dailyBudget ? `₺${Number(c.dailyBudget).toLocaleString('tr-TR')}` : '₺0',
           roas: '—',
           conversions: 0,
-          children: (c.adSets || []).map((as: any) => ({
+          children: (c.adSets || []).map((as: RawRecord) => ({
             id: as.id,
             type: 'adset' as const,
             name: as.name,
@@ -137,7 +140,7 @@ export default function CampaignsPage() {
             spend: as.dailyBudget ? `₺${Number(as.dailyBudget).toLocaleString('tr-TR')}` : '₺0',
             roas: '—',
             conversions: 0,
-            children: (as.ads || []).map((ad: any) => ({
+            children: (as.ads || []).map((ad: RawRecord) => ({
               id: ad.id,
               type: 'ad' as const,
               name: ad.name,
@@ -302,7 +305,7 @@ export default function CampaignsPage() {
         align: 'left' as const,
         render: (row: TreeNode) => (
           <StatusBadge 
-            status={row.status as any} 
+            status={row.status}
             size="sm" 
             pulse={row.status === 'active'}
           />
@@ -369,9 +372,9 @@ export default function CampaignsPage() {
   const refreshCampaigns = useCallback(async () => {
     if (!accountParam) return;
     try {
-      const treeData = await api<any[]>(`/campaigns/tree?accountId=${encodeURIComponent(accountParam)}`);
+      const treeData = await api<RawRecord[]>(`/campaigns/tree?accountId=${encodeURIComponent(accountParam)}`);
       const raw = Array.isArray(treeData) ? treeData : [];
-      const mapped: CampaignNode[] = raw.map((c: any) => ({
+      const mapped: CampaignNode[] = raw.map((c: RawRecord) => ({
         id: c.id,
         type: 'campaign' as const,
         name: c.name,
@@ -379,7 +382,7 @@ export default function CampaignsPage() {
         spend: c.dailyBudget ? `₺${Number(c.dailyBudget).toLocaleString('tr-TR')}` : '₺0',
         roas: '—',
         conversions: 0,
-        children: (c.adSets || []).map((as: any) => ({
+        children: (c.adSets || []).map((as: RawRecord) => ({
           id: as.id,
           type: 'adset' as const,
           name: as.name,
@@ -391,7 +394,7 @@ export default function CampaignsPage() {
           spend: as.dailyBudget ? `₺${Number(as.dailyBudget).toLocaleString('tr-TR')}` : '₺0',
           roas: '—',
           conversions: 0,
-          children: (as.ads || []).map((ad: any) => ({
+          children: (as.ads || []).map((ad: RawRecord) => ({
             id: ad.id,
             type: 'ad' as const,
             name: ad.name,
@@ -571,7 +574,7 @@ export default function CampaignsPage() {
         
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as any)}
+          onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'paused')}
           className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="all">{t('all_statuses')}</option>
@@ -591,6 +594,7 @@ export default function CampaignsPage() {
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
           </div>
         )}
+        {/* eslint-disable @typescript-eslint/no-explicit-any -- TreeTable generic constraint requires casts for heterogeneous tree */}
         <TreeTable
           data={filteredData as any}
           columns={columns as any}
@@ -604,6 +608,7 @@ export default function CampaignsPage() {
           levelIcons={levelIcons}
           maxLevel={2}
         />
+        {/* eslint-enable @typescript-eslint/no-explicit-any */}
       </div>
 
       <BulkActionBar
