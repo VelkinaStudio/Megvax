@@ -40,7 +40,7 @@ export function Header({ onMenuClick, showMenuButton = false }: HeaderProps) {
   useEffect(() => {
     if (!user) return; // Wait for auth before fetching accounts
 
-    api<{ data: Array<{ adAccountId?: string; adAccount?: { name?: string } }> }>('/campaigns?limit=500')
+    api<{ data: Array<{ adAccountId?: string; adAccount?: { name?: string } }> }>('/campaigns?limit=100')
       .then((res) => {
         const seen = new Map<string, { id: string; name: string; status: string }>();
         for (const c of res.data || []) {
