@@ -161,40 +161,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    // Try mock/demo credentials first — these always work regardless of API state
-    const mockResult = tryMockLogin(email.toLowerCase().trim(), password);
-    if (mockResult) {
-      setAccessToken(mockResult.accessToken);
-      setState({ user: mockResult.user, isLoading: false, isAuthenticated: true });
-      try { sessionStorage.setItem('megvax_mock_session', JSON.stringify(mockResult)); } catch {}
-      return;
-    }
-
-    // In demo mode, only mock accounts are allowed — skip API entirely
     if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+      // Demo mode — only mock accounts, no API calls
+      const mockResult = tryMockLogin(email.toLowerCase().trim(), password);
+      if (mockResult) {
+        setAccessToken(mockResult.accessToken);
+        setState({ user: mockResult.user, isLoading: false, isAuthenticated: true });
+        try { sessionStorage.setItem('megvax_mock_session', JSON.stringify(mockResult)); } catch {}
+        return;
+      }
       throw new Error('Demo modunda sadece demo hesapları kullanılabilir');
     }
 
-    // Not a demo account — proceed with real API call
-    try {
-      const data = await api<{ accessToken: string; user: User }>('/auth/login', {
-        method: 'POST',
-        body: { email, password },
-        skipAuth: true,
-      });
-      setAccessToken(data.accessToken);
-      setState({ user: data.user, isLoading: false, isAuthenticated: true });
-    } catch (err) {
-      // Re-try mock as last resort (covers edge cases like network race conditions)
-      const fallback = tryMockLogin(email, password);
-      if (fallback) {
-        setAccessToken(fallback.accessToken);
-        setState({ user: fallback.user, isLoading: false, isAuthenticated: true });
-        try { sessionStorage.setItem('megvax_mock_session', JSON.stringify(fallback)); } catch {}
-        return;
-      }
-      throw err;
-    }
+    // Production mode — real API only, no mock login
+    const data = await api<{ accessToken: string; user: User }>('/auth/login', {
+      method: 'POST',
+      body: { email, password },
+      skipAuth: true,
+    });
+    setAccessToken(data.accessToken);
+    setState({ user: data.user, isLoading: false, isAuthenticated: true });
   }, []);
 
   const register = useCallback(async (email: string, password: string, fullName: string) => {

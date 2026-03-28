@@ -10,6 +10,7 @@ import {
 import { PageHeader } from '@/components/dashboard';
 import { Button, Card, Badge, Checkbox } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { api } from '@/lib/api';
 import { ColumnCustomizer } from '@/components/dashboard/ColumnCustomizer';
 import { StatsSummaryBar, type StatItem } from '@/components/dashboard/StatsSummaryBar';
 import {
@@ -58,10 +59,8 @@ export default function AllAdsPage() {
   useEffect(() => {
     const fetchAds = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/ads?limit=100`);
-        if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
-        const data = await res.json();
-        const rows: AllAdsItem[] = Array.isArray(data) ? data : Array.isArray(data?.ads) ? data.ads : [];
+        const data = await api<Record<string, unknown>>('/ads?limit=100');
+        const rows: AllAdsItem[] = Array.isArray(data) ? data : Array.isArray((data as { ads?: unknown[] })?.ads) ? (data as { ads: AllAdsItem[] }).ads : [];
         setAllAds(rows);
 
         // Extract unique accounts

@@ -52,7 +52,7 @@ export default function AccountsPage() {
 
       try {
         // Extract unique ad accounts from campaigns (works without live Meta API)
-        const res = await api<{ data: Array<{ adAccountId?: string; adAccount?: { name?: string; lastSyncAt?: string; currency?: string; timezone?: string } }> }>('/campaigns?limit=500');
+        const res = await api<{ data: Array<{ adAccountId?: string; adAccount?: { name?: string; lastSyncAt?: string; currency?: string; timezone?: string } }> }>('/campaigns?limit=100');
         const seen = new Map<string, MetaAccount>();
         for (const c of res.data || []) {
           if (c.adAccountId && !seen.has(c.adAccountId)) {

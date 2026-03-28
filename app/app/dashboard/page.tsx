@@ -191,6 +191,31 @@ export default function DashboardPage() {
     );
   }
 
+  // No ad account selected and no data loaded — show onboarding prompt
+  if (!account && !isMetricsLoading && metrics.length === 0 && topCampaigns.length === 0) {
+    return (
+      <div className="space-y-10">
+        <WelcomeModal />
+        <OnboardingChecklist />
+        <Card padding="lg" className="text-center py-16">
+          <div className="mx-auto w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-5">
+            <BarChart2 className="w-7 h-7 text-blue-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Henüz bir Meta hesabı bağlanmamış</h2>
+          <p className="text-gray-500 mb-6 max-w-md mx-auto">
+            Reklam verilerinizi görmek için Meta hesabınızı bağlayın. Bağlandıktan sonra kampanyalarınız, harcamalarınız ve performans metrikleri burada görünecek.
+          </p>
+          <Link href="/app/accounts">
+            <Button variant="primary" size="lg">
+              Hesap Bağla
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-10">
 

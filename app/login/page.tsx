@@ -640,30 +640,32 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          {/* Demo Accounts */}
-          <div className="mt-6 border border-[#E5E7EB] bg-[#F9FAFB] rounded-xl p-4">
-            <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wider mb-3">
-              {t('demo_accounts_title')}
-            </p>
-            <div className="space-y-1">
-              <DemoCredentialRow
-                icon={UserCircle}
-                label={t('demo_user_label')}
-                email="demo@megvax.com"
-                password="demo123"
-                hint={t('click_to_fill')}
-                onFill={(email, password) => setFormData({ ...formData, email, password })}
-              />
-              <DemoCredentialRow
-                icon={ShieldCheck}
-                label={t('demo_admin_label')}
-                email="admin@megvax.com"
-                password="admin123"
-                hint={t('click_to_fill')}
-                onFill={(email, password) => setFormData({ ...formData, email, password })}
-              />
+          {/* Demo Accounts — only visible when NEXT_PUBLIC_DEMO_MODE is 'true' */}
+          {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' && (
+            <div className="mt-6 border border-[#E5E7EB] bg-[#F9FAFB] rounded-xl p-4">
+              <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wider mb-3">
+                {t('demo_accounts_title')}
+              </p>
+              <div className="space-y-1">
+                <DemoCredentialRow
+                  icon={UserCircle}
+                  label={t('demo_user_label')}
+                  email="demo@megvax.com"
+                  password="demo123"
+                  hint={t('click_to_fill')}
+                  onFill={(email, password) => setFormData({ ...formData, email, password })}
+                />
+                <DemoCredentialRow
+                  icon={ShieldCheck}
+                  label={t('demo_admin_label')}
+                  email="admin@megvax.com"
+                  password="admin123"
+                  hint={t('click_to_fill')}
+                  onFill={(email, password) => setFormData({ ...formData, email, password })}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </motion.div>
     </main>
