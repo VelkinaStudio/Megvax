@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ToastProvider } from '@/components/ui/ToastContext';
 import { useTranslations } from '@/lib/i18n';
+import { useAuth } from '@/lib/auth-context';
 
 const navItemDefs = [
   { key: 'nav_overview', href: '/admin/overview', icon: BarChart2 },
@@ -37,29 +38,24 @@ const navItemDefs = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations('admin');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
-  const hasCheckedAuth = React.useRef(false);
+  const auth = useAuth();
 
   useEffect(() => {
-    if (hasCheckedAuth.current) return;
-    hasCheckedAuth.current = true;
-    const adminSession = localStorage.getItem('adminSession');
-    if (!adminSession) {
-      router.push('/admin-login');
-    } else {
-      // State update in callback to avoid synchronous setState in effect
-      queueMicrotask(() => setIsAuthenticated(true));
+    if (auth.isLoading) return;
+    if (!auth.isAuthenticated || !auth.user?.isAdmin) {
+      router.replace('/admin-login');
     }
-    queueMicrotask(() => setIsLoading(false));
-  }, [router]);
+  }, [auth.isLoading, auth.isAuthenticated, auth.user, router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminSession');
+  const handleLogout = async () => {
+    await auth.logout();
     router.push('/admin-login');
   };
+
+  const isLoading = auth.isLoading;
+  const isAuthenticated = auth.isAuthenticated && auth.user?.isAdmin;
 
   if (isLoading) {
     return (
