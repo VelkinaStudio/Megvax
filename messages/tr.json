@@ -684,6 +684,7 @@
     "demo_user_label": "Demo Kullanıcı",
     "demo_admin_label": "Admin Hesabı",
     "click_to_fill": "Doldurmak için tıkla",
+    "back_to_home": "Ana Sayfa",
     "brand_welcome_prefix": "Tekrar",
     "brand_welcome_accent": "hoş geldin",
     "brand_signup_prefix": "Reklamlarını optimize etmeye",
@@ -1398,7 +1399,10 @@
     "faq_q1": "Meta reklam hesabımı nasıl bağlarım?",
     "faq_q2": "Kayıt olduktan sonra ne olur?",
     "faq_q3": "Ücretsiz deneme süresi var mı?",
-    "faq_read_more": "Devamını oku"
+    "faq_read_more": "Devamını oku",
+    "schedule_meeting_title": "Canlı Demo Planla",
+    "schedule_meeting_desc": "30 dakikalık görüşmede platformu birlikte inceleyelim. Sorularınızı yanıtlayalım, hesabınızı kuralım.",
+    "schedule_meeting_button": "Demo Planla"
   },
   "not_found": {
     "title": "Sayfa Bulunamadı",
@@ -1500,7 +1504,7 @@
     "hero_title": "Meta reklamlarını tek tıkla otomatikleştir.",
     "hero_subtitle": "Hesaplarını bağla, AI düşük performanslıları durdursun, kazananları ölçeklesin. Sen sadece onayla.",
     "hero_cta": "Ücretsiz Başla",
-    "hero_cta_secondary": "Nasıl çalışır?",
+    "hero_cta_secondary": "Demo Planla",
     "hero_trust": "14 gün ücretsiz · Kredi kartı gerekmez",
     "hero_stat_roas": "3.2x",
     "hero_stat_roas_label": "ort. ROAS",

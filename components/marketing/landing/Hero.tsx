@@ -215,13 +215,13 @@ export function Hero() {
             >
               {t('hero_cta')}
             </Link>
-            <button
-              type="button"
+            <Link
+              href="/book"
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-[#E5E7EB] bg-white/60 backdrop-blur-sm text-[#374151] font-medium text-sm hover:bg-white hover:border-[#D1D5DB] transition-all duration-300 w-full sm:w-auto"
             >
               <Play className="w-4 h-4 fill-current" />
-              Demo İzle
-            </button>
+              {t('hero_cta_secondary')}
+            </Link>
           </motion.div>
 
           {/* Trust text */}

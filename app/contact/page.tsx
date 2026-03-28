@@ -386,6 +386,34 @@ export default function ContactPage() {
         </div>
       </section>
 
+      {/* Schedule a Meeting CTA */}
+      <section className="py-16 px-6">
+        <div className="max-w-4xl mx-auto">
+          <ScrollReveal>
+            <div className="relative overflow-hidden rounded-2xl bg-[#0C0D14] p-8 sm:p-12 text-center">
+              <div className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full bg-[#2563EB]/10 blur-[80px] -translate-x-1/2 -translate-y-1/2" />
+              <div className="absolute bottom-0 right-0 w-[200px] h-[200px] rounded-full bg-violet-500/10 blur-[60px] translate-x-1/3 translate-y-1/3" />
+              <div className="relative z-10">
+                <Calendar className="w-10 h-10 text-[#2563EB] mx-auto mb-4" />
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3" style={{ fontFamily: 'var(--font-display)' }}>
+                  {t('schedule_meeting_title')}
+                </h3>
+                <p className="text-white/50 max-w-md mx-auto mb-6 text-sm leading-relaxed">
+                  {t('schedule_meeting_desc')}
+                </p>
+                <Link
+                  href="/book"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-[#2563EB] text-white font-medium text-sm hover:bg-[#1D4ED8] transition-all duration-300 shadow-lg shadow-[#2563EB]/25"
+                >
+                  <Calendar className="w-4 h-4" />
+                  {t('schedule_meeting_button')}
+                </Link>
+              </div>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
       <Footer />
     </main>
   );

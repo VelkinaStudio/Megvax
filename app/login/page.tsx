@@ -630,6 +630,16 @@ export default function LoginPage() {
             </Link>
           </p>
 
+          {/* Back to Home */}
+          <p className="mt-3 text-center">
+            <Link
+              href="/"
+              className="text-sm text-[#9CA3AF] hover:text-[#6B7280] transition-colors inline-flex items-center gap-1"
+            >
+              ← {t('back_to_home')}
+            </Link>
+          </p>
+
           {/* Demo Accounts */}
           <div className="mt-6 border border-[#E5E7EB] bg-[#F9FAFB] rounded-xl p-4">
             <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wider mb-3">

@@ -844,6 +844,7 @@
     "demo_user_label": "Demo User",
     "demo_admin_label": "Admin Account",
     "click_to_fill": "Click to fill",
+    "back_to_home": "Home",
     "brand_welcome_prefix": "Welcome",
     "brand_welcome_accent": "back",
     "brand_signup_prefix": "Start optimizing your ads",
@@ -1362,7 +1363,10 @@
     "faq_q1": "How do I connect my Meta ad account?",
     "faq_q2": "What happens after I sign up?",
     "faq_q3": "Is there a free trial available?",
-    "faq_read_more": "Read more"
+    "faq_read_more": "Read more",
+    "schedule_meeting_title": "Schedule a Live Demo",
+    "schedule_meeting_desc": "Book a 30-minute call. We'll walk you through the platform, answer your questions, and set up your account.",
+    "schedule_meeting_button": "Schedule a Demo"
   },
   "not_found": {
     "title": "Page Not Found",
@@ -1464,7 +1468,7 @@
     "hero_title": "Automate your Meta ads with one click.",
     "hero_subtitle": "Connect your accounts, AI pauses underperformers and scales winners. You just approve.",
     "hero_cta": "Start Free",
-    "hero_cta_secondary": "How it works",
+    "hero_cta_secondary": "Schedule a Demo",
     "hero_trust": "14 days free · No credit card required",
     "hero_stat_roas": "3.2x",
     "hero_stat_roas_label": "avg. ROAS",
