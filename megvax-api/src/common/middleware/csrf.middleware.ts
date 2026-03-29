@@ -7,7 +7,7 @@ const CSRF_COOKIE = 'csrf_token';
 const CSRF_HEADER = 'x-csrf-token';
 
 // Endpoints that don't need CSRF validation (they issue the initial token)
-const CSRF_EXEMPT = ['/auth/login', '/auth/register', '/auth/refresh'];
+const CSRF_EXEMPT = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/oauth/exchange'];
 
 @Injectable()
 export class CsrfMiddleware implements NestMiddleware {

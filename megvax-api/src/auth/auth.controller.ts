@@ -52,6 +52,7 @@ export class AuthController {
     return { accessToken: result.accessToken, user: result.user };
   }
 
+  @Throttle({ auth: { limit: 10, ttl: 900000 } })
   @Post('refresh')
   @HttpCode(200)
   async refresh(@Req() req: any, @Res({ passthrough: true }) res: Response) {
@@ -83,6 +84,7 @@ export class AuthController {
     return this.authService.verifyEmail(dto.token);
   }
 
+  @Throttle({ auth: { limit: 3, ttl: 900000 } })
   @Post('forgot-password')
   @HttpCode(200)
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
@@ -116,8 +118,12 @@ export class AuthController {
   async changePassword(
     @CurrentUser('sub') userId: string,
     @Body() dto: ChangePasswordDto,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.changePassword(userId, dto.currentPassword, dto.newPassword);
+    const result = await this.authService.changePassword(userId, dto.currentPassword, dto.newPassword);
+    // Clear refresh cookie — all sessions revoked, user must re-login
+    res.clearCookie('refresh_token');
+    return result;
   }
 
   @Auth()
@@ -130,20 +136,41 @@ export class AuthController {
     return this.authService.acceptInvitation(dto.token, userId);
   }
 
+  // ── OAuth code exchange ──────────────────────────────────
+  // Frontend exchanges a short-lived code for tokens via POST (no token in URL)
+
+  @Throttle({ auth: { limit: 10, ttl: 900000 } })
+  @Post('oauth/exchange')
+  @HttpCode(200)
+  async oauthExchange(
+    @Body('code') code: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    if (!code) throw new BadRequestException('Missing authorization code');
+    const result = await this.authService.exchangeOAuthCode(code);
+    this.setRefreshCookie(res, result.refreshToken);
+    return { accessToken: result.accessToken, user: result.user };
+  }
+
   // ── Google OAuth ───────────────────────────────────────
 
+  @Throttle({ auth: { limit: 10, ttl: 900000 } })
   @Get('google')
-  googleRedirect(@Res() res: Response) {
+  googleRedirect(@Req() req: any, @Res() res: Response) {
     const clientId = this.config.get('GOOGLE_CLIENT_ID');
     if (!clientId) throw new BadRequestException('Google OAuth not configured');
-    const redirectUri = `${this.config.get('FRONTEND_URL')}/auth/callback?provider=google`;
+
+    // Generate CSRF state token and store in cookie
+    const state = crypto.randomBytes(32).toString('hex');
+    this.setOAuthStateCookie(res, state);
+
     const params = new URLSearchParams({
       client_id: clientId,
       redirect_uri: `${this.getApiBase()}/auth/google/callback`,
       response_type: 'code',
       scope: 'openid email profile',
       access_type: 'offline',
-      state: redirectUri, // pass frontend callback URL in state
+      state,
     });
     res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
   }
@@ -152,9 +179,11 @@ export class AuthController {
   async googleCallback(
     @Query('code') code: string,
     @Query('state') state: string,
+    @Req() req: any,
     @Res() res: Response,
   ) {
     if (!code) throw new BadRequestException('Missing authorization code');
+    this.validateOAuthState(req, state);
 
     // Exchange code for tokens
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -185,24 +214,32 @@ export class AuthController {
       avatar: profile.picture,
     });
 
+    // Issue short-lived code instead of putting token in URL
+    const oauthCode = await this.authService.createOAuthCode(result);
     this.setRefreshCookie(res, result.refreshToken);
-    const frontendCallback = state || `${this.config.get('FRONTEND_URL')}/auth/callback?provider=google`;
-    res.redirect(`${frontendCallback}&token=${result.accessToken}`);
+    res.clearCookie('oauth_state');
+    const frontendUrl = this.config.getOrThrow('FRONTEND_URL');
+    res.redirect(`${frontendUrl}/auth/callback?provider=google&code=${oauthCode}`);
   }
 
   // ── Facebook OAuth ────────────────────────────────────
 
+  @Throttle({ auth: { limit: 10, ttl: 900000 } })
   @Get('facebook')
-  facebookRedirect(@Res() res: Response) {
+  facebookRedirect(@Req() req: any, @Res() res: Response) {
     const appId = this.config.get('META_APP_ID');
     if (!appId) throw new BadRequestException('Facebook OAuth not configured');
-    const redirectUri = `${this.config.get('FRONTEND_URL')}/auth/callback?provider=facebook`;
+
+    // Generate CSRF state token and store in cookie
+    const state = crypto.randomBytes(32).toString('hex');
+    this.setOAuthStateCookie(res, state);
+
     const configId = this.config.get<string>('META_LOGIN_CONFIG_ID');
     const params = new URLSearchParams({
       client_id: appId,
       redirect_uri: `${this.getApiBase()}/auth/facebook/callback`,
       response_type: 'code',
-      state: redirectUri,
+      state,
     });
     // Facebook Login for Business uses config_id instead of scope
     if (configId) {
@@ -217,9 +254,11 @@ export class AuthController {
   async facebookCallback(
     @Query('code') code: string,
     @Query('state') state: string,
+    @Req() req: any,
     @Res() res: Response,
   ) {
     if (!code) throw new BadRequestException('Missing authorization code');
+    this.validateOAuthState(req, state);
 
     // Exchange code for access token
     const tokenParams = new URLSearchParams({
@@ -246,10 +285,15 @@ export class AuthController {
       avatar: profile.picture?.data?.url,
     });
 
+    // Issue short-lived code instead of putting token in URL
+    const oauthCode = await this.authService.createOAuthCode(result);
     this.setRefreshCookie(res, result.refreshToken);
-    const frontendCallback = state || `${this.config.get('FRONTEND_URL')}/auth/callback?provider=facebook`;
-    res.redirect(`${frontendCallback}&token=${result.accessToken}`);
+    res.clearCookie('oauth_state');
+    const frontendUrl = this.config.getOrThrow('FRONTEND_URL');
+    res.redirect(`${frontendUrl}/auth/callback?provider=facebook&code=${oauthCode}`);
   }
+
+  // ── Helpers ───────────────────────────────────────────
 
   private getApiBase(): string {
     const domain = this.config.get('RAILWAY_PUBLIC_DOMAIN');
@@ -262,11 +306,32 @@ export class AuthController {
     res.cookie('refresh_token', token, {
       httpOnly: true,
       secure: isProduction,
-      // Cross-origin (frontend ≠ API domain): 'none' + secure
-      // Same-origin: 'strict' for tighter security
       sameSite: isProduction ? 'none' : 'strict',
       maxAge: 7 * 24 * 3600 * 1000, // 7 days
-      path: '/auth', // covers /auth/refresh and /auth/logout
+      path: '/auth',
     });
+  }
+
+  private setOAuthStateCookie(res: Response, state: string) {
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.cookie('oauth_state', state, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax', // must be lax for OAuth redirects
+      maxAge: 10 * 60 * 1000, // 10 minutes
+      path: '/auth',
+    });
+  }
+
+  private validateOAuthState(req: any, state: string) {
+    const cookieState = req.cookies?.oauth_state;
+    if (
+      !cookieState ||
+      !state ||
+      cookieState.length !== state.length ||
+      !crypto.timingSafeEqual(Buffer.from(cookieState), Buffer.from(state))
+    ) {
+      throw new BadRequestException('Invalid OAuth state — possible CSRF attack');
+    }
   }
 }

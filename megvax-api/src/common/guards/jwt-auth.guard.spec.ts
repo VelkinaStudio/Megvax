@@ -5,6 +5,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 
 jest.mock('fs', () => ({
   ...jest.requireActual('fs'),
+  existsSync: jest.fn().mockReturnValue(true),
   readFileSync: jest.fn().mockReturnValue('mock-public-key'),
 }));
 
@@ -25,6 +26,7 @@ describe('JwtAuthGuard', () => {
   beforeEach(() => {
     jwtService = { verifyAsync: jest.fn() };
     const configService = {
+      get: jest.fn().mockReturnValue(undefined),
       getOrThrow: jest.fn().mockReturnValue('/fake/public.pem'),
     };
     guard = new JwtAuthGuard(

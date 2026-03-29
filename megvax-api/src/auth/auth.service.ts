@@ -216,6 +216,8 @@ export class AuthService {
       data: { passwordHash },
     });
 
+    // Revoke all refresh tokens — forces re-login on all devices
+    await this.prisma.refreshToken.deleteMany({ where: { userId } });
     return { message: 'Password changed' };
   }
 
@@ -253,7 +255,7 @@ export class AuthService {
 
   async acceptInvitation(token: string, userId: string) {
     const invitation = await this.prisma.invitation.findFirst({
-      where: { token, acceptedAt: null, expiresAt: { gt: new Date() } },
+      where: { tokenHash: hashToken(token), acceptedAt: null, expiresAt: { gt: new Date() } },
     });
     if (!invitation) throw new BadRequestException('Invalid or expired invitation');
 
@@ -349,6 +351,58 @@ export class AuthService {
     });
 
     return this.generateTokens(user!.id, membership.workspaceId, membership.role);
+  }
+
+  // ── OAuth code exchange ──────────────────────────────
+
+  /**
+   * Create a short-lived authorization code that the frontend exchanges for tokens.
+   * This avoids putting JWTs in redirect URLs (which leak via logs/history/referer).
+   */
+  async createOAuthCode(result: { accessToken: string; refreshToken: string; user: any }): Promise<string> {
+    const code = crypto.randomBytes(32).toString('hex');
+    const codeHash = hashToken(code);
+
+    await this.prisma.oAuthCode.create({
+      data: {
+        codeHash,
+        userId: result.user.id,
+        expiresAt: new Date(Date.now() + 60_000), // 1 minute
+      },
+    });
+
+    return code;
+  }
+
+  /**
+   * Exchange a one-time code for access + refresh tokens.
+   */
+  async exchangeOAuthCode(code: string) {
+    const codeHash = hashToken(code);
+    const stored = await this.prisma.oAuthCode.findUnique({
+      where: { codeHash },
+      include: {
+        user: {
+          include: {
+            workspaceMembers: { take: 1, orderBy: { joinedAt: 'asc' } },
+          },
+        },
+      },
+    });
+
+    if (!stored || stored.expiresAt < new Date()) {
+      // Clean up expired code if found
+      if (stored) await this.prisma.oAuthCode.delete({ where: { id: stored.id } });
+      throw new UnauthorizedException('Invalid or expired authorization code');
+    }
+
+    // Delete the code — one-time use
+    await this.prisma.oAuthCode.delete({ where: { id: stored.id } });
+
+    const membership = stored.user.workspaceMembers[0];
+    if (!membership) throw new UnauthorizedException('No workspace found');
+
+    return this.generateTokens(stored.userId, membership.workspaceId, membership.role);
   }
 
   // ── Token helpers ─────────────────────────────────────

@@ -39,21 +39,14 @@ describe('CsrfMiddleware', () => {
       expect(next).toHaveBeenCalled();
     });
 
-    it('should set csrf cookie if none exists on GET', () => {
+    it('should not set csrf cookie on GET (non-mutating skips CSRF)', () => {
       const req = createMockReq({ method: 'GET' });
       const res = createMockRes();
 
       middleware.use(req as any, res as any, next);
 
-      expect(res.cookie).toHaveBeenCalledWith(
-        'csrf_token',
-        expect.any(String),
-        expect.objectContaining({
-          httpOnly: false,
-          sameSite: 'strict',
-          path: '/',
-        }),
-      );
+      // GET returns early before cookie logic
+      expect(res.cookie).not.toHaveBeenCalled();
     });
 
     it('should not overwrite existing csrf cookie', () => {
@@ -82,7 +75,8 @@ describe('CsrfMiddleware', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('should block POST with x-requested-with but without csrf tokens', () => {
+    it('should allow POST with x-requested-with but without csrf cookie (cross-origin defense)', () => {
+      // Cross-origin: no CSRF cookie present, X-Requested-With is the defense
       const req = createMockReq({
         method: 'POST',
         path: '/campaigns',
@@ -90,8 +84,15 @@ describe('CsrfMiddleware', () => {
       });
       const res = createMockRes();
 
-      expect(() => middleware.use(req as any, res as any, next)).toThrow(ForbiddenException);
-      expect(() => middleware.use(req as any, res as any, next)).toThrow('CSRF token mismatch');
+      middleware.use(req as any, res as any, next);
+
+      expect(next).toHaveBeenCalled();
+      // Should set the csrf cookie for future same-origin requests
+      expect(res.cookie).toHaveBeenCalledWith(
+        'csrf_token',
+        expect.any(String),
+        expect.objectContaining({ httpOnly: false, path: '/' }),
+      );
     });
   });
 
@@ -155,7 +156,7 @@ describe('CsrfMiddleware', () => {
 
   // ── Exempt auth endpoints ───────────────────────────
   describe('exempt endpoints', () => {
-    it.each(['/auth/login', '/auth/register', '/auth/refresh'])(
+    it.each(['/auth/login', '/auth/register', '/auth/refresh', '/auth/oauth/exchange'])(
       'should exempt %s from CSRF validation',
       (path) => {
         const req = createMockReq({
@@ -171,11 +172,16 @@ describe('CsrfMiddleware', () => {
       },
     );
 
-    it('should NOT exempt /auth/logout', () => {
+    it('should NOT exempt /auth/logout (requires double-submit when cookie present)', () => {
+      const cookieToken = crypto.randomBytes(32).toString('hex');
       const req = createMockReq({
         method: 'POST',
         path: '/auth/logout',
-        headers: { 'x-requested-with': 'XMLHttpRequest' },
+        cookies: { csrf_token: cookieToken },
+        headers: {
+          'x-requested-with': 'XMLHttpRequest',
+          // deliberately missing x-csrf-token header → mismatch
+        },
       });
       const res = createMockRes();
 

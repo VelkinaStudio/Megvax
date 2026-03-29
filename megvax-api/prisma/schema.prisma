@@ -31,6 +31,7 @@ model User {
 
   workspaceMembers WorkspaceMember[]
   refreshTokens    RefreshToken[]
+  oauthCodes       OAuthCode[]
   invitationsSent  Invitation[]      @relation("InvitedBy")
   auditLogs        AuditLog[]
   notifications    Notification[]
@@ -93,7 +94,7 @@ model Invitation {
   workspaceId String    @db.Uuid
   email       String
   role        Role      @default(MEMBER)
-  token       String    @unique
+  tokenHash   String    @unique
   invitedById String    @db.Uuid
   expiresAt   DateTime
   acceptedAt  DateTime?
@@ -102,7 +103,7 @@ model Invitation {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   invitedBy User      @relation("InvitedBy", fields: [invitedById], references: [id])
 
-  @@index([token])
+  @@index([tokenHash])
 }
 
 model RefreshToken {
@@ -116,6 +117,18 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([tokenHash])
+}
+
+model OAuthCode {
+  id        String   @id @default(uuid()) @db.Uuid
+  codeHash  String   @unique
+  userId    String   @db.Uuid
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([codeHash])
 }
 
 model ApiKey {

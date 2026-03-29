@@ -229,14 +229,14 @@ describe('WorkspaceService', () => {
   describe('inviteMember', () => {
     const dto = { email: 'newuser@example.com', role: 'MEMBER' as const };
 
-    it('should create invitation, look up workspace/inviter, and send email', async () => {
+    it('should create invitation with hashed token, look up workspace/inviter, and send email', async () => {
       prisma.workspaceMember.findFirst.mockResolvedValue(null);
       const invitation = {
         id: 'inv-1',
         workspaceId: WS_ID,
         email: dto.email,
         role: dto.role,
-        token: expect.any(String),
+        tokenHash: expect.any(String),
       };
       prisma.invitation.create.mockResolvedValue(invitation);
       prisma.workspace.findUniqueOrThrow.mockResolvedValue(mockWorkspace);
@@ -244,19 +244,19 @@ describe('WorkspaceService', () => {
 
       const result = await service.inviteMember(WS_ID, USER_ID, dto);
 
-      // Check invitation was created with correct fields
+      // Check invitation was created with hashed token
       expect(prisma.invitation.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           workspaceId: WS_ID,
           email: dto.email.toLowerCase(),
           role: dto.role,
           invitedById: USER_ID,
-          token: expect.any(String),
+          tokenHash: expect.any(String),
           expiresAt: expect.any(Date),
         }),
       });
 
-      // Check email was sent
+      // Check raw token was sent via email (not the hash)
       expect(emailService.sendInvitationEmail).toHaveBeenCalledWith(
         dto.email,
         expect.any(String),

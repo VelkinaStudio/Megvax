@@ -52,12 +52,13 @@ export class WorkspaceService {
     if (existing) throw new BadRequestException('User is already a member');
 
     const token = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
     const invitation = await this.prisma.invitation.create({
       data: {
         workspaceId,
         email: dto.email.toLowerCase(),
         role: dto.role,
-        token,
+        tokenHash,
         invitedById: inviterId,
         expiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),
       },
@@ -70,6 +71,7 @@ export class WorkspaceService {
       where: { id: inviterId },
     });
 
+    // Send the raw token via email; only the hash is stored
     await this.emailService.sendInvitationEmail(
       dto.email,
       token,

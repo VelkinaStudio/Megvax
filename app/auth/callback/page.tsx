@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { setAccessToken } from '@/lib/api';
+import { api, setAccessToken } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
 export default function AuthCallbackPage() {
@@ -12,17 +12,24 @@ export default function AuthCallbackPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = searchParams.get('token');
+    const code = searchParams.get('code');
     const provider = searchParams.get('provider');
 
-    if (!token) {
-      setError('Giriş başarısız — token alınamadı.');
+    if (!code) {
+      setError('Giriş başarısız — yetkilendirme kodu alınamadı.');
       return;
     }
 
-    // Store the access token and restore user profile
-    setAccessToken(token);
-    refreshUser()
+    // Exchange the short-lived code for tokens via POST
+    api<{ accessToken: string }>('/auth/oauth/exchange', {
+      method: 'POST',
+      body: { code },
+      skipAuth: true,
+    })
+      .then((data) => {
+        setAccessToken(data.accessToken);
+        return refreshUser();
+      })
       .then(() => {
         router.replace('/app/dashboard');
       })

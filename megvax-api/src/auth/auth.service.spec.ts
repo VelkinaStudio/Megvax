@@ -74,9 +74,10 @@ const emailService = {
   sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
 };
 
-// Mock fs.readFileSync to avoid needing real key files
+// Mock fs to avoid needing real key files
 jest.mock('fs', () => ({
   ...jest.requireActual('fs'),
+  existsSync: jest.fn().mockReturnValue(true),
   readFileSync: jest.fn().mockReturnValue('mock-private-key'),
 }));
 
@@ -327,13 +328,17 @@ describe('AuthService', () => {
 
   // ── Change Password ────────────────────────────────
   describe('changePassword', () => {
-    it('should update password when current password is correct', async () => {
+    it('should update password and revoke all refresh tokens', async () => {
       prisma.user.findUniqueOrThrow.mockResolvedValue(mockUser);
       prisma.user.update.mockResolvedValue(mockUser);
+      prisma.refreshToken.deleteMany.mockResolvedValue({ count: 2 });
 
       const result = await service.changePassword(mockUser.id, 'Password123', 'NewPassword123');
 
       expect(prisma.user.update).toHaveBeenCalled();
+      expect(prisma.refreshToken.deleteMany).toHaveBeenCalledWith({
+        where: { userId: mockUser.id },
+      });
       expect(result).toEqual({ message: 'Password changed' });
     });
 
@@ -394,7 +399,7 @@ describe('AuthService', () => {
     it('should create membership and mark invitation accepted', async () => {
       const invitation = {
         id: 'inv-1',
-        token: 'inv-token',
+        tokenHash: hashToken('inv-token'),
         workspaceId: 'ws-2',
         role: 'MEMBER',
         acceptedAt: null,
@@ -406,6 +411,9 @@ describe('AuthService', () => {
 
       const result = await service.acceptInvitation('inv-token', mockUser.id);
 
+      expect(prisma.invitation.findFirst).toHaveBeenCalledWith({
+        where: { tokenHash: hashToken('inv-token'), acceptedAt: null, expiresAt: { gt: expect.any(Date) } },
+      });
       expect(prisma.workspaceMember.create).toHaveBeenCalledWith({
         data: {
           userId: mockUser.id,
