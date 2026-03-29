@@ -1,11 +1,9 @@
-import { Controller, Get, Post, Delete, Query, Param, Body, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Query, Param, Body, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { MetaService } from './meta.service';
 import { Auth } from '../common/decorators/auth.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Roles } from '../common/decorators/roles.decorator';
-import { RolesGuard } from '../common/guards/roles.guard';
 
 @Controller('meta')
 export class MetaController {
@@ -15,14 +13,12 @@ export class MetaController {
   ) {}
 
   @Auth()
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
   @Get('auth-url')
   getAuthUrl(@CurrentUser('workspaceId') workspaceId: string) {
     return this.metaService.getAuthUrl(workspaceId);
   }
 
-  // No @Auth() — this is an OAuth redirect from Facebook (no JWT)
+  // No @Auth() — OAuth redirect from Facebook (no JWT in browser redirect)
   @Get('callback')
   async handleCallback(
     @Query('code') code: string,
@@ -52,8 +48,6 @@ export class MetaController {
   }
 
   @Auth()
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
   @Delete('connections/:id')
   deleteConnection(
     @CurrentUser('workspaceId') workspaceId: string,
@@ -63,8 +57,6 @@ export class MetaController {
   }
 
   @Auth()
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
   @Post('ad-accounts/:metaAccountId/connect')
   connectAdAccount(
     @CurrentUser('workspaceId') workspaceId: string,
@@ -74,8 +66,6 @@ export class MetaController {
   }
 
   @Auth()
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
   @Delete('ad-accounts/:id/disconnect')
   disconnectAdAccount(
     @CurrentUser('workspaceId') workspaceId: string,
@@ -85,8 +75,6 @@ export class MetaController {
   }
 
   @Auth()
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
   @Post('ad-accounts/:id/sync')
   async triggerSync(
     @CurrentUser('workspaceId') workspaceId: string,

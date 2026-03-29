@@ -121,7 +121,7 @@ export function OnboardingChecklist() {
                   Kurulum Adımları
                 </h3>
                 <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                  {completedCount}/{STEPS.length} tamamlandı
+                  {completedCount}/{steps.length} tamamlandı
                 </span>
               </div>
               <button

@@ -29,6 +29,24 @@ export default function AccountsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // Handle Meta OAuth callback results
+  useEffect(() => {
+    const connected = searchParams.get('meta_connected');
+    const error = searchParams.get('meta_error');
+    if (connected === 'true') {
+      toast.success('Meta hesabınız başarıyla bağlandı!');
+      // Clean URL
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('meta_connected');
+      router.replace(`${pathname}?${params.toString()}`);
+    } else if (error) {
+      toast.error(`Meta bağlantı hatası: ${error}`);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('meta_error');
+      router.replace(`${pathname}?${params.toString()}`);
+    }
+  }, [searchParams, toast, router, pathname]);
+
   const setActiveAccount = (nextAccountId: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('account', nextAccountId);
