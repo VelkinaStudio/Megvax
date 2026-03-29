@@ -197,13 +197,19 @@ export class AuthController {
     const appId = this.config.get('META_APP_ID');
     if (!appId) throw new BadRequestException('Facebook OAuth not configured');
     const redirectUri = `${this.config.get('FRONTEND_URL')}/auth/callback?provider=facebook`;
+    const configId = this.config.get<string>('META_LOGIN_CONFIG_ID');
     const params = new URLSearchParams({
       client_id: appId,
       redirect_uri: `${this.getApiBase()}/auth/facebook/callback`,
-      scope: 'public_profile,email',
       response_type: 'code',
       state: redirectUri,
     });
+    // Facebook Login for Business uses config_id instead of scope
+    if (configId) {
+      params.set('config_id', configId);
+    } else {
+      params.set('scope', 'email');
+    }
     res.redirect(`https://www.facebook.com/v25.0/dialog/oauth?${params}`);
   }
 
