@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link2, LayoutGrid, Settings2, BarChart3, Check, X } from 'lucide-react';
 import Link from 'next/link';
 import { Card } from '@/components/ui';
+import { api } from '@/lib/api';
 
 const STORAGE_KEY = 'megvax-onboarding-dismissed';
 
@@ -17,54 +18,81 @@ interface OnboardingStep {
   status: 'done' | 'current' | 'upcoming';
 }
 
-const STEPS: OnboardingStep[] = [
-  {
-    id: 'connect',
-    title: 'Hesap Bağla',
-    description: 'Meta Business hesabınızı bağlayın',
-    icon: Link2,
-    href: '/app/accounts',
-    status: 'done',
-  },
-  {
-    id: 'select',
-    title: 'Reklam Hesabı Seç',
-    description: 'Yönetmek istediğiniz hesapları seçin',
-    icon: LayoutGrid,
-    href: '/app/accounts',
-    status: 'done',
-  },
-  {
-    id: 'strategy',
-    title: 'Strateji Belirle',
-    description: 'Optimizasyon tercihlerinizi yapılandırın',
-    icon: Settings2,
-    href: '/app/optimizations',
-    status: 'current',
-  },
-  {
-    id: 'report',
-    title: 'İlk Raporu Gör',
-    description: 'Dashboard verilerinizi inceleyin',
-    icon: BarChart3,
-    href: '/app/dashboard',
-    status: 'upcoming',
-  },
-];
+function buildSteps(hasConnection: boolean, hasAdAccount: boolean): OnboardingStep[] {
+  // Step 1: done if user has at least one Meta connection
+  const connectDone = hasConnection;
+  // Step 2: done if user has at least one ad account selected
+  const selectDone = hasAdAccount;
+  // Step 3: current if previous steps done
+  const strategyStatus = selectDone ? 'current' : 'upcoming';
+  // Step 4: upcoming until strategy is set
+  const reportStatus = 'upcoming';
+
+  return [
+    {
+      id: 'connect',
+      title: 'Hesap Bağla',
+      description: 'Meta Business hesabınızı bağlayın',
+      icon: Link2,
+      href: '/app/accounts',
+      status: connectDone ? 'done' : 'current',
+    },
+    {
+      id: 'select',
+      title: 'Reklam Hesabı Seç',
+      description: 'Yönetmek istediğiniz hesapları seçin',
+      icon: LayoutGrid,
+      href: '/app/accounts',
+      status: selectDone ? 'done' : connectDone ? 'current' : 'upcoming',
+    },
+    {
+      id: 'strategy',
+      title: 'Strateji Belirle',
+      description: 'Optimizasyon tercihlerinizi yapılandırın',
+      icon: Settings2,
+      href: '/app/optimizations',
+      status: strategyStatus as 'done' | 'current' | 'upcoming',
+    },
+    {
+      id: 'report',
+      title: 'İlk Raporu Gör',
+      description: 'Dashboard verilerinizi inceleyin',
+      icon: BarChart3,
+      href: '/app/dashboard',
+      status: reportStatus,
+    },
+  ];
+}
 
 export function OnboardingChecklist() {
   const [dismissed, setDismissed] = useState(() => {
-    if (typeof window === 'undefined') return true; // SSR: hidden
+    if (typeof window === 'undefined') return true;
     return localStorage.getItem(STORAGE_KEY) === 'true';
   });
+
+  const [steps, setSteps] = useState<OnboardingStep[]>(() => buildSteps(false, false));
+
+  // Check actual onboarding state from API
+  useEffect(() => {
+    if (dismissed) return;
+
+    Promise.all([
+      api<any[]>('/meta/connections').catch(() => []),
+      api<any[]>('/meta/ad-accounts').catch(() => []),
+    ]).then(([connections, adAccounts]) => {
+      const hasConnection = Array.isArray(connections) && connections.length > 0;
+      const hasAdAccount = Array.isArray(adAccounts) && adAccounts.length > 0;
+      setSteps(buildSteps(hasConnection, hasAdAccount));
+    });
+  }, [dismissed]);
 
   const handleDismiss = () => {
     setDismissed(true);
     localStorage.setItem(STORAGE_KEY, 'true');
   };
 
-  const completedCount = STEPS.filter((s) => s.status === 'done').length;
-  const progressPercent = (completedCount / STEPS.length) * 100;
+  const completedCount = steps.filter((s) => s.status === 'done').length;
+  const progressPercent = (completedCount / steps.length) * 100;
 
   return (
     <AnimatePresence>
@@ -108,7 +136,7 @@ export function OnboardingChecklist() {
             {/* Steps */}
             <div className="px-6 pb-6 pt-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {STEPS.map((step, index) => (
+                {steps.map((step, index) => (
                   <StepItem key={step.id} step={step} index={index} />
                 ))}
               </div>

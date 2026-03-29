@@ -200,7 +200,7 @@ export class AuthController {
     const params = new URLSearchParams({
       client_id: appId,
       redirect_uri: `${this.getApiBase()}/auth/facebook/callback`,
-      scope: 'email,public_profile',
+      scope: 'public_profile,email',
       response_type: 'code',
       state: redirectUri,
     });
