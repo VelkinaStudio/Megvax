@@ -101,7 +101,7 @@ export class AuthService {
       },
     });
 
-    if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
+    if (!user || !user.passwordHash || !(await bcrypt.compare(dto.password, user.passwordHash))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -206,7 +206,7 @@ export class AuthService {
       where: { id: userId },
     });
 
-    if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
+    if (!user.passwordHash || !(await bcrypt.compare(currentPassword, user.passwordHash))) {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
@@ -272,6 +272,83 @@ export class AuthService {
     });
 
     return { message: 'Invitation accepted' };
+  }
+
+  // ── OAuth helpers ──────────────────────────────────────
+
+  /**
+   * Find-or-create a user from an OAuth provider profile.
+   * If the user exists (by provider ID or email), link and return tokens.
+   * If not, create user + workspace and return tokens.
+   */
+  async oauthLogin(provider: 'google' | 'facebook', profile: { id: string; email: string; name: string; avatar?: string }) {
+    const providerField = provider === 'google' ? 'googleId' : 'facebookId';
+
+    // 1. Try to find by provider ID
+    let user = await this.prisma.user.findUnique({
+      where: { [providerField]: profile.id } as any,
+      include: { workspaceMembers: { take: 1, orderBy: { joinedAt: 'asc' as const } } },
+    });
+
+    // 2. Try to find by email (link existing account)
+    if (!user) {
+      const existing = await this.prisma.user.findUnique({
+        where: { email: profile.email.toLowerCase() },
+        include: { workspaceMembers: { take: 1, orderBy: { joinedAt: 'asc' as const } } },
+      });
+      if (existing) {
+        user = await this.prisma.user.update({
+          where: { id: existing.id },
+          data: {
+            [providerField]: profile.id,
+            emailVerified: true,
+            avatar: existing.avatar || profile.avatar || null,
+          },
+          include: { workspaceMembers: { take: 1, orderBy: { joinedAt: 'asc' as const } } },
+        });
+      }
+    }
+
+    // 3. Create new user + workspace
+    if (!user) {
+      const slug = profile.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+        + '-' + crypto.randomBytes(3).toString('hex');
+
+      user = await this.prisma.$transaction(async (tx) => {
+        const newUser = await tx.user.create({
+          data: {
+            email: profile.email.toLowerCase(),
+            fullName: profile.name,
+            avatar: profile.avatar || null,
+            emailVerified: true,
+            [providerField]: profile.id,
+          },
+        });
+
+        const workspace = await tx.workspace.create({
+          data: { name: `${profile.name}'s Workspace`, slug },
+        });
+
+        await tx.workspaceMember.create({
+          data: { userId: newUser.id, workspaceId: workspace.id, role: 'OWNER' },
+        });
+
+        return { ...newUser, workspaceMembers: [{ workspaceId: workspace.id, role: 'OWNER' }] };
+      }) as any;
+    }
+
+    const membership = user!.workspaceMembers[0];
+    if (!membership) throw new UnauthorizedException('No workspace found');
+
+    await this.prisma.user.update({
+      where: { id: user!.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    return this.generateTokens(user!.id, membership.workspaceId, membership.role);
   }
 
   // ── Token helpers ─────────────────────────────────────

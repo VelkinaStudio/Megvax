@@ -3,13 +3,16 @@ import {
   Post,
   Get,
   Patch,
+  Query,
   Body,
   Req,
   Res,
   UseGuards,
   HttpCode,
+  BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -27,7 +30,10 @@ import { JwtPayload, AuthenticatedRequest } from '../common/types/request.types'
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private config: ConfigService,
+  ) {}
 
   @Throttle({ auth: { limit: 5, ttl: 900000 } })
   @Post('register')
@@ -122,6 +128,127 @@ export class AuthController {
     @Body() dto: AcceptInvitationDto,
   ) {
     return this.authService.acceptInvitation(dto.token, userId);
+  }
+
+  // ── Google OAuth ───────────────────────────────────────
+
+  @Get('google')
+  googleRedirect(@Res() res: Response) {
+    const clientId = this.config.get('GOOGLE_CLIENT_ID');
+    if (!clientId) throw new BadRequestException('Google OAuth not configured');
+    const redirectUri = `${this.config.get('FRONTEND_URL')}/auth/callback?provider=google`;
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: `${this.getApiBase()}/auth/google/callback`,
+      response_type: 'code',
+      scope: 'openid email profile',
+      access_type: 'offline',
+      state: redirectUri, // pass frontend callback URL in state
+    });
+    res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+  }
+
+  @Get('google/callback')
+  async googleCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Res() res: Response,
+  ) {
+    if (!code) throw new BadRequestException('Missing authorization code');
+
+    // Exchange code for tokens
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: this.config.getOrThrow('GOOGLE_CLIENT_ID'),
+        client_secret: this.config.getOrThrow('GOOGLE_CLIENT_SECRET'),
+        redirect_uri: `${this.getApiBase()}/auth/google/callback`,
+        grant_type: 'authorization_code',
+      }),
+    });
+    const tokens = await tokenRes.json() as any;
+    if (!tokens.access_token) throw new BadRequestException('Google token exchange failed');
+
+    // Get user profile
+    const profileRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
+    });
+    const profile = await profileRes.json() as any;
+    if (!profile.email) throw new BadRequestException('Could not get Google profile');
+
+    const result = await this.authService.oauthLogin('google', {
+      id: profile.id,
+      email: profile.email,
+      name: profile.name || profile.email.split('@')[0],
+      avatar: profile.picture,
+    });
+
+    this.setRefreshCookie(res, result.refreshToken);
+    const frontendCallback = state || `${this.config.get('FRONTEND_URL')}/auth/callback?provider=google`;
+    res.redirect(`${frontendCallback}&token=${result.accessToken}`);
+  }
+
+  // ── Facebook OAuth ────────────────────────────────────
+
+  @Get('facebook')
+  facebookRedirect(@Res() res: Response) {
+    const appId = this.config.get('META_APP_ID');
+    if (!appId) throw new BadRequestException('Facebook OAuth not configured');
+    const redirectUri = `${this.config.get('FRONTEND_URL')}/auth/callback?provider=facebook`;
+    const params = new URLSearchParams({
+      client_id: appId,
+      redirect_uri: `${this.getApiBase()}/auth/facebook/callback`,
+      scope: 'email,public_profile',
+      response_type: 'code',
+      state: redirectUri,
+    });
+    res.redirect(`https://www.facebook.com/v25.0/dialog/oauth?${params}`);
+  }
+
+  @Get('facebook/callback')
+  async facebookCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Res() res: Response,
+  ) {
+    if (!code) throw new BadRequestException('Missing authorization code');
+
+    // Exchange code for access token
+    const tokenParams = new URLSearchParams({
+      code,
+      client_id: this.config.getOrThrow('META_APP_ID'),
+      client_secret: this.config.getOrThrow('META_APP_SECRET'),
+      redirect_uri: `${this.getApiBase()}/auth/facebook/callback`,
+    });
+    const tokenRes = await fetch(`https://graph.facebook.com/v25.0/oauth/access_token?${tokenParams}`);
+    const tokens = await tokenRes.json() as any;
+    if (!tokens.access_token) throw new BadRequestException('Facebook token exchange failed');
+
+    // Get user profile
+    const profileRes = await fetch(
+      `https://graph.facebook.com/v25.0/me?fields=id,name,email,picture.type(large)&access_token=${tokens.access_token}`,
+    );
+    const profile = await profileRes.json() as any;
+    if (!profile.email) throw new BadRequestException('Could not get Facebook profile. Ensure email permission is granted.');
+
+    const result = await this.authService.oauthLogin('facebook', {
+      id: profile.id,
+      email: profile.email,
+      name: profile.name || profile.email.split('@')[0],
+      avatar: profile.picture?.data?.url,
+    });
+
+    this.setRefreshCookie(res, result.refreshToken);
+    const frontendCallback = state || `${this.config.get('FRONTEND_URL')}/auth/callback?provider=facebook`;
+    res.redirect(`${frontendCallback}&token=${result.accessToken}`);
+  }
+
+  private getApiBase(): string {
+    const domain = this.config.get('RAILWAY_PUBLIC_DOMAIN');
+    if (domain) return `https://${domain}`;
+    return `http://localhost:${this.config.get('PORT', '4000')}`;
   }
 
   private setRefreshCookie(res: Response, token: string) {
