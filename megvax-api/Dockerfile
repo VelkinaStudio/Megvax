@@ -30,4 +30,4 @@ ENV PORT=4000
 EXPOSE 4000
 
 # Run migrations then start
-CMD ["sh", "-c", "npx prisma db push --skip-generate && node dist/main"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate --accept-data-loss && node dist/main"]
